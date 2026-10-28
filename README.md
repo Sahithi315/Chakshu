@@ -26,11 +26,11 @@ python -c "from src.reports.extract import extract_pdf, highlight; r = extract_p
 Each row: test, value, unit, reference_range, page, bbox, source_line, quote_ok, range_note ("outside listed range" or empty). The PDFs come from the team's own generator; accuracy here is not a real-world claim.
 
 ## Symptom pipeline (Stage 1)
-Team data: CSV with columns `id, author, text_marked, source`; tags `[phrase]{S|N|D|V}` (S symptom, N denied symptom, D duration, V severity). Tag the phrase only, not "no"/"denies".
+Team data: CSV with columns `id, author, text_marked, source`; tags `[phrase]{S|N|D|V}` (S symptom, N denied symptom, D duration, V severity). Tag the phrase alone, not "no"/"denies".
 ```
 # 1. CSV -> JSONL (lists malformed rows, exit code 1 if any; tags other than S/N/D/V become plain text)
 python -m src.symptoms.convert data/symptoms/raw/*.csv --out data/symptoms/all.jsonl
-# 2a. train-only (no test set yet)
+# 2a. training data alone (no test set yet)
 python -m src.symptoms.prepare --inp data/symptoms/all.jsonl --out data/symptoms/split
 # 2b. when the human test file exists: add its CSV to step 1, then split by author and freeze
 python -m src.symptoms.prepare --inp data/symptoms/all.jsonl --out data/symptoms/split --test-author TESTAUTHOR --freeze

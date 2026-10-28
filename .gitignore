@@ -1,0 +1,7 @@
+node_modules/
+output/
+outputs/
+tmp/
+__pycache__/
+*.py[cod]
+~$*.xlsx

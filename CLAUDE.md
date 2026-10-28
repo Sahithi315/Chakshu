@@ -1,19 +1,19 @@
 # Clinical Context Platform - Phase 2 demo (Team 404 Vision)
 
 ## Goal
-Thin demo slice for a college review (possibly 30 Oct 2026). The full product is in `PRD_Clinical_Context_Platform.md`; we build only the slice below.
+Thin demo slice for a college review (possibly 30 Oct 2026). The full product is in `PRD_Clinical_Context_Platform.md`; we build the slice below.
 
 ## Scope (in this order)
 1. Symptom extraction: patient types symptoms; fine-tuned small encoder tags SYMPTOM, NEG_SYMPTOM, DURATION, SEVERITY.
 2. Report extraction: synthetic text-based lab PDFs -> rows (test, value, unit, reference range) with page + word coordinates, via pdfplumber; quote check flags values not found in the source line.
 3. UI: one-screen doctor brief; click an item -> source page with line highlighted; Confirm/Correct/Reject per item; plain text box for symptoms.
-Out of scope: opening animation, ABDM, HMIS, offline, voice, WhatsApp, handwriting, logins, camera. Do not use the watermarked doctor image (`image.png`).
+Out of scope: opening animation, ABDM, HMIS, offline, voice, WhatsApp, handwriting, logins, camera. The watermarked doctor image (`image.png`) stays unused.
 
 ## Rules
-- Branch `phase2-adit`. Never push or touch `main` without Adit's say-so. Small commits.
-- Synthetic data only. Never create or accept real patient data. Every screen shows: "Prototype. Synthetic data only. Not for clinical use."
+- Branch `phase2-adit`. Do not push or touch `main` unless Adit says so. Small commits.
+- Synthetic data only. No real patient data, ever. Every screen shows: "Prototype. Synthetic data only. Not for clinical use."
 - No diagnosis, treatment or medicine advice.
-- Banned words in UI/docs: verified, compliant, certified, "detects errors", "saves time", first, only.
+- Wording: UI and docs avoid these words: verified, compliant, certified, "detects errors", "saves time", first, only. Prefer "confirmed", "extracted", "reviewed".
 - Short readable code, no needless abstractions. README with exact run commands.
 - No credentialed clinical data (MIMIC, n2c2, THYME) or models trained on it (e.g. BioClinical-ModernBERT). No scraped doctor-chat sets (ChatDoctor, MedDialog). CADEC/PsyTAR/TwiMed/DDXPlus: vocabulary/label conventions only, never test set, check licence first.
 - Data format (`data/symptoms/*.json[l]`): `{"text": "...", "spans": [{"start":int,"end":int,"label":"SYMPTOM|DURATION|SEVERITY","negated":bool?}]}`; negated SYMPTOM -> NEG_SYMPTOM internally. Validate and report bad rows; never skip silently.

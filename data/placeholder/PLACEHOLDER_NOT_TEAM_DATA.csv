@@ -1,0 +1,51 @@
+id,author,text_marked,source
+1,placeholder_a,"I have had a [fever]{S} for [3 days]{D} and it is [severe]{V}",placeholder
+2,placeholder_a,"no [cough]{N} but [headache]{S} since [yesterday]{D}",placeholder
+3,placeholder_a,"[mild]{V} [sore throat]{S} for [two days]{D}",placeholder
+4,placeholder_a,"I do not have any [chest pain]{N}",placeholder
+5,placeholder_a,"[stomach pain]{S} and [vomiting]{S} for [1 week]{D}",placeholder
+6,placeholder_a,"denies [fever]{N} and [chills]{N}",placeholder
+7,placeholder_a,"[severe]{V} [back pain]{S} since [5 days]{D}",placeholder
+8,placeholder_a,"feeling [tired]{S} all the time for [2 months]{D}",placeholder
+9,placeholder_a,"[dizziness]{S} when I stand up but no [fainting]{N}",placeholder
+10,placeholder_a,"[moderate]{V} [joint pain]{S} in the knees for [3 weeks]{D}",placeholder
+11,placeholder_a,"no [shortness of breath]{N} and no [swelling]{N}",placeholder
+12,placeholder_a,"my [cough]{S} is [mild]{V} and started [4 days]{D} ago",placeholder
+13,placeholder_a,"[nausea]{S} after meals for [a week]{D}",placeholder
+14,placeholder_a,"without [rash]{N} or [itching]{N}",placeholder
+15,placeholder_a,"[very severe]{V} [headache]{S} and [blurred vision]{S}",placeholder
+16,placeholder_a,"I have [diarrhoea]{S} since [2 days]{D} but no [blood]{N}",placeholder
+17,placeholder_a,"[runny nose]{S} and [sneezing]{S} for [3 days]{D}",placeholder
+18,placeholder_a,"no [fever]{N} today",placeholder
+19,placeholder_a,"[slight]{V} [cough]{S} at night",placeholder
+20,placeholder_a,"[excessive thirst]{S} and [frequent urination]{S} for [1 month]{D}",placeholder
+21,placeholder_a,"not having any [vomiting]{N}",placeholder
+22,placeholder_a,"[chest tightness]{S} for [2 hours]{D}",placeholder
+23,placeholder_a,"[unbearable]{V} [toothache]{S} since [last night]{D}",placeholder
+24,placeholder_a,"no [loss of appetite]{N} but [weight loss]{S} over [3 months]{D}",placeholder
+25,placeholder_a,"[mild]{V} [fever]{S} and [body ache]{S}",placeholder
+26,placeholder_a,"I never had [wheezing]{N}",placeholder
+27,placeholder_a,"[burning urination]{S} for [5 days]{D}",placeholder
+28,placeholder_a,"[constipation]{S} for [10 days]{D}",placeholder
+29,placeholder_a,"no [palpitations]{N} and no [sweating]{N}",placeholder
+30,placeholder_a,"[ear pain]{S} on the left side for [2 days]{D}",placeholder
+31,placeholder_a,"[severe]{V} [vomiting]{S} since morning",placeholder
+32,placeholder_a,"denies [cough]{N}",placeholder
+33,placeholder_a,"[moderate]{V} [stomach ache]{S} and [bloating]{S}",placeholder
+34,placeholder_a,"[leg swelling]{S} for [1 week]{D} with no [pain]{N}",placeholder
+35,placeholder_a,"[sleeplessness]{S} for [a month]{D}",placeholder
+36,placeholder_a,"no [fever]{N} and no [cough]{N} but [weakness]{S}",placeholder
+37,placeholder_a,"[mild]{V} [dizziness]{S}",placeholder
+38,placeholder_a,"[numbness]{S} in the hands since [6 days]{D}",placeholder
+1,placeholder_b,"I have [cough]{S} for [4 days]{D} and no [fever]{N}",placeholder
+2,placeholder_b,"[severe]{V} [headache]{S} since [yesterday]{D}",placeholder
+3,placeholder_b,"denies [chest pain]{N} and [breathlessness]{N}",placeholder
+4,placeholder_b,"[mild]{V} [sore throat]{S}",placeholder
+5,placeholder_b,"[vomiting]{S} for [2 days]{D} but no [diarrhoea]{N}",placeholder
+6,placeholder_b,"[back pain]{S} for [3 weeks]{D}",placeholder
+7,placeholder_b,"no [rash]{N}",placeholder
+8,placeholder_b,"[tiredness]{S} and [dizziness]{S} for [a week]{D}",placeholder
+9,placeholder_b,"[moderate]{V} [joint pain]{S} but no [swelling]{N}",placeholder
+10,placeholder_b,"without [nausea]{N}",placeholder
+11,placeholder_b,"[fever]{S} for [5 days]{D}",placeholder
+12,placeholder_b,"not having [palpitations]{N}, only [fatigue]{S}",placeholder

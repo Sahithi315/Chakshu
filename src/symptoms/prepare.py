@@ -16,7 +16,7 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--inp", nargs="+", required=True)
     ap.add_argument("--out", required=True)
-    ap.add_argument("--test-author", nargs="+", required=True)
+    ap.add_argument("--test-author", nargs="+", default=None)  # omit: train-only, no test set yet
     ap.add_argument("--freeze", action="store_true")
     a = ap.parse_args()
     rows, errors = load_validated(a.inp)
@@ -24,8 +24,11 @@ def main():
         print("ERROR", e)
     if errors:
         sys.exit(f"STOP: {len(errors)} malformed rows. Fix them; nothing was skipped silently.")
-    train, test, dropped = split_by_author(rows, a.test_author)
     os.makedirs(a.out, exist_ok=True)
+    if not a.test_author:
+        dump(rows, f"{a.out}/train.jsonl")
+        print("train-only:", summary(rows)); return
+    train, test, dropped = split_by_author(rows, a.test_author)
     dump(train, f"{a.out}/train.jsonl"); dump(test, f"{a.out}/test.jsonl")
     dump(dropped, f"{a.out}/dropped_near_duplicates.jsonl")
     print("train:", summary(train)); print("test: ", summary(test))

@@ -1,9 +1,12 @@
-"""No-training baseline: keyword list + simple negation rule (and an optional negspaCy variant).
+"""No-model baselines: keyword list + simple negation rule.
 
-The vocabulary below was written from general knowledge before any team test data existed.
-Do not tune it on the test set.
+ - baseline_train: symptom vocabulary = every SYMPTOM/NEG_SYMPTOM span in the TRAIN set (main baseline).
+ - baseline: the hand-written list below (weaker, written before any data existed).
+ - baseline_negspacy: hand-written list, polarity from negspaCy's Negex (optional).
+Duration regex, severity list and negation rule are the same hand-written code in all three.
+Never tune any of this on the test set.
 """
-import re
+import json, re
 
 SYMPTOMS = sorted("""fever|chills|cough|headache|sore throat|chest pain|chest tightness|shortness of breath|breathlessness|
 stomach pain|stomach ache|abdominal pain|vomiting|nausea|diarrhoea|diarrhea|constipation|bloating|back pain|joint pain|
@@ -45,11 +48,21 @@ def _is_negated(text, start):
     return bool(re.search(NEG_WORDS, " ".join(words), re.I))
 
 
-def predict(text):
+def from_train(train_jsonl):
+    """Symptom vocabulary from the training spans only; returns predict(text)."""
+    vocab = set()
+    for line in open(train_jsonl, encoding="utf-8"):
+        r = json.loads(line)
+        vocab |= {r["text"][s["start"]:s["end"]].lower() for s in r["spans"] if s["label"] in ("SYMPTOM", "NEG_SYMPTOM")}
+    vocab = sorted(vocab, key=len, reverse=True)
+    return lambda text: predict(text, vocab)
+
+
+def predict(text, symptoms=None):
     spans, taken = [], []
     for s, e, l in _duration_spans(text) + _find(r"\b(" + "|".join(map(re.escape, SEVERITY)) + r")\b", text, "SEVERITY"):
         spans.append((s, e, l)); taken.append((s, e))
-    for kw in SYMPTOMS:  # longest first; skip overlaps
+    for kw in symptoms or SYMPTOMS:  # longest first; skip overlaps
         for m in re.finditer(r"\b" + re.escape(kw) + r"\b", text, re.I):
             if any(m.start() < e and s < m.end() for s, e in taken):
                 continue

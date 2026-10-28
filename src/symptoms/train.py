@@ -4,14 +4,11 @@ python -m src.symptoms.train --model answerdotai/ModernBERT-base --data data/sym
 """
 import argparse, json, random, time
 import torch
-from .data import check_frozen
 from .model import load, encode, collate
 
 
 def train(model_name, data_dir, frac, out, epochs=10, bs=16, lr=5e-5, seed=0, dtype="bf16"):
-    # the test set must be frozen before any training
-    test = [json.loads(l) for l in open(f"{data_dir}/test.jsonl", encoding="utf-8")]
-    check_frozen(test, f"{data_dir}/test_freeze.json")
+    # training only reads train.jsonl; the test set does not exist yet (or is not touched) at this point
     rows = [json.loads(l) for l in open(f"{data_dir}/train.jsonl", encoding="utf-8")]
     random.Random(seed).shuffle(rows)
     rows = rows[:max(1, round(len(rows) * frac))]

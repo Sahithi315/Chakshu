@@ -1,0 +1,6 @@
+id,author,text_marked,source
+train_llm_01_001,LLM_01,"I've had [high]{V} [fever]{S} for [2 days]{D}, with [body ache]{S}, no [cough]{N}.",llm
+train_llm_01_002,LLM_01,"Since [last night]{D} my [chest pain]{S} is [mild]{V}, not having [breathlessness]{N}.",llm
+train_llm_01_003,LLM_01,"[stomch is hurting]{S} [a lot]{V} from [3 hrs]{D}, also [loose motions]{S} but no [blood in stool]{N}",llm
+train_llm_01_004,LLM_01,"I feel [dizzy]{S} whenever I stand, going on for [one week]{D}. No [fainting]{N} or [blurred vision]{N}.",llm
+train_llm_01_005,LLM_01,"My [sore throat]{S} started [4 days ago]{D}; it is [moderate]{V} and I have [difficulty swallowing]{S}, but no [runny nose]{N}.",llm

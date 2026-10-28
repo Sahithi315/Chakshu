@@ -7,6 +7,8 @@ Nothing is dropped silently: bad rows are listed in <out>.errors.txt too.
 import argparse, csv, json, re, sys
 
 TAGS = {"S": "SYMPTOM", "N": "NEG_SYMPTOM", "D": "DURATION", "V": "SEVERITY"}
+# other tags from the team codebook: kept as plain, unlabelled text (decision of 28 Oct). Any other tag is still an error.
+PLAIN_TAGS = set("BFMQUCAETLPH")
 TAG_RE = re.compile(r"\[([^\[\]]+)\]\{([^{}]*)\}")
 
 
@@ -15,6 +17,10 @@ def parse_marked(marked):
     text, spans, pos = "", [], 0
     for m in TAG_RE.finditer(marked):
         tag = m.group(2).strip()
+        if tag in PLAIN_TAGS:
+            text += marked[pos:m.start()] + m.group(1)
+            pos = m.end()
+            continue
         if tag not in TAGS:
             raise ValueError(f"unknown tag {{{tag}}} on '{m.group(1)}'")
         text += marked[pos:m.start()]

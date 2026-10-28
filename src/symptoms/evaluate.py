@@ -4,7 +4,7 @@ python -m src.symptoms.evaluate --system baseline|baseline_negspacy|models/NAME 
 """
 import argparse, json, os
 import numpy as np
-from .data import LABELS, check_frozen
+from .data import LABELS, check_frozen, sha
 
 
 def counts(gold, pred):
@@ -68,7 +68,9 @@ def failures(rows, preds, limit=40):
     return out[:limit]
 
 
-def predictor(system):
+def predictor(system, data=None):
+    if system == "baseline_train":
+        from . import baseline; f = baseline.from_train(f"{data}/train.jsonl"); return lambda texts: [f(t) for t in texts]
     if system == "baseline":
         from . import baseline; return lambda texts: [baseline.predict(t) for t in texts]
     if system == "baseline_negspacy":
@@ -94,9 +96,14 @@ def main():
     a = ap.parse_args()
     test = [json.loads(l) for l in open(f"{a.data}/test.jsonl", encoding="utf-8")]
     check_frozen(test, f"{a.data}/test_freeze.json")
-    preds = predictor(a.system)([r["text"] for r in test])
-    res = evaluate(test, preds)
     placeholder = "placeholder" in a.data.lower()
+    if not placeholder:  # each system is scored on the real test set once; no re-scoring after seeing a number
+        log = "outputs/test_scored.jsonl"; key = {"system": a.system, "test_sha": sha(test)}
+        if os.path.exists(log) and any(json.loads(l) == key for l in open(log)):
+            raise SystemExit(f"STOP: {a.system} was already scored on this test set. Not re-scoring.")
+        os.makedirs("outputs", exist_ok=True); open(log, "a").write(json.dumps(key) + "\n")
+    preds = predictor(a.system, a.data)([r["text"] for r in test])
+    res = evaluate(test, preds)
     print_report(a.system, res, placeholder)
     if not placeholder:
         os.makedirs("outputs", exist_ok=True)

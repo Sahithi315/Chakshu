@@ -1,0 +1,501 @@
+id,author,text_marked,source
+train_sym_0001,LLM_SYMPTOM_01,"I have [mild]{V} [hedache]{S} for [2 hours]{D}, but no [breathlessness]{N}.",llm
+train_sym_0002,LLM_SYMPTOM_01,[constipation]{S} [all the time]{F} from [two months]{D},llm
+train_sym_0003,LLM_SYMPTOM_01,"feeling [tiredness]{S} and [cough]{S} for [many months]{D}, [unbearable]{V}, but no [fainting]{N}",llm
+train_sym_0004,LLM_SYMPTOM_01,"I wanted to say [pain]{S} in [both legs]{B} is [very bad]{V}, going on [one week]{D}",llm
+train_sym_0005,LLM_SYMPTOM_01,"mujhe [acidity]{S} ho raha hai [4 weeks]{D} se, [every morning]{F}, but no [rash]{N}",llm
+train_sym_0006,LLM_SYMPTOM_01,since [this morning]{D} [vomiting]{S}. feels [moderate]{V},llm
+train_sym_0007,LLM_SYMPTOM_01,"[neck]{B} me [pain]{S} [on and off]{F}, [last night]{D} se, but no [seizures]{N}",llm
+train_sym_0008,LLM_SYMPTOM_01,I get [dizzines]{S} [all the time]{F}; started [Monday]{D},llm
+train_sym_0009,LLM_SYMPTOM_01,"I have [unbearable]{V} [fainting]{S} for [about 10 days]{D}, but no [cough]{N}. please check this.",llm
+train_sym_0010,LLM_SYMPTOM_01,[dizziness]{S} [twice a day]{F} from [yesterday evening]{D} please check this.,llm
+train_sym_0011,LLM_SYMPTOM_01,"feeling [sore throat]{S} and [joint stiffness]{S} for [3 days]{D}, [severe]{V}, but no [blood in urine]{N} please check this.",llm
+train_sym_0012,LLM_SYMPTOM_01,"I wanted to say [pain]{S} in [left shoulder]{B} is [moderate]{V}, going on [half an hour]{D} please check this.",llm
+train_sym_0013,LLM_SYMPTOM_01,"mujhe [night sweats]{S} ho raha hai [2 hours]{D} se, [on and off]{F}, but no [breathlessness]{N} please check this.",llm
+train_sym_0014,LLM_SYMPTOM_01,since [two months]{D} [cough]{S}. feels [slight]{V} please check this.,llm
+train_sym_0015,LLM_SYMPTOM_01,"[upper abdomen]{B} me [pain]{S} [mostly at night]{F}, [many months]{D} se, but no [fainting]{N} please check this.",llm
+train_sym_0016,LLM_SYMPTOM_01,I get [burning while passing urine]{S} [twice a day]{F}; started [one week]{D} please check this.,llm
+train_sym_0017,LLM_SYMPTOM_01,"I have [severe]{V} [rash]{S} for [4 weeks]{D}, but no [rash]{N}. this is what I remember.",llm
+train_sym_0018,LLM_SYMPTOM_01,[joint stiffness]{S} [once every few days]{F} from [this morning]{D} this is what I remember.,llm
+train_sym_0019,LLM_SYMPTOM_01,"feeling [loose motions]{S} and [stomach cramps]{S} for [last night]{D}, [mild]{V}, but no [seizures]{N} this is what I remember.",llm
+train_sym_0020,LLM_SYMPTOM_01,"I wanted to say [pain]{S} in [lower back]{B} is [slight]{V}, going on [Monday]{D} this is what I remember.",llm
+train_sym_0021,LLM_SYMPTOM_01,"mujhe [swelling]{S} ho raha hai [about 10 days]{D} se, [mostly at night]{F}, but no [cough]{N} this is what I remember.",llm
+train_sym_0022,LLM_SYMPTOM_01,since [yesterday evening]{D} [vommiting]{S}. feels [very bad]{V} this is what I remember.,llm
+train_sym_0023,LLM_SYMPTOM_01,"[right side of my head]{B} me [pain]{S} [every morning]{F}, [3 days]{D} se, but no [blood in urine]{N} this is what I remember.",llm
+train_sym_0024,LLM_SYMPTOM_01,I get [runny nose]{S} [once every few days]{F}; started [half an hour]{D} this is what I remember.,llm
+train_sym_0025,LLM_SYMPTOM_01,"I have [mild]{V} [blurred vision]{S} for [2 hours]{D}, but no [breathlessness]{N}. family helped me type this.",llm
+train_sym_0026,LLM_SYMPTOM_01,[dry mouth]{S} [all the time]{F} from [two months]{D} family helped me type this.,llm
+train_sym_0027,LLM_SYMPTOM_01,"feeling [headache]{S} and [dry mouth]{S} for [many months]{D}, [unbearable]{V}, but no [fainting]{N} family helped me type this.",llm
+train_sym_0028,LLM_SYMPTOM_01,"I wanted to say [pain]{S} in [both legs]{B} is [very bad]{V}, going on [one week]{D} family helped me type this.",llm
+train_sym_0029,LLM_SYMPTOM_01,"mujhe [brethlessness]{S} ho raha hai [4 weeks]{D} se, [every morning]{F}, but no [rash]{N} family helped me type this.",llm
+train_sym_0030,LLM_SYMPTOM_01,since [this morning]{D} [chills]{S}. feels [moderate]{V} family helped me type this.,llm
+train_sym_0031,LLM_SYMPTOM_01,"[neck]{B} me [pain]{S} [on and off]{F}, [last night]{D} se, but no [seizures]{N} family helped me type this.",llm
+train_sym_0032,LLM_SYMPTOM_01,I get [constipation]{S} [all the time]{F}; started [Monday]{D} family helped me type this.,llm
+train_sym_0033,LLM_SYMPTOM_01,"I have [unbearable]{V} [tiredness]{S} for [about 10 days]{D}, but no [cough]{N}. I may have typed spelling wrong.",llm
+train_sym_0034,LLM_SYMPTOM_01,[itching]{S} [twice a day]{F} from [yesterday evening]{D} I may have typed spelling wrong.,llm
+train_sym_0035,LLM_SYMPTOM_01,"feeling [acidity]{S} and [chills]{S} for [3 days]{D}, [severe]{V}, but no [blood in urine]{N} I may have typed spelling wrong.",llm
+train_sym_0036,LLM_SYMPTOM_01,"I wanted to say [pain]{S} in [left shoulder]{B} is [moderate]{V}, going on [half an hour]{D} I may have typed spelling wrong.",llm
+train_sym_0037,LLM_SYMPTOM_01,"mujhe [body ache]{S} ho raha hai [2 hours]{D} se, [on and off]{F}, but no [breathlessness]{N} I may have typed spelling wrong.",llm
+train_sym_0038,LLM_SYMPTOM_01,since [two months]{D} [palpitations]{S}. feels [slight]{V} I may have typed spelling wrong.,llm
+train_sym_0039,LLM_SYMPTOM_01,"[upper abdomen]{B} me [pain]{S} [mostly at night]{F}, [many months]{D} se, but no [fainting]{N} I may have typed spelling wrong.",llm
+train_sym_0040,LLM_SYMPTOM_01,I get [dizziness]{S} [twice a day]{F}; started [one week]{D} I may have typed spelling wrong.,llm
+train_sym_0041,LLM_SYMPTOM_01,"I have [severe]{V} [sore throat]{S} for [4 weeks]{D}, but no [rash]{N}. sharing this for the doctor.",llm
+train_sym_0042,LLM_SYMPTOM_01,[loss of appetite]{S} [once every few days]{F} from [this morning]{D} sharing this for the doctor.,llm
+train_sym_0043,LLM_SYMPTOM_01,"feeling [wekness]{S} and [itching]{S} for [last night]{D}, [mild]{V}, but no [seizures]{N} sharing this for the doctor.",llm
+train_sym_0044,LLM_SYMPTOM_01,"I wanted to say [pain]{S} in [lower back]{B} is [slight]{V}, going on [Monday]{D} sharing this for the doctor.",llm
+train_sym_0045,LLM_SYMPTOM_01,"mujhe [breathlessness]{S} ho raha hai [about 10 days]{D} se, [mostly at night]{F}, but no [cough]{N} sharing this for the doctor.",llm
+train_sym_0046,LLM_SYMPTOM_01,since [yesterday evening]{D} [burning while passing urine]{S}. feels [very bad]{V} sharing this for the doctor.,llm
+train_sym_0047,LLM_SYMPTOM_01,"[right side of my head]{B} me [pain]{S} [every morning]{F}, [3 days]{D} se, but no [blood in urine]{N} sharing this for the doctor.",llm
+train_sym_0048,LLM_SYMPTOM_01,I get [joint stiffness]{S} [once every few days]{F}; started [half an hour]{D} sharing this for the doctor.,llm
+train_sym_0049,LLM_SYMPTOM_01,"I have [mild]{V} [loose motions]{S} for [2 hours]{D}, but no [breathlessness]{N}. these are my current details.",llm
+train_sym_0050,LLM_SYMPTOM_01,[runy nose]{S} [all the time]{F} from [two months]{D} these are my current details.,llm
+train_sym_0051,LLM_SYMPTOM_01,"feeling [swelling]{S} and [palpitations]{S} for [many months]{D}, [unbearable]{V}, but no [fainting]{N} these are my current details.",llm
+train_sym_0052,LLM_SYMPTOM_01,"I wanted to say [pain]{S} in [both legs]{B} is [very bad]{V}, going on [one week]{D} these are my current details.",llm
+train_sym_0053,LLM_SYMPTOM_01,"mujhe [nausea]{S} ho raha hai [4 weeks]{D} se, [every morning]{F}, but no [rash]{N} these are my current details.",llm
+train_sym_0054,LLM_SYMPTOM_01,since [this morning]{D} [runny nose]{S}. feels [moderate]{V} these are my current details.,llm
+train_sym_0055,LLM_SYMPTOM_01,"[neck]{B} me [pain]{S} [on and off]{F}, [last night]{D} se, but no [seizures]{N} these are my current details.",llm
+train_sym_0056,LLM_SYMPTOM_01,I get [dry mouth]{S} [all the time]{F}; started [Monday]{D} these are my current details.,llm
+train_sym_0057,LLM_SYMPTOM_01,"I have [unbearable]{V} [hedache]{S} for [about 10 days]{D}, but no [cough]{N}. adding this before consultation.",llm
+train_sym_0058,LLM_SYMPTOM_01,[wheezing]{S} [twice a day]{F} from [yesterday evening]{D} adding this before consultation.,llm
+train_sym_0059,LLM_SYMPTOM_01,"feeling [frequent urination]{S} and [loss of appetite]{S} for [3 days]{D}, [severe]{V}, but no [blood in urine]{N} adding this before consultation.",llm
+train_sym_0060,LLM_SYMPTOM_01,"I wanted to say [pain]{S} in [left shoulder]{B} is [moderate]{V}, going on [half an hour]{D} adding this before consultation.",llm
+train_sym_0061,LLM_SYMPTOM_01,"mujhe [fever]{S} ho raha hai [2 hours]{D} se, [on and off]{F}, but no [breathlessness]{N} adding this before consultation.",llm
+train_sym_0062,LLM_SYMPTOM_01,since [two months]{D} [constipation]{S}. feels [slight]{V} adding this before consultation.,llm
+train_sym_0063,LLM_SYMPTOM_01,"[upper abdomen]{B} me [pain]{S} [mostly at night]{F}, [many months]{D} se, but no [fainting]{N} adding this before consultation.",llm
+train_sym_0064,LLM_SYMPTOM_01,I get [dizzines]{S} [twice a day]{F}; started [one week]{D} adding this before consultation.,llm
+train_sym_0065,LLM_SYMPTOM_01,"I have [severe]{V} [acidity]{S} for [4 weeks]{D}, but no [rash]{N}. this is the main issue.",llm
+train_sym_0066,LLM_SYMPTOM_01,[vomiting]{S} [once every few days]{F} from [this morning]{D} this is the main issue.,llm
+train_sym_0067,LLM_SYMPTOM_01,"feeling [body ache]{S} and [burning while passing urine]{S} for [last night]{D}, [mild]{V}, but no [seizures]{N} this is the main issue.",llm
+train_sym_0068,LLM_SYMPTOM_01,"I wanted to say [pain]{S} in [lower back]{B} is [slight]{V}, going on [Monday]{D} this is the main issue.",llm
+train_sym_0069,LLM_SYMPTOM_01,"mujhe [fainting]{S} ho raha hai [about 10 days]{D} se, [mostly at night]{F}, but no [cough]{N} this is the main issue.",llm
+train_sym_0070,LLM_SYMPTOM_01,since [yesterday evening]{D} [dizziness]{S}. feels [very bad]{V} this is the main issue.,llm
+train_sym_0071,LLM_SYMPTOM_01,"[right side of my head]{B} me [pain]{S} [every morning]{F}, [3 days]{D} se, but no [blood in urine]{N} this is the main issue.",llm
+train_sym_0072,LLM_SYMPTOM_01,I get [loss of appetite]{S} [once every few days]{F}; started [half an hour]{D} this is the main issue.,llm
+train_sym_0073,LLM_SYMPTOM_01,"I have [mild]{V} [night sweats]{S} for [2 hours]{D}, but no [breathlessness]{N}. entered using the kiosk.",llm
+train_sym_0074,LLM_SYMPTOM_01,[cough]{S} [all the time]{F} from [two months]{D} entered using the kiosk.,llm
+train_sym_0075,LLM_SYMPTOM_01,"feeling [breathlessness]{S} and [weakness]{S} for [many months]{D}, [unbearable]{V}, but no [fainting]{N} entered using the kiosk.",llm
+train_sym_0076,LLM_SYMPTOM_01,"I wanted to say [pain]{S} in [both legs]{B} is [very bad]{V}, going on [one week]{D} entered using the kiosk.",llm
+train_sym_0077,LLM_SYMPTOM_01,"mujhe [rash]{S} ho raha hai [4 weeks]{D} se, [every morning]{F}, but no [rash]{N} entered using the kiosk.",llm
+train_sym_0078,LLM_SYMPTOM_01,since [this morning]{D} [vommiting]{S}. feels [moderate]{V} entered using the kiosk.,llm
+train_sym_0079,LLM_SYMPTOM_01,"[neck]{B} me [pain]{S} [on and off]{F}, [last night]{D} se, but no [seizures]{N} entered using the kiosk.",llm
+train_sym_0080,LLM_SYMPTOM_01,I get [weakness]{S} [all the time]{F}; started [Monday]{D} entered using the kiosk.,llm
+train_sym_0081,LLM_SYMPTOM_01,"I have [unbearable]{V} [swelling]{S} for [about 10 days]{D}, but no [cough]{N}. I can explain more inside.",llm
+train_sym_0082,LLM_SYMPTOM_01,[stomach cramps]{S} [twice a day]{F} from [yesterday evening]{D} I can explain more inside.,llm
+train_sym_0083,LLM_SYMPTOM_01,"feeling [nausea]{S} and [runny nose]{S} for [3 days]{D}, [severe]{V}, but no [blood in urine]{N} I can explain more inside.",llm
+train_sym_0084,LLM_SYMPTOM_01,"I wanted to say [pain]{S} in [left shoulder]{B} is [moderate]{V}, going on [half an hour]{D} I can explain more inside.",llm
+train_sym_0085,LLM_SYMPTOM_01,"mujhe [brethlessness]{S} ho raha hai [2 hours]{D} se, [on and off]{F}, but no [breathlessness]{N} I can explain more inside.",llm
+train_sym_0086,LLM_SYMPTOM_01,since [two months]{D} [dry mouth]{S}. feels [slight]{V} I can explain more inside.,llm
+train_sym_0087,LLM_SYMPTOM_01,"[upper abdomen]{B} me [pain]{S} [mostly at night]{F}, [many months]{D} se, but no [fainting]{N} I can explain more inside.",llm
+train_sym_0088,LLM_SYMPTOM_01,I get [wheezing]{S} [twice a day]{F}; started [one week]{D} I can explain more inside.,llm
+train_sym_0089,LLM_SYMPTOM_01,"I have [severe]{V} [frequent urination]{S} for [4 weeks]{D}, but no [rash]{N}. please confirm with me.",llm
+train_sym_0090,LLM_SYMPTOM_01,[chills]{S} [once every few days]{F} from [this morning]{D} please confirm with me.,llm
+train_sym_0091,LLM_SYMPTOM_01,"feeling [fever]{S} and [wheezing]{S} for [last night]{D}, [mild]{V}, but no [seizures]{N} please confirm with me.",llm
+train_sym_0092,LLM_SYMPTOM_01,"I wanted to say [pain]{S} in [lower back]{B} is [slight]{V}, going on [Monday]{D} please confirm with me.",llm
+train_sym_0093,LLM_SYMPTOM_01,"mujhe [tiredness]{S} ho raha hai [about 10 days]{D} se, [mostly at night]{F}, but no [cough]{N} please confirm with me.",llm
+train_sym_0094,LLM_SYMPTOM_01,since [yesterday evening]{D} [itching]{S}. feels [very bad]{V} please confirm with me.,llm
+train_sym_0095,LLM_SYMPTOM_01,"[right side of my head]{B} me [pain]{S} [every morning]{F}, [3 days]{D} se, but no [blood in urine]{N} please confirm with me.",llm
+train_sym_0096,LLM_SYMPTOM_01,I get [vomiting]{S} [once every few days]{F}; started [half an hour]{D} please confirm with me.,llm
+train_sym_0097,LLM_SYMPTOM_01,"I have [mild]{V} [body ache]{S} for [2 hours]{D}, but no [breathlessness]{N}.",llm
+train_sym_0098,LLM_SYMPTOM_01,[palpitations]{S} [all the time]{F} from [two months]{D},llm
+train_sym_0099,LLM_SYMPTOM_01,"feeling [wekness]{S} and [constipation]{S} for [many months]{D}, [unbearable]{V}, but no [fainting]{N}",llm
+train_sym_0100,LLM_SYMPTOM_01,"mujhe [sore throat]{S} ho raha hai [4 weeks]{D} se, [every morning]{F}, but no [rash]{N}",llm
+train_sym_0101,LLM_SYMPTOM_01,since [this morning]{D} [loss of appetite]{S}. feels [moderate]{V},llm
+train_sym_0102,LLM_SYMPTOM_01,I get [cough]{S} [all the time]{F}; started [Monday]{D},llm
+train_sym_0103,LLM_SYMPTOM_01,"I have [unbearable]{V} [breathlessness]{S} for [about 10 days]{D}, but no [cough]{N}. please check this.",llm
+train_sym_0104,LLM_SYMPTOM_01,[runy nose]{S} [twice a day]{F} from [yesterday evening]{D} please check this.,llm
+train_sym_0105,LLM_SYMPTOM_01,"feeling [rash]{S} and [vomiting]{S} for [3 days]{D}, [severe]{V}, but no [blood in urine]{N} please check this.",llm
+train_sym_0106,LLM_SYMPTOM_01,"mujhe [loose motions]{S} ho raha hai [2 hours]{D} se, [on and off]{F}, but no [breathlessness]{N} please check this.",llm
+train_sym_0107,LLM_SYMPTOM_01,since [two months]{D} [weakness]{S}. feels [slight]{V} please check this.,llm
+train_sym_0108,LLM_SYMPTOM_01,I get [stomach cramps]{S} [twice a day]{F}; started [one week]{D} please check this.,llm
+train_sym_0109,LLM_SYMPTOM_01,"I have [severe]{V} [hedache]{S} for [4 weeks]{D}, but no [rash]{N}. this is what I remember.",llm
+train_sym_0110,LLM_SYMPTOM_01,[runny nose]{S} [once every few days]{F} from [this morning]{D} this is what I remember.,llm
+train_sym_0111,LLM_SYMPTOM_01,"feeling [blurred vision]{S} and [dizziness]{S} for [last night]{D}, [mild]{V}, but no [seizures]{N} this is what I remember.",llm
+train_sym_0112,LLM_SYMPTOM_01,"mujhe [headache]{S} ho raha hai [about 10 days]{D} se, [mostly at night]{F}, but no [cough]{N} this is what I remember.",llm
+train_sym_0113,LLM_SYMPTOM_01,since [yesterday evening]{D} [wheezing]{S}. feels [very bad]{V} this is what I remember.,llm
+train_sym_0114,LLM_SYMPTOM_01,I get [dizzines]{S} [once every few days]{F}; started [half an hour]{D} this is what I remember.,llm
+train_sym_0115,LLM_SYMPTOM_01,"I have [mild]{V} [fever]{S} for [2 hours]{D}, but no [breathlessness]{N}. family helped me type this.",llm
+train_sym_0116,LLM_SYMPTOM_01,[constipation]{S} [all the time]{F} from [two months]{D} family helped me type this.,llm
+train_sym_0117,LLM_SYMPTOM_01,"feeling [tiredness]{S} and [cough]{S} for [many months]{D}, [unbearable]{V}, but no [fainting]{N} family helped me type this.",llm
+train_sym_0118,LLM_SYMPTOM_01,"mujhe [acidity]{S} ho raha hai [4 weeks]{D} se, [every morning]{F}, but no [rash]{N} family helped me type this.",llm
+train_sym_0119,LLM_SYMPTOM_01,since [this morning]{D} [vomiting]{S}. feels [moderate]{V} family helped me type this.,llm
+train_sym_0120,LLM_SYMPTOM_01,I get [palpitations]{S} [all the time]{F}; started [Monday]{D} family helped me type this.,llm
+train_sym_0121,LLM_SYMPTOM_01,"I have [unbearable]{V} [fainting]{S} for [about 10 days]{D}, but no [cough]{N}. I may have typed spelling wrong.",llm
+train_sym_0122,LLM_SYMPTOM_01,[dizziness]{S} [twice a day]{F} from [yesterday evening]{D} I may have typed spelling wrong.,llm
+train_sym_0123,LLM_SYMPTOM_01,"feeling [sore throat]{S} and [joint stiffness]{S} for [3 days]{D}, [severe]{V}, but no [blood in urine]{N} I may have typed spelling wrong.",llm
+train_sym_0124,LLM_SYMPTOM_01,"mujhe [night sweats]{S} ho raha hai [2 hours]{D} se, [on and off]{F}, but no [breathlessness]{N} I may have typed spelling wrong.",llm
+train_sym_0125,LLM_SYMPTOM_01,since [two months]{D} [vommiting]{S}. feels [slight]{V} I may have typed spelling wrong.,llm
+train_sym_0126,LLM_SYMPTOM_01,I get [burning while passing urine]{S} [twice a day]{F}; started [one week]{D} I may have typed spelling wrong.,llm
+train_sym_0127,LLM_SYMPTOM_01,"I have [severe]{V} [rash]{S} for [4 weeks]{D}, but no [rash]{N}. sharing this for the doctor.",llm
+train_sym_0128,LLM_SYMPTOM_01,[joint stiffness]{S} [once every few days]{F} from [this morning]{D} sharing this for the doctor.,llm
+train_sym_0129,LLM_SYMPTOM_01,"feeling [loose motions]{S} and [stomach cramps]{S} for [last night]{D}, [mild]{V}, but no [seizures]{N} sharing this for the doctor.",llm
+train_sym_0130,LLM_SYMPTOM_01,"mujhe [brethlessness]{S} ho raha hai [about 10 days]{D} se, [mostly at night]{F}, but no [cough]{N} sharing this for the doctor.",llm
+train_sym_0131,LLM_SYMPTOM_01,since [yesterday evening]{D} [stomach cramps]{S}. feels [very bad]{V} sharing this for the doctor.,llm
+train_sym_0132,LLM_SYMPTOM_01,I get [runny nose]{S} [once every few days]{F}; started [half an hour]{D} sharing this for the doctor.,llm
+train_sym_0133,LLM_SYMPTOM_01,"I have [mild]{V} [blurred vision]{S} for [2 hours]{D}, but no [breathlessness]{N}. these are my current details.",llm
+train_sym_0134,LLM_SYMPTOM_01,[dry mouth]{S} [all the time]{F} from [two months]{D} these are my current details.,llm
+train_sym_0135,LLM_SYMPTOM_01,"feeling [headache]{S} and [dry mouth]{S} for [many months]{D}, [unbearable]{V}, but no [fainting]{N} these are my current details.",llm
+train_sym_0136,LLM_SYMPTOM_01,"mujhe [frequent urination]{S} ho raha hai [4 weeks]{D} se, [every morning]{F}, but no [rash]{N} these are my current details.",llm
+train_sym_0137,LLM_SYMPTOM_01,since [this morning]{D} [chills]{S}. feels [moderate]{V} these are my current details.,llm
+train_sym_0138,LLM_SYMPTOM_01,I get [constipation]{S} [all the time]{F}; started [Monday]{D} these are my current details.,llm
+train_sym_0139,LLM_SYMPTOM_01,"I have [unbearable]{V} [tiredness]{S} for [about 10 days]{D}, but no [cough]{N}. adding this before consultation.",llm
+train_sym_0140,LLM_SYMPTOM_01,[itching]{S} [twice a day]{F} from [yesterday evening]{D} adding this before consultation.,llm
+train_sym_0141,LLM_SYMPTOM_01,"feeling [wekness]{S} and [chills]{S} for [3 days]{D}, [severe]{V}, but no [blood in urine]{N} adding this before consultation.",llm
+train_sym_0142,LLM_SYMPTOM_01,"mujhe [body ache]{S} ho raha hai [2 hours]{D} se, [on and off]{F}, but no [breathlessness]{N} adding this before consultation.",llm
+train_sym_0143,LLM_SYMPTOM_01,since [two months]{D} [palpitations]{S}. feels [slight]{V} adding this before consultation.,llm
+train_sym_0144,LLM_SYMPTOM_01,I get [dizziness]{S} [twice a day]{F}; started [one week]{D} adding this before consultation.,llm
+train_sym_0145,LLM_SYMPTOM_01,"I have [severe]{V} [sore throat]{S} for [4 weeks]{D}, but no [rash]{N}. this is the main issue.",llm
+train_sym_0146,LLM_SYMPTOM_01,[runy nose]{S} [once every few days]{F} from [this morning]{D} this is the main issue.,llm
+train_sym_0147,LLM_SYMPTOM_01,"feeling [night sweats]{S} and [itching]{S} for [last night]{D}, [mild]{V}, but no [seizures]{N} this is the main issue.",llm
+train_sym_0148,LLM_SYMPTOM_01,"mujhe [breathlessness]{S} ho raha hai [about 10 days]{D} se, [mostly at night]{F}, but no [cough]{N} this is the main issue.",llm
+train_sym_0149,LLM_SYMPTOM_01,since [yesterday evening]{D} [burning while passing urine]{S}. feels [very bad]{V} this is the main issue.,llm
+train_sym_0150,LLM_SYMPTOM_01,I get [joint stiffness]{S} [once every few days]{F}; started [half an hour]{D} this is the main issue.,llm
+train_sym_0151,LLM_SYMPTOM_01,"I have [mild]{V} [hedache]{S} for [2 hours]{D}, but no [breathlessness]{N}. entered using the kiosk.",llm
+train_sym_0152,LLM_SYMPTOM_01,[weakness]{S} [all the time]{F} from [two months]{D} entered using the kiosk.,llm
+train_sym_0153,LLM_SYMPTOM_01,"feeling [swelling]{S} and [palpitations]{S} for [many months]{D}, [unbearable]{V}, but no [fainting]{N} entered using the kiosk.",llm
+train_sym_0154,LLM_SYMPTOM_01,"mujhe [nausea]{S} ho raha hai [4 weeks]{D} se, [every morning]{F}, but no [rash]{N} entered using the kiosk.",llm
+train_sym_0155,LLM_SYMPTOM_01,since [this morning]{D} [runny nose]{S}. feels [moderate]{V} entered using the kiosk.,llm
+train_sym_0156,LLM_SYMPTOM_01,I get [dizzines]{S} [all the time]{F}; started [Monday]{D} entered using the kiosk.,llm
+train_sym_0157,LLM_SYMPTOM_01,"I have [unbearable]{V} [headache]{S} for [about 10 days]{D}, but no [cough]{N}. I can explain more inside.",llm
+train_sym_0158,LLM_SYMPTOM_01,[wheezing]{S} [twice a day]{F} from [yesterday evening]{D} I can explain more inside.,llm
+train_sym_0159,LLM_SYMPTOM_01,"feeling [frequent urination]{S} and [loss of appetite]{S} for [3 days]{D}, [severe]{V}, but no [blood in urine]{N} I can explain more inside.",llm
+train_sym_0160,LLM_SYMPTOM_01,"mujhe [fever]{S} ho raha hai [2 hours]{D} se, [on and off]{F}, but no [breathlessness]{N} I can explain more inside.",llm
+train_sym_0161,LLM_SYMPTOM_01,since [two months]{D} [constipation]{S}. feels [slight]{V} I can explain more inside.,llm
+train_sym_0162,LLM_SYMPTOM_01,I get [itching]{S} [twice a day]{F}; started [one week]{D} I can explain more inside.,llm
+train_sym_0163,LLM_SYMPTOM_01,"I have [severe]{V} [acidity]{S} for [4 weeks]{D}, but no [rash]{N}. please confirm with me.",llm
+train_sym_0164,LLM_SYMPTOM_01,[vomiting]{S} [once every few days]{F} from [this morning]{D} please confirm with me.,llm
+train_sym_0165,LLM_SYMPTOM_01,"feeling [body ache]{S} and [burning while passing urine]{S} for [last night]{D}, [mild]{V}, but no [seizures]{N} please confirm with me.",llm
+train_sym_0166,LLM_SYMPTOM_01,"mujhe [fainting]{S} ho raha hai [about 10 days]{D} se, [mostly at night]{F}, but no [cough]{N} please confirm with me.",llm
+train_sym_0167,LLM_SYMPTOM_01,since [yesterday evening]{D} [vommiting]{S}. feels [very bad]{V} please confirm with me.,llm
+train_sym_0168,LLM_SYMPTOM_01,I get [loss of appetite]{S} [once every few days]{F}; started [half an hour]{D} please confirm with me.,llm
+train_sym_0169,LLM_SYMPTOM_01,"I have [mild]{V} [night sweats]{S} for [2 hours]{D}, but no [breathlessness]{N}.",llm
+train_sym_0170,LLM_SYMPTOM_01,[cough]{S} [all the time]{F} from [two months]{D},llm
+train_sym_0171,LLM_SYMPTOM_01,"feeling [breathlessness]{S} and [weakness]{S} for [many months]{D}, [unbearable]{V}, but no [fainting]{N}",llm
+train_sym_0172,LLM_SYMPTOM_01,"mujhe [brethlessness]{S} ho raha hai [4 weeks]{D} se, [every morning]{F}, but no [rash]{N}",llm
+train_sym_0173,LLM_SYMPTOM_01,since [this morning]{D} [joint stiffness]{S}. feels [moderate]{V},llm
+train_sym_0174,LLM_SYMPTOM_01,I get [weakness]{S} [all the time]{F}; started [Monday]{D},llm
+train_sym_0175,LLM_SYMPTOM_01,"I have [unbearable]{V} [swelling]{S} for [about 10 days]{D}, but no [cough]{N}. please check this.",llm
+train_sym_0176,LLM_SYMPTOM_01,[stomach cramps]{S} [twice a day]{F} from [yesterday evening]{D} please check this.,llm
+train_sym_0177,LLM_SYMPTOM_01,"feeling [nausea]{S} and [runny nose]{S} for [3 days]{D}, [severe]{V}, but no [blood in urine]{N} please check this.",llm
+train_sym_0178,LLM_SYMPTOM_01,"mujhe [blurred vision]{S} ho raha hai [2 hours]{D} se, [on and off]{F}, but no [breathlessness]{N} please check this.",llm
+train_sym_0179,LLM_SYMPTOM_01,since [two months]{D} [dry mouth]{S}. feels [slight]{V} please check this.,llm
+train_sym_0180,LLM_SYMPTOM_01,I get [wheezing]{S} [twice a day]{F}; started [one week]{D} please check this.,llm
+train_sym_0181,LLM_SYMPTOM_01,"I have [severe]{V} [frequent urination]{S} for [4 weeks]{D}, but no [rash]{N}. this is what I remember.",llm
+train_sym_0182,LLM_SYMPTOM_01,[chills]{S} [once every few days]{F} from [this morning]{D} this is what I remember.,llm
+train_sym_0183,LLM_SYMPTOM_01,"feeling [wekness]{S} and [wheezing]{S} for [last night]{D}, [mild]{V}, but no [seizures]{N} this is what I remember.",llm
+train_sym_0184,LLM_SYMPTOM_01,"mujhe [tiredness]{S} ho raha hai [about 10 days]{D} se, [mostly at night]{F}, but no [cough]{N} this is what I remember.",llm
+train_sym_0185,LLM_SYMPTOM_01,since [yesterday evening]{D} [itching]{S}. feels [very bad]{V} this is what I remember.,llm
+train_sym_0186,LLM_SYMPTOM_01,I get [vomiting]{S} [once every few days]{F}; started [half an hour]{D} this is what I remember.,llm
+train_sym_0187,LLM_SYMPTOM_01,"I have [mild]{V} [body ache]{S} for [2 hours]{D}, but no [breathlessness]{N}. family helped me type this.",llm
+train_sym_0188,LLM_SYMPTOM_01,[runy nose]{S} [all the time]{F} from [two months]{D} family helped me type this.,llm
+train_sym_0189,LLM_SYMPTOM_01,"feeling [fainting]{S} and [constipation]{S} for [many months]{D}, [unbearable]{V}, but no [fainting]{N} family helped me type this.",llm
+train_sym_0190,LLM_SYMPTOM_01,"mujhe [sore throat]{S} ho raha hai [4 weeks]{D} se, [every morning]{F}, but no [rash]{N} family helped me type this.",llm
+train_sym_0191,LLM_SYMPTOM_01,since [this morning]{D} [loss of appetite]{S}. feels [moderate]{V} family helped me type this.,llm
+train_sym_0192,LLM_SYMPTOM_01,I get [cough]{S} [all the time]{F}; started [Monday]{D} family helped me type this.,llm
+train_sym_0193,LLM_SYMPTOM_01,"I have [unbearable]{V} [hedache]{S} for [about 10 days]{D}, but no [cough]{N}. I may have typed spelling wrong.",llm
+train_sym_0194,LLM_SYMPTOM_01,[burning while passing urine]{S} [twice a day]{F} from [yesterday evening]{D} I may have typed spelling wrong.,llm
+train_sym_0195,LLM_SYMPTOM_01,"feeling [rash]{S} and [vomiting]{S} for [3 days]{D}, [severe]{V}, but no [blood in urine]{N} I may have typed spelling wrong.",llm
+train_sym_0196,LLM_SYMPTOM_01,"mujhe [loose motions]{S} ho raha hai [2 hours]{D} se, [on and off]{F}, but no [breathlessness]{N} I may have typed spelling wrong.",llm
+train_sym_0197,LLM_SYMPTOM_01,since [two months]{D} [weakness]{S}. feels [slight]{V} I may have typed spelling wrong.,llm
+train_sym_0198,LLM_SYMPTOM_01,I get [dizzines]{S} [twice a day]{F}; started [one week]{D} I may have typed spelling wrong.,llm
+train_sym_0199,LLM_SYMPTOM_01,"I have [severe]{V} [nausea]{S} for [4 weeks]{D}, but no [rash]{N}. sharing this for the doctor.",llm
+train_sym_0200,LLM_SYMPTOM_01,[runny nose]{S} [once every few days]{F} from [this morning]{D} sharing this for the doctor.,llm
+train_sym_0201,LLM_SYMPTOM_01,"feeling [blurred vision]{S} and [dizziness]{S} for [last night]{D}, [mild]{V}, but no [seizures]{N} sharing this for the doctor.",llm
+train_sym_0202,LLM_SYMPTOM_01,"mujhe [headache]{S} ho raha hai [about 10 days]{D} se, [mostly at night]{F}, but no [cough]{N} sharing this for the doctor.",llm
+train_sym_0203,LLM_SYMPTOM_01,since [yesterday evening]{D} [wheezing]{S}. feels [very bad]{V} sharing this for the doctor.,llm
+train_sym_0204,LLM_SYMPTOM_01,I get [chills]{S} [once every few days]{F}; started [half an hour]{D} sharing this for the doctor.,llm
+train_sym_0205,LLM_SYMPTOM_01,"I have [mild]{V} [fever]{S} for [2 hours]{D}, but no [breathlessness]{N}. these are my current details.",llm
+train_sym_0206,LLM_SYMPTOM_01,[constipation]{S} [all the time]{F} from [two months]{D} these are my current details.,llm
+train_sym_0207,LLM_SYMPTOM_01,"feeling [tiredness]{S} and [cough]{S} for [many months]{D}, [unbearable]{V}, but no [fainting]{N} these are my current details.",llm
+train_sym_0208,LLM_SYMPTOM_01,"mujhe [acidity]{S} ho raha hai [4 weeks]{D} se, [every morning]{F}, but no [rash]{N} these are my current details.",llm
+train_sym_0209,LLM_SYMPTOM_01,since [this morning]{D} [vommiting]{S}. feels [moderate]{V} these are my current details.,llm
+train_sym_0210,LLM_SYMPTOM_01,I get [palpitations]{S} [all the time]{F}; started [Monday]{D} these are my current details.,llm
+train_sym_0211,LLM_SYMPTOM_01,"I have [unbearable]{V} [fainting]{S} for [about 10 days]{D}, but no [cough]{N}. adding this before consultation.",llm
+train_sym_0212,LLM_SYMPTOM_01,[dizziness]{S} [twice a day]{F} from [yesterday evening]{D} adding this before consultation.,llm
+train_sym_0213,LLM_SYMPTOM_01,"feeling [sore throat]{S} and [joint stiffness]{S} for [3 days]{D}, [severe]{V}, but no [blood in urine]{N} adding this before consultation.",llm
+train_sym_0214,LLM_SYMPTOM_01,"mujhe [brethlessness]{S} ho raha hai [2 hours]{D} se, [on and off]{F}, but no [breathlessness]{N} adding this before consultation.",llm
+train_sym_0215,LLM_SYMPTOM_01,since [two months]{D} [cough]{S}. feels [slight]{V} adding this before consultation.,llm
+train_sym_0216,LLM_SYMPTOM_01,I get [burning while passing urine]{S} [twice a day]{F}; started [one week]{D} adding this before consultation.,llm
+train_sym_0217,LLM_SYMPTOM_01,"I have [severe]{V} [rash]{S} for [4 weeks]{D}, but no [rash]{N}. this is the main issue.",llm
+train_sym_0218,LLM_SYMPTOM_01,[joint stiffness]{S} [once every few days]{F} from [this morning]{D} this is the main issue.,llm
+train_sym_0219,LLM_SYMPTOM_01,"feeling [loose motions]{S} and [stomach cramps]{S} for [last night]{D}, [mild]{V}, but no [seizures]{N} this is the main issue.",llm
+train_sym_0220,LLM_SYMPTOM_01,"mujhe [swelling]{S} ho raha hai [about 10 days]{D} se, [mostly at night]{F}, but no [cough]{N} this is the main issue.",llm
+train_sym_0221,LLM_SYMPTOM_01,since [yesterday evening]{D} [stomach cramps]{S}. feels [very bad]{V} this is the main issue.,llm
+train_sym_0222,LLM_SYMPTOM_01,I get [runny nose]{S} [once every few days]{F}; started [half an hour]{D} this is the main issue.,llm
+train_sym_0223,LLM_SYMPTOM_01,"I have [mild]{V} [blurred vision]{S} for [2 hours]{D}, but no [breathlessness]{N}. entered using the kiosk.",llm
+train_sym_0224,LLM_SYMPTOM_01,[dry mouth]{S} [all the time]{F} from [two months]{D} entered using the kiosk.,llm
+train_sym_0225,LLM_SYMPTOM_01,"feeling [wekness]{S} and [dry mouth]{S} for [many months]{D}, [unbearable]{V}, but no [fainting]{N} entered using the kiosk.",llm
+train_sym_0226,LLM_SYMPTOM_01,"mujhe [frequent urination]{S} ho raha hai [4 weeks]{D} se, [every morning]{F}, but no [rash]{N} entered using the kiosk.",llm
+train_sym_0227,LLM_SYMPTOM_01,since [this morning]{D} [chills]{S}. feels [moderate]{V} entered using the kiosk.,llm
+train_sym_0228,LLM_SYMPTOM_01,I get [constipation]{S} [all the time]{F}; started [Monday]{D} entered using the kiosk.,llm
+train_sym_0229,LLM_SYMPTOM_01,"I have [unbearable]{V} [tiredness]{S} for [about 10 days]{D}, but no [cough]{N}. I can explain more inside.",llm
+train_sym_0230,LLM_SYMPTOM_01,[runy nose]{S} [twice a day]{F} from [yesterday evening]{D} I can explain more inside.,llm
+train_sym_0231,LLM_SYMPTOM_01,"feeling [acidity]{S} and [chills]{S} for [3 days]{D}, [severe]{V}, but no [blood in urine]{N} I can explain more inside.",llm
+train_sym_0232,LLM_SYMPTOM_01,"mujhe [body ache]{S} ho raha hai [2 hours]{D} se, [on and off]{F}, but no [breathlessness]{N} I can explain more inside.",llm
+train_sym_0233,LLM_SYMPTOM_01,since [two months]{D} [palpitations]{S}. feels [slight]{V} I can explain more inside.,llm
+train_sym_0234,LLM_SYMPTOM_01,I get [dizziness]{S} [twice a day]{F}; started [one week]{D} I can explain more inside.,llm
+train_sym_0235,LLM_SYMPTOM_01,"I have [severe]{V} [hedache]{S} for [4 weeks]{D}, but no [rash]{N}. please confirm with me.",llm
+train_sym_0236,LLM_SYMPTOM_01,[loss of appetite]{S} [once every few days]{F} from [this morning]{D} please confirm with me.,llm
+train_sym_0237,LLM_SYMPTOM_01,"feeling [night sweats]{S} and [itching]{S} for [last night]{D}, [mild]{V}, but no [seizures]{N} please confirm with me.",llm
+train_sym_0238,LLM_SYMPTOM_01,"mujhe [breathlessness]{S} ho raha hai [about 10 days]{D} se, [mostly at night]{F}, but no [cough]{N} please confirm with me.",llm
+train_sym_0239,LLM_SYMPTOM_01,since [yesterday evening]{D} [burning while passing urine]{S}. feels [very bad]{V} please confirm with me.,llm
+train_sym_0240,LLM_SYMPTOM_01,I get [dizzines]{S} [once every few days]{F}; started [half an hour]{D} please confirm with me.,llm
+train_sym_0241,LLM_SYMPTOM_01,"I have [mild]{V} [loose motions]{S} for [2 hours]{D}, but no [breathlessness]{N}.",llm
+train_sym_0242,LLM_SYMPTOM_01,[weakness]{S} [all the time]{F} from [two months]{D},llm
+train_sym_0243,LLM_SYMPTOM_01,"feeling [swelling]{S} and [palpitations]{S} for [many months]{D}, [unbearable]{V}, but no [fainting]{N}",llm
+train_sym_0244,LLM_SYMPTOM_01,"mujhe [nausea]{S} ho raha hai [4 weeks]{D} se, [every morning]{F}, but no [rash]{N}",llm
+train_sym_0245,LLM_SYMPTOM_01,since [this morning]{D} [runny nose]{S}. feels [moderate]{V},llm
+train_sym_0246,LLM_SYMPTOM_01,I get [dry mouth]{S} [all the time]{F}; started [Monday]{D},llm
+train_sym_0247,LLM_SYMPTOM_01,"I have [unbearable]{V} [headache]{S} for [about 10 days]{D}, but no [cough]{N}. please check this.",llm
+train_sym_0248,LLM_SYMPTOM_01,[wheezing]{S} [twice a day]{F} from [yesterday evening]{D} please check this.,llm
+train_sym_0249,LLM_SYMPTOM_01,"feeling [frequent urination]{S} and [loss of appetite]{S} for [3 days]{D}, [severe]{V}, but no [blood in urine]{N} please check this.",llm
+train_sym_0250,LLM_SYMPTOM_01,"mujhe [fever]{S} ho raha hai [2 hours]{D} se, [on and off]{F}, but no [breathlessness]{N} please check this.",llm
+train_sym_0251,LLM_SYMPTOM_01,since [two months]{D} [vommiting]{S}. feels [slight]{V} please check this.,llm
+train_sym_0252,LLM_SYMPTOM_01,I get [itching]{S} [twice a day]{F}; started [one week]{D} please check this.,llm
+train_sym_0253,LLM_SYMPTOM_01,"I have [severe]{V} [acidity]{S} for [4 weeks]{D}, but no [rash]{N}. this is what I remember.",llm
+train_sym_0254,LLM_SYMPTOM_01,[vomiting]{S} [once every few days]{F} from [this morning]{D} this is what I remember.,llm
+train_sym_0255,LLM_SYMPTOM_01,"feeling [body ache]{S} and [burning while passing urine]{S} for [last night]{D}, [mild]{V}, but no [seizures]{N} this is what I remember.",llm
+train_sym_0256,LLM_SYMPTOM_01,"mujhe [brethlessness]{S} ho raha hai [about 10 days]{D} se, [mostly at night]{F}, but no [cough]{N} this is what I remember.",llm
+train_sym_0257,LLM_SYMPTOM_01,since [yesterday evening]{D} [dizziness]{S}. feels [very bad]{V} this is what I remember.,llm
+train_sym_0258,LLM_SYMPTOM_01,I get [loss of appetite]{S} [once every few days]{F}; started [half an hour]{D} this is what I remember.,llm
+train_sym_0259,LLM_SYMPTOM_01,"I have [mild]{V} [night sweats]{S} for [2 hours]{D}, but no [breathlessness]{N}. family helped me type this.",llm
+train_sym_0260,LLM_SYMPTOM_01,[cough]{S} [all the time]{F} from [two months]{D} family helped me type this.,llm
+train_sym_0261,LLM_SYMPTOM_01,"feeling [breathlessness]{S} and [weakness]{S} for [many months]{D}, [unbearable]{V}, but no [fainting]{N} family helped me type this.",llm
+train_sym_0262,LLM_SYMPTOM_01,"mujhe [rash]{S} ho raha hai [4 weeks]{D} se, [every morning]{F}, but no [rash]{N} family helped me type this.",llm
+train_sym_0263,LLM_SYMPTOM_01,since [this morning]{D} [joint stiffness]{S}. feels [moderate]{V} family helped me type this.,llm
+train_sym_0264,LLM_SYMPTOM_01,I get [weakness]{S} [all the time]{F}; started [Monday]{D} family helped me type this.,llm
+train_sym_0265,LLM_SYMPTOM_01,"I have [unbearable]{V} [swelling]{S} for [about 10 days]{D}, but no [cough]{N}. I may have typed spelling wrong.",llm
+train_sym_0266,LLM_SYMPTOM_01,[stomach cramps]{S} [twice a day]{F} from [yesterday evening]{D} I may have typed spelling wrong.,llm
+train_sym_0267,LLM_SYMPTOM_01,"feeling [wekness]{S} and [runny nose]{S} for [3 days]{D}, [severe]{V}, but no [blood in urine]{N} I may have typed spelling wrong.",llm
+train_sym_0268,LLM_SYMPTOM_01,"mujhe [blurred vision]{S} ho raha hai [2 hours]{D} se, [on and off]{F}, but no [breathlessness]{N} I may have typed spelling wrong.",llm
+train_sym_0269,LLM_SYMPTOM_01,since [two months]{D} [dry mouth]{S}. feels [slight]{V} I may have typed spelling wrong.,llm
+train_sym_0270,LLM_SYMPTOM_01,I get [wheezing]{S} [twice a day]{F}; started [one week]{D} I may have typed spelling wrong.,llm
+train_sym_0271,LLM_SYMPTOM_01,"I have [severe]{V} [frequent urination]{S} for [4 weeks]{D}, but no [rash]{N}. sharing this for the doctor.",llm
+train_sym_0272,LLM_SYMPTOM_01,[runy nose]{S} [once every few days]{F} from [this morning]{D} sharing this for the doctor.,llm
+train_sym_0273,LLM_SYMPTOM_01,"feeling [fever]{S} and [wheezing]{S} for [last night]{D}, [mild]{V}, but no [seizures]{N} sharing this for the doctor.",llm
+train_sym_0274,LLM_SYMPTOM_01,"mujhe [tiredness]{S} ho raha hai [about 10 days]{D} se, [mostly at night]{F}, but no [cough]{N} sharing this for the doctor.",llm
+train_sym_0275,LLM_SYMPTOM_01,since [yesterday evening]{D} [itching]{S}. feels [very bad]{V} sharing this for the doctor.,llm
+train_sym_0276,LLM_SYMPTOM_01,I get [vomiting]{S} [once every few days]{F}; started [half an hour]{D} sharing this for the doctor.,llm
+train_sym_0277,LLM_SYMPTOM_01,"I have [mild]{V} [hedache]{S} for [2 hours]{D}, but no [breathlessness]{N}. these are my current details.",llm
+train_sym_0278,LLM_SYMPTOM_01,[palpitations]{S} [all the time]{F} from [two months]{D} these are my current details.,llm
+train_sym_0279,LLM_SYMPTOM_01,"feeling [fainting]{S} and [constipation]{S} for [many months]{D}, [unbearable]{V}, but no [fainting]{N} these are my current details.",llm
+train_sym_0280,LLM_SYMPTOM_01,"mujhe [sore throat]{S} ho raha hai [4 weeks]{D} se, [every morning]{F}, but no [rash]{N} these are my current details.",llm
+train_sym_0281,LLM_SYMPTOM_01,since [this morning]{D} [loss of appetite]{S}. feels [moderate]{V} these are my current details.,llm
+train_sym_0282,LLM_SYMPTOM_01,I get [dizzines]{S} [all the time]{F}; started [Monday]{D} these are my current details.,llm
+train_sym_0283,LLM_SYMPTOM_01,"I have [unbearable]{V} [breathlessness]{S} for [about 10 days]{D}, but no [cough]{N}. adding this before consultation.",llm
+train_sym_0284,LLM_SYMPTOM_01,[burning while passing urine]{S} [twice a day]{F} from [yesterday evening]{D} adding this before consultation.,llm
+train_sym_0285,LLM_SYMPTOM_01,"feeling [rash]{S} and [vomiting]{S} for [3 days]{D}, [severe]{V}, but no [blood in urine]{N} adding this before consultation.",llm
+train_sym_0286,LLM_SYMPTOM_01,"mujhe [loose motions]{S} ho raha hai [2 hours]{D} se, [on and off]{F}, but no [breathlessness]{N} adding this before consultation.",llm
+train_sym_0287,LLM_SYMPTOM_01,since [two months]{D} [weakness]{S}. feels [slight]{V} adding this before consultation.,llm
+train_sym_0288,LLM_SYMPTOM_01,I get [stomach cramps]{S} [twice a day]{F}; started [one week]{D} adding this before consultation.,llm
+train_sym_0289,LLM_SYMPTOM_01,"I have [severe]{V} [nausea]{S} for [4 weeks]{D}, but no [rash]{N}. this is the main issue.",llm
+train_sym_0290,LLM_SYMPTOM_01,[runny nose]{S} [once every few days]{F} from [this morning]{D} this is the main issue.,llm
+train_sym_0291,LLM_SYMPTOM_01,"feeling [blurred vision]{S} and [dizziness]{S} for [last night]{D}, [mild]{V}, but no [seizures]{N} this is the main issue.",llm
+train_sym_0292,LLM_SYMPTOM_01,"mujhe [headache]{S} ho raha hai [about 10 days]{D} se, [mostly at night]{F}, but no [cough]{N} this is the main issue.",llm
+train_sym_0293,LLM_SYMPTOM_01,since [yesterday evening]{D} [vommiting]{S}. feels [very bad]{V} this is the main issue.,llm
+train_sym_0294,LLM_SYMPTOM_01,I get [chills]{S} [once every few days]{F}; started [half an hour]{D} this is the main issue.,llm
+train_sym_0295,LLM_SYMPTOM_01,"I have [mild]{V} [fever]{S} for [2 hours]{D}, but no [breathlessness]{N}. entered using the kiosk.",llm
+train_sym_0296,LLM_SYMPTOM_01,[constipation]{S} [all the time]{F} from [two months]{D} entered using the kiosk.,llm
+train_sym_0297,LLM_SYMPTOM_01,"feeling [tiredness]{S} and [cough]{S} for [many months]{D}, [unbearable]{V}, but no [fainting]{N} entered using the kiosk.",llm
+train_sym_0298,LLM_SYMPTOM_01,"mujhe [brethlessness]{S} ho raha hai [4 weeks]{D} se, [every morning]{F}, but no [rash]{N} entered using the kiosk.",llm
+train_sym_0299,LLM_SYMPTOM_01,since [this morning]{D} [vomiting]{S}. feels [moderate]{V} entered using the kiosk.,llm
+train_sym_0300,LLM_SYMPTOM_01,I get [palpitations]{S} [all the time]{F}; started [Monday]{D} entered using the kiosk.,llm
+train_sym_0301,LLM_SYMPTOM_01,"I have [unbearable]{V} [fainting]{S} for [about 10 days]{D}, but no [cough]{N}. I can explain more inside.",llm
+train_sym_0302,LLM_SYMPTOM_01,[dizziness]{S} [twice a day]{F} from [yesterday evening]{D} I can explain more inside.,llm
+train_sym_0303,LLM_SYMPTOM_01,"feeling [sore throat]{S} and [joint stiffness]{S} for [3 days]{D}, [severe]{V}, but no [blood in urine]{N} I can explain more inside.",llm
+train_sym_0304,LLM_SYMPTOM_01,"mujhe [night sweats]{S} ho raha hai [2 hours]{D} se, [on and off]{F}, but no [breathlessness]{N} I can explain more inside.",llm
+train_sym_0305,LLM_SYMPTOM_01,since [two months]{D} [cough]{S}. feels [slight]{V} I can explain more inside.,llm
+train_sym_0306,LLM_SYMPTOM_01,I get [burning while passing urine]{S} [twice a day]{F}; started [one week]{D} I can explain more inside.,llm
+train_sym_0307,LLM_SYMPTOM_01,"I have [severe]{V} [rash]{S} for [4 weeks]{D}, but no [rash]{N}. please confirm with me.",llm
+train_sym_0308,LLM_SYMPTOM_01,[joint stiffness]{S} [once every few days]{F} from [this morning]{D} please confirm with me.,llm
+train_sym_0309,LLM_SYMPTOM_01,"feeling [wekness]{S} and [stomach cramps]{S} for [last night]{D}, [mild]{V}, but no [seizures]{N} please confirm with me.",llm
+train_sym_0310,LLM_SYMPTOM_01,"mujhe [swelling]{S} ho raha hai [about 10 days]{D} se, [mostly at night]{F}, but no [cough]{N} please confirm with me.",llm
+train_sym_0311,LLM_SYMPTOM_01,since [yesterday evening]{D} [stomach cramps]{S}. feels [very bad]{V} please confirm with me.,llm
+train_sym_0312,LLM_SYMPTOM_01,I get [runny nose]{S} [once every few days]{F}; started [half an hour]{D} please confirm with me.,llm
+train_sym_0313,LLM_SYMPTOM_01,"I have [mild]{V} [blurred vision]{S} for [2 hours]{D}, but no [breathlessness]{N}.",llm
+train_sym_0314,LLM_SYMPTOM_01,[runy nose]{S} [all the time]{F} from [two months]{D},llm
+train_sym_0315,LLM_SYMPTOM_01,"feeling [headache]{S} and [dry mouth]{S} for [many months]{D}, [unbearable]{V}, but no [fainting]{N}",llm
+train_sym_0316,LLM_SYMPTOM_01,"mujhe [frequent urination]{S} ho raha hai [4 weeks]{D} se, [every morning]{F}, but no [rash]{N}",llm
+train_sym_0317,LLM_SYMPTOM_01,since [this morning]{D} [chills]{S}. feels [moderate]{V},llm
+train_sym_0318,LLM_SYMPTOM_01,I get [constipation]{S} [all the time]{F}; started [Monday]{D},llm
+train_sym_0319,LLM_SYMPTOM_01,"I have [unbearable]{V} [hedache]{S} for [about 10 days]{D}, but no [cough]{N}. please check this.",llm
+train_sym_0320,LLM_SYMPTOM_01,[itching]{S} [twice a day]{F} from [yesterday evening]{D} please check this.,llm
+train_sym_0321,LLM_SYMPTOM_01,"feeling [acidity]{S} and [chills]{S} for [3 days]{D}, [severe]{V}, but no [blood in urine]{N} please check this.",llm
+train_sym_0322,LLM_SYMPTOM_01,"mujhe [body ache]{S} ho raha hai [2 hours]{D} se, [on and off]{F}, but no [breathlessness]{N} please check this.",llm
+train_sym_0323,LLM_SYMPTOM_01,since [two months]{D} [palpitations]{S}. feels [slight]{V} please check this.,llm
+train_sym_0324,LLM_SYMPTOM_01,I get [dizzines]{S} [twice a day]{F}; started [one week]{D} please check this.,llm
+train_sym_0325,LLM_SYMPTOM_01,"I have [severe]{V} [sore throat]{S} for [4 weeks]{D}, but no [rash]{N}. this is what I remember.",llm
+train_sym_0326,LLM_SYMPTOM_01,[loss of appetite]{S} [once every few days]{F} from [this morning]{D} this is what I remember.,llm
+train_sym_0327,LLM_SYMPTOM_01,"feeling [night sweats]{S} and [itching]{S} for [last night]{D}, [mild]{V}, but no [seizures]{N} this is what I remember.",llm
+train_sym_0328,LLM_SYMPTOM_01,"mujhe [breathlessness]{S} ho raha hai [about 10 days]{D} se, [mostly at night]{F}, but no [cough]{N} this is what I remember.",llm
+train_sym_0329,LLM_SYMPTOM_01,since [yesterday evening]{D} [burning while passing urine]{S}. feels [very bad]{V} this is what I remember.,llm
+train_sym_0330,LLM_SYMPTOM_01,I get [joint stiffness]{S} [once every few days]{F}; started [half an hour]{D} this is what I remember.,llm
+train_sym_0331,LLM_SYMPTOM_01,"I have [mild]{V} [loose motions]{S} for [2 hours]{D}, but no [breathlessness]{N}. family helped me type this.",llm
+train_sym_0332,LLM_SYMPTOM_01,[weakness]{S} [all the time]{F} from [two months]{D} family helped me type this.,llm
+train_sym_0333,LLM_SYMPTOM_01,"feeling [swelling]{S} and [palpitations]{S} for [many months]{D}, [unbearable]{V}, but no [fainting]{N} family helped me type this.",llm
+train_sym_0334,LLM_SYMPTOM_01,"mujhe [nausea]{S} ho raha hai [4 weeks]{D} se, [every morning]{F}, but no [rash]{N} family helped me type this.",llm
+train_sym_0335,LLM_SYMPTOM_01,since [this morning]{D} [vommiting]{S}. feels [moderate]{V} family helped me type this.,llm
+train_sym_0336,LLM_SYMPTOM_01,I get [dry mouth]{S} [all the time]{F}; started [Monday]{D} family helped me type this.,llm
+train_sym_0337,LLM_SYMPTOM_01,"I have [unbearable]{V} [headache]{S} for [about 10 days]{D}, but no [cough]{N}. I may have typed spelling wrong.",llm
+train_sym_0338,LLM_SYMPTOM_01,[wheezing]{S} [twice a day]{F} from [yesterday evening]{D} I may have typed spelling wrong.,llm
+train_sym_0339,LLM_SYMPTOM_01,"feeling [frequent urination]{S} and [loss of appetite]{S} for [3 days]{D}, [severe]{V}, but no [blood in urine]{N} I may have typed spelling wrong.",llm
+train_sym_0340,LLM_SYMPTOM_01,"mujhe [brethlessness]{S} ho raha hai [2 hours]{D} se, [on and off]{F}, but no [breathlessness]{N} I may have typed spelling wrong.",llm
+train_sym_0341,LLM_SYMPTOM_01,since [two months]{D} [constipation]{S}. feels [slight]{V} I may have typed spelling wrong.,llm
+train_sym_0342,LLM_SYMPTOM_01,I get [itching]{S} [twice a day]{F}; started [one week]{D} I may have typed spelling wrong.,llm
+train_sym_0343,LLM_SYMPTOM_01,"I have [severe]{V} [acidity]{S} for [4 weeks]{D}, but no [rash]{N}. sharing this for the doctor.",llm
+train_sym_0344,LLM_SYMPTOM_01,[vomiting]{S} [once every few days]{F} from [this morning]{D} sharing this for the doctor.,llm
+train_sym_0345,LLM_SYMPTOM_01,"feeling [body ache]{S} and [burning while passing urine]{S} for [last night]{D}, [mild]{V}, but no [seizures]{N} sharing this for the doctor.",llm
+train_sym_0346,LLM_SYMPTOM_01,"mujhe [fainting]{S} ho raha hai [about 10 days]{D} se, [mostly at night]{F}, but no [cough]{N} sharing this for the doctor.",llm
+train_sym_0347,LLM_SYMPTOM_01,since [yesterday evening]{D} [dizziness]{S}. feels [very bad]{V} sharing this for the doctor.,llm
+train_sym_0348,LLM_SYMPTOM_01,I get [loss of appetite]{S} [once every few days]{F}; started [half an hour]{D} sharing this for the doctor.,llm
+train_sym_0349,LLM_SYMPTOM_01,"I have [mild]{V} [night sweats]{S} for [2 hours]{D}, but no [breathlessness]{N}. these are my current details.",llm
+train_sym_0350,LLM_SYMPTOM_01,[cough]{S} [all the time]{F} from [two months]{D} these are my current details.,llm
+train_sym_0351,LLM_SYMPTOM_01,"feeling [wekness]{S} and [weakness]{S} for [many months]{D}, [unbearable]{V}, but no [fainting]{N} these are my current details.",llm
+train_sym_0352,LLM_SYMPTOM_01,"mujhe [rash]{S} ho raha hai [4 weeks]{D} se, [every morning]{F}, but no [rash]{N} these are my current details.",llm
+train_sym_0353,LLM_SYMPTOM_01,since [this morning]{D} [joint stiffness]{S}. feels [moderate]{V} these are my current details.,llm
+train_sym_0354,LLM_SYMPTOM_01,I get [weakness]{S} [all the time]{F}; started [Monday]{D} these are my current details.,llm
+train_sym_0355,LLM_SYMPTOM_01,"I have [unbearable]{V} [swelling]{S} for [about 10 days]{D}, but no [cough]{N}. adding this before consultation.",llm
+train_sym_0356,LLM_SYMPTOM_01,[runy nose]{S} [twice a day]{F} from [yesterday evening]{D} adding this before consultation.,llm
+train_sym_0357,LLM_SYMPTOM_01,"feeling [nausea]{S} and [runny nose]{S} for [3 days]{D}, [severe]{V}, but no [blood in urine]{N} adding this before consultation.",llm
+train_sym_0358,LLM_SYMPTOM_01,"mujhe [blurred vision]{S} ho raha hai [2 hours]{D} se, [on and off]{F}, but no [breathlessness]{N} adding this before consultation.",llm
+train_sym_0359,LLM_SYMPTOM_01,since [two months]{D} [dry mouth]{S}. feels [slight]{V} adding this before consultation.,llm
+train_sym_0360,LLM_SYMPTOM_01,I get [wheezing]{S} [twice a day]{F}; started [one week]{D} adding this before consultation.,llm
+train_sym_0361,LLM_SYMPTOM_01,"I have [severe]{V} [hedache]{S} for [4 weeks]{D}, but no [rash]{N}. this is the main issue.",llm
+train_sym_0362,LLM_SYMPTOM_01,[chills]{S} [once every few days]{F} from [this morning]{D} this is the main issue.,llm
+train_sym_0363,LLM_SYMPTOM_01,"feeling [fever]{S} and [wheezing]{S} for [last night]{D}, [mild]{V}, but no [seizures]{N} this is the main issue.",llm
+train_sym_0364,LLM_SYMPTOM_01,"mujhe [tiredness]{S} ho raha hai [about 10 days]{D} se, [mostly at night]{F}, but no [cough]{N} this is the main issue.",llm
+train_sym_0365,LLM_SYMPTOM_01,since [yesterday evening]{D} [itching]{S}. feels [very bad]{V} this is the main issue.,llm
+train_sym_0366,LLM_SYMPTOM_01,I get [dizzines]{S} [once every few days]{F}; started [half an hour]{D} this is the main issue.,llm
+train_sym_0367,LLM_SYMPTOM_01,"I have [mild]{V} [body ache]{S} for [2 hours]{D}, but no [breathlessness]{N}. entered using the kiosk.",llm
+train_sym_0368,LLM_SYMPTOM_01,[palpitations]{S} [all the time]{F} from [two months]{D} entered using the kiosk.,llm
+train_sym_0369,LLM_SYMPTOM_01,"feeling [fainting]{S} and [constipation]{S} for [many months]{D}, [unbearable]{V}, but no [fainting]{N} entered using the kiosk.",llm
+train_sym_0370,LLM_SYMPTOM_01,"mujhe [sore throat]{S} ho raha hai [4 weeks]{D} se, [every morning]{F}, but no [rash]{N} entered using the kiosk.",llm
+train_sym_0371,LLM_SYMPTOM_01,since [this morning]{D} [loss of appetite]{S}. feels [moderate]{V} entered using the kiosk.,llm
+train_sym_0372,LLM_SYMPTOM_01,I get [cough]{S} [all the time]{F}; started [Monday]{D} entered using the kiosk.,llm
+train_sym_0373,LLM_SYMPTOM_01,"I have [unbearable]{V} [breathlessness]{S} for [about 10 days]{D}, but no [cough]{N}. I can explain more inside.",llm
+train_sym_0374,LLM_SYMPTOM_01,[burning while passing urine]{S} [twice a day]{F} from [yesterday evening]{D} I can explain more inside.,llm
+train_sym_0375,LLM_SYMPTOM_01,"feeling [rash]{S} and [vomiting]{S} for [3 days]{D}, [severe]{V}, but no [blood in urine]{N} I can explain more inside.",llm
+train_sym_0376,LLM_SYMPTOM_01,"mujhe [loose motions]{S} ho raha hai [2 hours]{D} se, [on and off]{F}, but no [breathlessness]{N} I can explain more inside.",llm
+train_sym_0377,LLM_SYMPTOM_01,since [two months]{D} [vommiting]{S}. feels [slight]{V} I can explain more inside.,llm
+train_sym_0378,LLM_SYMPTOM_01,I get [stomach cramps]{S} [twice a day]{F}; started [one week]{D} I can explain more inside.,llm
+train_sym_0379,LLM_SYMPTOM_01,"I have [severe]{V} [nausea]{S} for [4 weeks]{D}, but no [rash]{N}. please confirm with me.",llm
+train_sym_0380,LLM_SYMPTOM_01,[runny nose]{S} [once every few days]{F} from [this morning]{D} please confirm with me.,llm
+train_sym_0381,LLM_SYMPTOM_01,"feeling [blurred vision]{S} and [dizziness]{S} for [last night]{D}, [mild]{V}, but no [seizures]{N} please confirm with me.",llm
+train_sym_0382,LLM_SYMPTOM_01,"mujhe [brethlessness]{S} ho raha hai [about 10 days]{D} se, [mostly at night]{F}, but no [cough]{N} please confirm with me.",llm
+train_sym_0383,LLM_SYMPTOM_01,since [yesterday evening]{D} [wheezing]{S}. feels [very bad]{V} please confirm with me.,llm
+train_sym_0384,LLM_SYMPTOM_01,I get [chills]{S} [once every few days]{F}; started [half an hour]{D} please confirm with me.,llm
+train_sym_0385,LLM_SYMPTOM_01,"I have [mild]{V} [fever]{S} for [2 hours]{D}, but no [breathlessness]{N}.",llm
+train_sym_0386,LLM_SYMPTOM_01,I get [palpitations]{S} [all the time]{F}; started [Monday]{D},llm
+train_sym_0387,LLM_SYMPTOM_01,"feeling [wekness]{S} and [joint stiffness]{S} for [3 days]{D}, [severe]{V}, but no [blood in urine]{N} please check this.",llm
+train_sym_0388,LLM_SYMPTOM_01,[runy nose]{S} [once every few days]{F} from [this morning]{D} this is what I remember.,llm
+train_sym_0389,LLM_SYMPTOM_01,since [yesterday evening]{D} [stomach cramps]{S}. feels [very bad]{V} this is what I remember.,llm
+train_sym_0390,LLM_SYMPTOM_01,"I have [mild]{V} [hedache]{S} for [2 hours]{D}, but no [breathlessness]{N}. family helped me type this.",llm
+train_sym_0391,LLM_SYMPTOM_01,"mujhe [frequent urination]{S} ho raha hai [4 weeks]{D} se, [every morning]{F}, but no [rash]{N} family helped me type this.",llm
+train_sym_0392,LLM_SYMPTOM_01,I get [dizzines]{S} [all the time]{F}; started [Monday]{D} family helped me type this.,llm
+train_sym_0393,LLM_SYMPTOM_01,"feeling [night sweats]{S} and [itching]{S} for [last night]{D}, [mild]{V}, but no [seizures]{N} sharing this for the doctor.",llm
+train_sym_0394,LLM_SYMPTOM_01,since [yesterday evening]{D} [vommiting]{S}. feels [very bad]{V} sharing this for the doctor.,llm
+train_sym_0395,LLM_SYMPTOM_01,[weakness]{S} [all the time]{F} from [two months]{D} these are my current details.,llm
+train_sym_0396,LLM_SYMPTOM_01,"mujhe [brethlessness]{S} ho raha hai [4 weeks]{D} se, [every morning]{F}, but no [rash]{N} these are my current details.",llm
+train_sym_0397,LLM_SYMPTOM_01,"I have [unbearable]{V} [headache]{S} for [about 10 days]{D}, but no [cough]{N}. adding this before consultation.",llm
+train_sym_0398,LLM_SYMPTOM_01,I get [itching]{S} [twice a day]{F}; started [one week]{D} adding this before consultation.,llm
+train_sym_0399,LLM_SYMPTOM_01,"feeling [wekness]{S} and [burning while passing urine]{S} for [last night]{D}, [mild]{V}, but no [seizures]{N} this is the main issue.",llm
+train_sym_0400,LLM_SYMPTOM_01,[runy nose]{S} [all the time]{F} from [two months]{D} entered using the kiosk.,llm
+train_sym_0401,LLM_SYMPTOM_01,since [this morning]{D} [joint stiffness]{S}. feels [moderate]{V} entered using the kiosk.,llm
+train_sym_0402,LLM_SYMPTOM_01,"I have [unbearable]{V} [hedache]{S} for [about 10 days]{D}, but no [cough]{N}. I can explain more inside.",llm
+train_sym_0403,LLM_SYMPTOM_01,"mujhe [blurred vision]{S} ho raha hai [2 hours]{D} se, [on and off]{F}, but no [breathlessness]{N} I can explain more inside.",llm
+train_sym_0404,LLM_SYMPTOM_01,I get [dizzines]{S} [twice a day]{F}; started [one week]{D} I can explain more inside.,llm
+train_sym_0405,LLM_SYMPTOM_01,"feeling [fainting]{S} and [constipation]{S} for [many months]{D}, [unbearable]{V}, but no [fainting]{N}",llm
+train_sym_0406,LLM_SYMPTOM_01,since [this morning]{D} [vommiting]{S}. feels [moderate]{V},llm
+train_sym_0407,LLM_SYMPTOM_01,[burning while passing urine]{S} [twice a day]{F} from [yesterday evening]{D} please check this.,llm
+train_sym_0408,LLM_SYMPTOM_01,"mujhe [brethlessness]{S} ho raha hai [2 hours]{D} se, [on and off]{F}, but no [breathlessness]{N} please check this.",llm
+train_sym_0409,LLM_SYMPTOM_01,"I have [severe]{V} [nausea]{S} for [4 weeks]{D}, but no [rash]{N}. this is what I remember.",llm
+train_sym_0410,LLM_SYMPTOM_01,I get [chills]{S} [once every few days]{F}; started [half an hour]{D} this is what I remember.,llm
+train_sym_0411,LLM_SYMPTOM_01,"feeling [wekness]{S} and [cough]{S} for [many months]{D}, [unbearable]{V}, but no [fainting]{N} family helped me type this.",llm
+train_sym_0412,LLM_SYMPTOM_01,[runy nose]{S} [twice a day]{F} from [yesterday evening]{D} I may have typed spelling wrong.,llm
+train_sym_0413,LLM_SYMPTOM_01,since [two months]{D} [cough]{S}. feels [slight]{V} I may have typed spelling wrong.,llm
+train_sym_0414,LLM_SYMPTOM_01,"I have [severe]{V} [hedache]{S} for [4 weeks]{D}, but no [rash]{N}. sharing this for the doctor.",llm
+train_sym_0415,LLM_SYMPTOM_01,"mujhe [swelling]{S} ho raha hai [about 10 days]{D} se, [mostly at night]{F}, but no [cough]{N} sharing this for the doctor.",llm
+train_sym_0416,LLM_SYMPTOM_01,I get [dizzines]{S} [once every few days]{F}; started [half an hour]{D} sharing this for the doctor.,llm
+train_sym_0417,LLM_SYMPTOM_01,"feeling [acidity]{S} and [chills]{S} for [3 days]{D}, [severe]{V}, but no [blood in urine]{N} adding this before consultation.",llm
+train_sym_0418,LLM_SYMPTOM_01,since [two months]{D} [vommiting]{S}. feels [slight]{V} adding this before consultation.,llm
+train_sym_0419,LLM_SYMPTOM_01,[loss of appetite]{S} [once every few days]{F} from [this morning]{D} this is the main issue.,llm
+train_sym_0420,LLM_SYMPTOM_01,"mujhe [brethlessness]{S} ho raha hai [about 10 days]{D} se, [mostly at night]{F}, but no [cough]{N} this is the main issue.",llm
+train_sym_0421,LLM_SYMPTOM_01,"I have [mild]{V} [loose motions]{S} for [2 hours]{D}, but no [breathlessness]{N}. entered using the kiosk.",llm
+train_sym_0422,LLM_SYMPTOM_01,I get [dry mouth]{S} [all the time]{F}; started [Monday]{D} entered using the kiosk.,llm
+train_sym_0423,LLM_SYMPTOM_01,"feeling [wekness]{S} and [loss of appetite]{S} for [3 days]{D}, [severe]{V}, but no [blood in urine]{N} I can explain more inside.",llm
+train_sym_0424,LLM_SYMPTOM_01,[runy nose]{S} [once every few days]{F} from [this morning]{D} please confirm with me.,llm
+train_sym_0425,LLM_SYMPTOM_01,since [yesterday evening]{D} [dizziness]{S}. feels [very bad]{V} please confirm with me.,llm
+train_sym_0426,LLM_SYMPTOM_01,"mujhe [rash]{S} ho raha hai [4 weeks]{D} se, [every morning]{F}, but no [rash]{N}",llm
+train_sym_0427,LLM_SYMPTOM_01,"feeling [fever]{S} and [wheezing]{S} for [last night]{D}, [mild]{V}, but no [seizures]{N} this is what I remember.",llm
+train_sym_0428,LLM_SYMPTOM_01,[palpitations]{S} [all the time]{F} from [two months]{D} family helped me type this.,llm
+train_sym_0429,LLM_SYMPTOM_01,"I have [unbearable]{V} [breathlessness]{S} for [about 10 days]{D}, but no [cough]{N}. I may have typed spelling wrong.",llm
+train_sym_0430,LLM_SYMPTOM_01,I get [stomach cramps]{S} [twice a day]{F}; started [one week]{D} I may have typed spelling wrong.,llm
+train_sym_0431,LLM_SYMPTOM_01,"feeling [wekness]{S} and [dizziness]{S} for [last night]{D}, [mild]{V}, but no [seizures]{N} sharing this for the doctor.",llm
+train_sym_0432,LLM_SYMPTOM_01,since [this morning]{D} [vomiting]{S}. feels [moderate]{V} these are my current details.,llm
+train_sym_0433,LLM_SYMPTOM_01,"mujhe [night sweats]{S} ho raha hai [2 hours]{D} se, [on and off]{F}, but no [breathlessness]{N} adding this before consultation.",llm
+train_sym_0434,LLM_SYMPTOM_01,"feeling [headache]{S} and [dry mouth]{S} for [many months]{D}, [unbearable]{V}, but no [fainting]{N} entered using the kiosk.",llm
+train_sym_0435,LLM_SYMPTOM_01,[itching]{S} [twice a day]{F} from [yesterday evening]{D} I can explain more inside.,llm
+train_sym_0436,LLM_SYMPTOM_01,"I have [severe]{V} [sore throat]{S} for [4 weeks]{D}, but no [rash]{N}. please confirm with me.",llm
+train_sym_0437,LLM_SYMPTOM_01,I get [joint stiffness]{S} [once every few days]{F}; started [half an hour]{D} please confirm with me.,llm
+train_sym_0438,LLM_SYMPTOM_01,"feeling [wekness]{S} and [palpitations]{S} for [many months]{D}, [unbearable]{V}, but no [fainting]{N}",llm
+train_sym_0439,LLM_SYMPTOM_01,since [two months]{D} [constipation]{S}. feels [slight]{V} please check this.,llm
+train_sym_0440,LLM_SYMPTOM_01,"mujhe [fainting]{S} ho raha hai [about 10 days]{D} se, [mostly at night]{F}, but no [cough]{N} this is what I remember.",llm
+train_sym_0441,LLM_SYMPTOM_01,"feeling [nausea]{S} and [runny nose]{S} for [3 days]{D}, [severe]{V}, but no [blood in urine]{N} I may have typed spelling wrong.",llm
+train_sym_0442,LLM_SYMPTOM_01,[chills]{S} [once every few days]{F} from [this morning]{D} sharing this for the doctor.,llm
+train_sym_0443,LLM_SYMPTOM_01,"I have [mild]{V} [body ache]{S} for [2 hours]{D}, but no [breathlessness]{N}. these are my current details.",llm
+train_sym_0444,LLM_SYMPTOM_01,I get [cough]{S} [all the time]{F}; started [Monday]{D} these are my current details.,llm
+train_sym_0445,LLM_SYMPTOM_01,"feeling [wekness]{S} and [vomiting]{S} for [3 days]{D}, [severe]{V}, but no [blood in urine]{N} adding this before consultation.",llm
+train_sym_0446,LLM_SYMPTOM_01,since [yesterday evening]{D} [wheezing]{S}. feels [very bad]{V} this is the main issue.,llm
+train_sym_0447,LLM_SYMPTOM_01,"mujhe [acidity]{S} ho raha hai [4 weeks]{D} se, [every morning]{F}, but no [rash]{N} entered using the kiosk.",llm
+train_sym_0448,LLM_SYMPTOM_01,"feeling [loose motions]{S} and [stomach cramps]{S} for [last night]{D}, [mild]{V}, but no [seizures]{N} please confirm with me.",llm
+train_sym_0449,LLM_SYMPTOM_01,[dry mouth]{S} [all the time]{F} from [two months]{D},llm
+train_sym_0450,LLM_SYMPTOM_01,"I have [unbearable]{V} [tiredness]{S} for [about 10 days]{D}, but no [cough]{N}. please check this.",llm
+train_sym_0451,LLM_SYMPTOM_01,I get [dizziness]{S} [twice a day]{F}; started [one week]{D} please check this.,llm
+train_sym_0452,LLM_SYMPTOM_01,"feeling [wekness]{S} and [itching]{S} for [last night]{D}, [mild]{V}, but no [seizures]{N} this is what I remember.",llm
+train_sym_0453,LLM_SYMPTOM_01,since [this morning]{D} [runny nose]{S}. feels [moderate]{V} family helped me type this.,llm
+train_sym_0454,LLM_SYMPTOM_01,"mujhe [fever]{S} ho raha hai [2 hours]{D} se, [on and off]{F}, but no [breathlessness]{N} I may have typed spelling wrong.",llm
+train_sym_0455,LLM_SYMPTOM_01,"feeling [breathlessness]{S} and [weakness]{S} for [many months]{D}, [unbearable]{V}, but no [fainting]{N} these are my current details.",llm
+train_sym_0456,LLM_SYMPTOM_01,[stomach cramps]{S} [twice a day]{F} from [yesterday evening]{D} adding this before consultation.,llm
+train_sym_0457,LLM_SYMPTOM_01,"I have [severe]{V} [frequent urination]{S} for [4 weeks]{D}, but no [rash]{N}. this is the main issue.",llm
+train_sym_0458,LLM_SYMPTOM_01,I get [vomiting]{S} [once every few days]{F}; started [half an hour]{D} this is the main issue.,llm
+train_sym_0459,LLM_SYMPTOM_01,"feeling [wekness]{S} and [constipation]{S} for [many months]{D}, [unbearable]{V}, but no [fainting]{N} entered using the kiosk.",llm
+train_sym_0460,LLM_SYMPTOM_01,since [two months]{D} [weakness]{S}. feels [slight]{V} I can explain more inside.,llm
+train_sym_0461,LLM_SYMPTOM_01,"mujhe [headache]{S} ho raha hai [about 10 days]{D} se, [mostly at night]{F}, but no [cough]{N} please confirm with me.",llm
+train_sym_0462,LLM_SYMPTOM_01,"feeling [wekness]{S} and [chills]{S} for [3 days]{D}, [severe]{V}, but no [blood in urine]{N} I may have typed spelling wrong.",llm
+train_sym_0463,LLM_SYMPTOM_01,"feeling [wekness]{S} and [wheezing]{S} for [last night]{D}, [mild]{V}, but no [seizures]{N} please confirm with me.",llm
+train_sym_0464,LLM_SYMPTOM_01,"feeling [wekness]{S} and [dry mouth]{S} for [many months]{D}, [unbearable]{V}, but no [fainting]{N} these are my current details.",llm
+train_sym_0465,LLM_SYMPTOM_01,"feeling [wekness]{S} and [runny nose]{S} for [3 days]{D}, [severe]{V}, but no [blood in urine]{N} please check this.",llm
+train_sym_0466,LLM_SYMPTOM_01,"feeling [wekness]{S} and [stomach cramps]{S} for [last night]{D}, [mild]{V}, but no [seizures]{N} this is the main issue.",llm
+train_sym_0467,LLM_SYMPTOM_01,"feeling [wekness]{S} and [weakness]{S} for [many months]{D}, [unbearable]{V}, but no [fainting]{N} family helped me type this.",llm
+train_sym_0468,LLM_SYMPTOM_01,"feeling [wekness]{S} and [joint stiffness]{S} for [3 days]{D}, [severe]{V}, but no [blood in urine]{N} I can explain more inside.",llm
+train_sym_0469,LLM_SYMPTOM_01,"feeling [wekness]{S} and [burning while passing urine]{S} for [last night]{D}, [mild]{V}, but no [seizures]{N} sharing this for the doctor.",llm
+train_sym_0470,LLM_SYMPTOM_01,"feeling [wekness]{S} and [cough]{S} for [many months]{D}, [unbearable]{V}, but no [fainting]{N}",llm
+train_sym_0471,LLM_SYMPTOM_01,"feeling [wekness]{S} and [loss of appetite]{S} for [3 days]{D}, [severe]{V}, but no [blood in urine]{N} adding this before consultation.",llm
+train_sym_0472,LLM_SYMPTOM_01,"feeling [wekness]{S} and [dizziness]{S} for [last night]{D}, [mild]{V}, but no [seizures]{N} this is what I remember.",llm
+train_sym_0473,LLM_SYMPTOM_01,"feeling [wekness]{S} and [palpitations]{S} for [many months]{D}, [unbearable]{V}, but no [fainting]{N} entered using the kiosk.",llm
+train_sym_0474,LLM_SYMPTOM_01,"feeling [wekness]{S} and [vomiting]{S} for [3 days]{D}, [severe]{V}, but no [blood in urine]{N} I may have typed spelling wrong.",llm
+train_sym_0475,LLM_SYMPTOM_01,"feeling [wekness]{S} and [itching]{S} for [last night]{D}, [mild]{V}, but no [seizures]{N} please confirm with me.",llm
+train_sym_0476,LLM_SYMPTOM_01,"feeling [wekness]{S} and [constipation]{S} for [many months]{D}, [unbearable]{V}, but no [fainting]{N} these are my current details.",llm
+train_sym_0477,LLM_SYMPTOM_01,"feeling [wekness]{S} and [chills]{S} for [3 days]{D}, [severe]{V}, but no [blood in urine]{N} please check this.",llm
+train_sym_0478,LLM_SYMPTOM_01,"feeling [wekness]{S} and [wheezing]{S} for [last night]{D}, [mild]{V}, but no [seizures]{N} this is the main issue.",llm
+train_sym_0479,LLM_SYMPTOM_01,"feeling [wekness]{S} and [dry mouth]{S} for [many months]{D}, [unbearable]{V}, but no [fainting]{N} family helped me type this.",llm
+train_sym_0480,LLM_SYMPTOM_01,"feeling [wekness]{S} and [runny nose]{S} for [3 days]{D}, [severe]{V}, but no [blood in urine]{N} I can explain more inside.",llm
+train_sym_0481,LLM_SYMPTOM_01,"feeling [wekness]{S} and [stomach cramps]{S} for [last night]{D}, [mild]{V}, but no [seizures]{N} sharing this for the doctor.",llm
+train_sym_0482,LLM_SYMPTOM_01,"feeling [wekness]{S} and [weakness]{S} for [many months]{D}, [unbearable]{V}, but no [fainting]{N}",llm
+train_sym_0483,LLM_SYMPTOM_01,"feeling [wekness]{S} and [joint stiffness]{S} for [3 days]{D}, [severe]{V}, but no [blood in urine]{N} adding this before consultation.",llm
+train_sym_0484,LLM_SYMPTOM_01,"feeling [wekness]{S} and [burning while passing urine]{S} for [last night]{D}, [mild]{V}, but no [seizures]{N} this is what I remember.",llm
+train_sym_0485,LLM_SYMPTOM_01,"feeling [wekness]{S} and [cough]{S} for [many months]{D}, [unbearable]{V}, but no [fainting]{N} entered using the kiosk.",llm
+train_sym_0486,LLM_SYMPTOM_01,"feeling [wekness]{S} and [loss of appetite]{S} for [3 days]{D}, [severe]{V}, but no [blood in urine]{N} I may have typed spelling wrong.",llm
+train_sym_0487,LLM_SYMPTOM_01,"feeling [wekness]{S} and [dizziness]{S} for [last night]{D}, [mild]{V}, but no [seizures]{N} please confirm with me.",llm
+train_sym_0488,LLM_SYMPTOM_01,"feeling [wekness]{S} and [palpitations]{S} for [many months]{D}, [unbearable]{V}, but no [fainting]{N} these are my current details.",llm
+train_sym_0489,LLM_SYMPTOM_01,"feeling [wekness]{S} and [vomiting]{S} for [3 days]{D}, [severe]{V}, but no [blood in urine]{N} please check this.",llm
+train_sym_0490,LLM_SYMPTOM_01,"feeling [wekness]{S} and [itching]{S} for [last night]{D}, [mild]{V}, but no [seizures]{N} this is the main issue.",llm
+train_sym_0491,LLM_SYMPTOM_01,"feeling [wekness]{S} and [constipation]{S} for [many months]{D}, [unbearable]{V}, but no [fainting]{N} family helped me type this.",llm
+train_sym_0492,LLM_SYMPTOM_01,"feeling [wekness]{S} and [chills]{S} for [3 days]{D}, [severe]{V}, but no [blood in urine]{N} I can explain more inside.",llm
+train_sym_0493,LLM_SYMPTOM_01,"feeling [wekness]{S} and [wheezing]{S} for [last night]{D}, [mild]{V}, but no [seizures]{N} sharing this for the doctor.",llm
+train_sym_0494,LLM_SYMPTOM_01,"feeling [wekness]{S} and [dry mouth]{S} for [many months]{D}, [unbearable]{V}, but no [fainting]{N}",llm
+train_sym_0495,LLM_SYMPTOM_01,"feeling [wekness]{S} and [runny nose]{S} for [3 days]{D}, [severe]{V}, but no [blood in urine]{N} adding this before consultation.",llm
+train_sym_0496,LLM_SYMPTOM_01,"feeling [wekness]{S} and [stomach cramps]{S} for [last night]{D}, [mild]{V}, but no [seizures]{N} this is what I remember.",llm
+train_sym_0497,LLM_SYMPTOM_01,"feeling [wekness]{S} and [weakness]{S} for [many months]{D}, [unbearable]{V}, but no [fainting]{N} entered using the kiosk.",llm
+train_sym_0498,LLM_SYMPTOM_01,"feeling [wekness]{S} and [joint stiffness]{S} for [3 days]{D}, [severe]{V}, but no [blood in urine]{N} I may have typed spelling wrong.",llm
+train_sym_0499,LLM_SYMPTOM_01,"feeling [wekness]{S} and [burning while passing urine]{S} for [last night]{D}, [mild]{V}, but no [seizures]{N} please confirm with me.",llm
+train_sym_0500,LLM_SYMPTOM_01,"feeling [wekness]{S} and [cough]{S} for [many months]{D}, [unbearable]{V}, but no [fainting]{N} these are my current details.",llm

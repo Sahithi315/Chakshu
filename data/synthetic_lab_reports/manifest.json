@@ -1,0 +1,492 @@
+[
+  {
+    "filename": "SYN-P001_P001-D01_opd_intake.pdf",
+    "patient_id": "SYN-P001",
+    "synthetic_patient_name": "Aarav Nair",
+    "record_id": "P001-D01",
+    "date": "2025-11-12",
+    "record_type": "OPD_INTAKE",
+    "clinical_focus": "Type 2 diabetes follow-up",
+    "expected_use": "summarization, entity extraction, source linking, longitudinal comparison"
+  },
+  {
+    "filename": "SYN-P001_P001-D02_lab_report.pdf",
+    "patient_id": "SYN-P001",
+    "synthetic_patient_name": "Aarav Nair",
+    "record_id": "P001-D02",
+    "date": "2025-11-12",
+    "record_type": "LAB_REPORT",
+    "clinical_focus": "Type 2 diabetes follow-up",
+    "expected_use": "summarization, entity extraction, source linking, longitudinal comparison"
+  },
+  {
+    "filename": "SYN-P001_P001-D03_prescription.pdf",
+    "patient_id": "SYN-P001",
+    "synthetic_patient_name": "Aarav Nair",
+    "record_id": "P001-D03",
+    "date": "2025-11-12",
+    "record_type": "PRESCRIPTION",
+    "clinical_focus": "Type 2 diabetes follow-up",
+    "expected_use": "summarization, entity extraction, source linking, longitudinal comparison"
+  },
+  {
+    "filename": "SYN-P001_P001-D04_lab_report.pdf",
+    "patient_id": "SYN-P001",
+    "synthetic_patient_name": "Aarav Nair",
+    "record_id": "P001-D04",
+    "date": "2026-04-15",
+    "record_type": "LAB_REPORT",
+    "clinical_focus": "Type 2 diabetes follow-up",
+    "expected_use": "summarization, entity extraction, source linking, longitudinal comparison"
+  },
+  {
+    "filename": "SYN-P001_P001-D05_follow_up_note.pdf",
+    "patient_id": "SYN-P001",
+    "synthetic_patient_name": "Aarav Nair",
+    "record_id": "P001-D05",
+    "date": "2026-10-20",
+    "record_type": "FOLLOW_UP_NOTE",
+    "clinical_focus": "Type 2 diabetes follow-up",
+    "expected_use": "summarization, entity extraction, source linking, longitudinal comparison"
+  },
+  {
+    "filename": "SYN-P002_P002-D01_opd_intake.pdf",
+    "patient_id": "SYN-P002",
+    "synthetic_patient_name": "Meera Kulkarni",
+    "record_id": "P002-D01",
+    "date": "2025-09-08",
+    "record_type": "OPD_INTAKE",
+    "clinical_focus": "Hypertension follow-up",
+    "expected_use": "summarization, entity extraction, source linking, longitudinal comparison"
+  },
+  {
+    "filename": "SYN-P002_P002-D02_vitals_and_labs.pdf",
+    "patient_id": "SYN-P002",
+    "synthetic_patient_name": "Meera Kulkarni",
+    "record_id": "P002-D02",
+    "date": "2025-09-08",
+    "record_type": "VITALS_AND_LABS",
+    "clinical_focus": "Hypertension follow-up",
+    "expected_use": "summarization, entity extraction, source linking, longitudinal comparison"
+  },
+  {
+    "filename": "SYN-P002_P002-D03_prescription.pdf",
+    "patient_id": "SYN-P002",
+    "synthetic_patient_name": "Meera Kulkarni",
+    "record_id": "P002-D03",
+    "date": "2025-09-08",
+    "record_type": "PRESCRIPTION",
+    "clinical_focus": "Hypertension follow-up",
+    "expected_use": "summarization, entity extraction, source linking, longitudinal comparison"
+  },
+  {
+    "filename": "SYN-P002_P002-D04_vitals_and_labs.pdf",
+    "patient_id": "SYN-P002",
+    "synthetic_patient_name": "Meera Kulkarni",
+    "record_id": "P002-D04",
+    "date": "2026-02-10",
+    "record_type": "VITALS_AND_LABS",
+    "clinical_focus": "Hypertension follow-up",
+    "expected_use": "summarization, entity extraction, source linking, longitudinal comparison"
+  },
+  {
+    "filename": "SYN-P002_P002-D05_follow_up_note.pdf",
+    "patient_id": "SYN-P002",
+    "synthetic_patient_name": "Meera Kulkarni",
+    "record_id": "P002-D05",
+    "date": "2026-10-21",
+    "record_type": "FOLLOW_UP_NOTE",
+    "clinical_focus": "Hypertension follow-up",
+    "expected_use": "summarization, entity extraction, source linking, longitudinal comparison"
+  },
+  {
+    "filename": "SYN-P003_P003-D01_opd_intake.pdf",
+    "patient_id": "SYN-P003",
+    "synthetic_patient_name": "Imran Shaikh",
+    "record_id": "P003-D01",
+    "date": "2025-08-19",
+    "record_type": "OPD_INTAKE",
+    "clinical_focus": "General medicine and lipid follow-up",
+    "expected_use": "summarization, entity extraction, source linking, longitudinal comparison"
+  },
+  {
+    "filename": "SYN-P003_P003-D02_lab_report.pdf",
+    "patient_id": "SYN-P003",
+    "synthetic_patient_name": "Imran Shaikh",
+    "record_id": "P003-D02",
+    "date": "2025-08-19",
+    "record_type": "LAB_REPORT",
+    "clinical_focus": "General medicine and lipid follow-up",
+    "expected_use": "summarization, entity extraction, source linking, longitudinal comparison"
+  },
+  {
+    "filename": "SYN-P003_P003-D03_prescription.pdf",
+    "patient_id": "SYN-P003",
+    "synthetic_patient_name": "Imran Shaikh",
+    "record_id": "P003-D03",
+    "date": "2025-08-19",
+    "record_type": "PRESCRIPTION",
+    "clinical_focus": "General medicine and lipid follow-up",
+    "expected_use": "summarization, entity extraction, source linking, longitudinal comparison"
+  },
+  {
+    "filename": "SYN-P003_P003-D04_lab_report.pdf",
+    "patient_id": "SYN-P003",
+    "synthetic_patient_name": "Imran Shaikh",
+    "record_id": "P003-D04",
+    "date": "2026-03-03",
+    "record_type": "LAB_REPORT",
+    "clinical_focus": "General medicine and lipid follow-up",
+    "expected_use": "summarization, entity extraction, source linking, longitudinal comparison"
+  },
+  {
+    "filename": "SYN-P003_P003-D05_follow_up_note.pdf",
+    "patient_id": "SYN-P003",
+    "synthetic_patient_name": "Imran Shaikh",
+    "record_id": "P003-D05",
+    "date": "2026-10-18",
+    "record_type": "FOLLOW_UP_NOTE",
+    "clinical_focus": "General medicine and lipid follow-up",
+    "expected_use": "summarization, entity extraction, source linking, longitudinal comparison"
+  },
+  {
+    "filename": "SYN-P004_P004-D01_opd_intake.pdf",
+    "patient_id": "SYN-P004",
+    "synthetic_patient_name": "Kavya Reddy",
+    "record_id": "P004-D01",
+    "date": "2025-12-02",
+    "record_type": "OPD_INTAKE",
+    "clinical_focus": "Thyroid follow-up",
+    "expected_use": "summarization, entity extraction, source linking, longitudinal comparison"
+  },
+  {
+    "filename": "SYN-P004_P004-D02_lab_report.pdf",
+    "patient_id": "SYN-P004",
+    "synthetic_patient_name": "Kavya Reddy",
+    "record_id": "P004-D02",
+    "date": "2025-12-02",
+    "record_type": "LAB_REPORT",
+    "clinical_focus": "Thyroid follow-up",
+    "expected_use": "summarization, entity extraction, source linking, longitudinal comparison"
+  },
+  {
+    "filename": "SYN-P004_P004-D03_prescription.pdf",
+    "patient_id": "SYN-P004",
+    "synthetic_patient_name": "Kavya Reddy",
+    "record_id": "P004-D03",
+    "date": "2025-12-02",
+    "record_type": "PRESCRIPTION",
+    "clinical_focus": "Thyroid follow-up",
+    "expected_use": "summarization, entity extraction, source linking, longitudinal comparison"
+  },
+  {
+    "filename": "SYN-P004_P004-D04_lab_report.pdf",
+    "patient_id": "SYN-P004",
+    "synthetic_patient_name": "Kavya Reddy",
+    "record_id": "P004-D04",
+    "date": "2026-05-14",
+    "record_type": "LAB_REPORT",
+    "clinical_focus": "Thyroid follow-up",
+    "expected_use": "summarization, entity extraction, source linking, longitudinal comparison"
+  },
+  {
+    "filename": "SYN-P004_P004-D05_follow_up_note.pdf",
+    "patient_id": "SYN-P004",
+    "synthetic_patient_name": "Kavya Reddy",
+    "record_id": "P004-D05",
+    "date": "2026-10-22",
+    "record_type": "FOLLOW_UP_NOTE",
+    "clinical_focus": "Thyroid follow-up",
+    "expected_use": "summarization, entity extraction, source linking, longitudinal comparison"
+  },
+  {
+    "filename": "SYN-P005_P005-D01_opd_intake.pdf",
+    "patient_id": "SYN-P005",
+    "synthetic_patient_name": "Devika Menon",
+    "record_id": "P005-D01",
+    "date": "2025-10-05",
+    "record_type": "OPD_INTAKE",
+    "clinical_focus": "General medicine follow-up with medication discrepancy",
+    "expected_use": "summarization, entity extraction, source linking, longitudinal comparison"
+  },
+  {
+    "filename": "SYN-P005_P005-D02_vitals_and_labs.pdf",
+    "patient_id": "SYN-P005",
+    "synthetic_patient_name": "Devika Menon",
+    "record_id": "P005-D02",
+    "date": "2025-10-05",
+    "record_type": "VITALS_AND_LABS",
+    "clinical_focus": "General medicine follow-up with medication discrepancy",
+    "expected_use": "summarization, entity extraction, source linking, longitudinal comparison"
+  },
+  {
+    "filename": "SYN-P005_P005-D03_prescription.pdf",
+    "patient_id": "SYN-P005",
+    "synthetic_patient_name": "Devika Menon",
+    "record_id": "P005-D03",
+    "date": "2025-10-05",
+    "record_type": "PRESCRIPTION",
+    "clinical_focus": "General medicine follow-up with medication discrepancy",
+    "expected_use": "summarization, entity extraction, source linking, longitudinal comparison"
+  },
+  {
+    "filename": "SYN-P005_P005-D04_lab_report.pdf",
+    "patient_id": "SYN-P005",
+    "synthetic_patient_name": "Devika Menon",
+    "record_id": "P005-D04",
+    "date": "2026-04-09",
+    "record_type": "LAB_REPORT",
+    "clinical_focus": "General medicine follow-up with medication discrepancy",
+    "expected_use": "summarization, entity extraction, source linking, longitudinal comparison"
+  },
+  {
+    "filename": "SYN-P005_P005-D05_follow_up_note.pdf",
+    "patient_id": "SYN-P005",
+    "synthetic_patient_name": "Devika Menon",
+    "record_id": "P005-D05",
+    "date": "2026-10-24",
+    "record_type": "FOLLOW_UP_NOTE",
+    "clinical_focus": "General medicine follow-up with medication discrepancy",
+    "expected_use": "summarization, entity extraction, source linking, longitudinal comparison"
+  },
+  {
+    "filename": "synthetic_report_001.pdf",
+    "patient_id": "SYN-P006",
+    "synthetic_patient_name": "Ari Vellan",
+    "record_id": "P006-D01",
+    "date": "2026-10-03",
+    "record_type": "LAB_REPORT",
+    "clinical_focus": "Complete blood count monitoring",
+    "expected_use": "summarization, entity extraction, source linking, longitudinal comparison"
+  },
+  {
+    "filename": "synthetic_report_009.pdf",
+    "patient_id": "SYN-P006",
+    "synthetic_patient_name": "Ari Vellan",
+    "record_id": "P006-D02",
+    "date": "2026-10-11",
+    "record_type": "LAB_REPORT",
+    "clinical_focus": "Complete blood count monitoring",
+    "expected_use": "summarization, entity extraction, source linking, longitudinal comparison"
+  },
+  {
+    "filename": "synthetic_report_017.pdf",
+    "patient_id": "SYN-P006",
+    "synthetic_patient_name": "Ari Vellan",
+    "record_id": "P006-D03",
+    "date": "2026-10-19",
+    "record_type": "LAB_REPORT",
+    "clinical_focus": "Complete blood count monitoring",
+    "expected_use": "summarization, entity extraction, source linking, longitudinal comparison"
+  },
+  {
+    "filename": "synthetic_report_002.pdf",
+    "patient_id": "SYN-P007",
+    "synthetic_patient_name": "Mira Tovan",
+    "record_id": "P007-D01",
+    "date": "2026-10-04",
+    "record_type": "LAB_REPORT",
+    "clinical_focus": "Diabetes and lipid panel monitoring",
+    "expected_use": "summarization, entity extraction, source linking, longitudinal comparison"
+  },
+  {
+    "filename": "synthetic_report_010.pdf",
+    "patient_id": "SYN-P007",
+    "synthetic_patient_name": "Mira Tovan",
+    "record_id": "P007-D02",
+    "date": "2026-10-12",
+    "record_type": "LAB_REPORT",
+    "clinical_focus": "Diabetes and lipid panel monitoring",
+    "expected_use": "summarization, entity extraction, source linking, longitudinal comparison"
+  },
+  {
+    "filename": "synthetic_report_003.pdf",
+    "patient_id": "SYN-P008",
+    "synthetic_patient_name": "Dev Niral",
+    "record_id": "P008-D01",
+    "date": "2026-10-05",
+    "record_type": "LAB_REPORT",
+    "clinical_focus": "Renal function monitoring",
+    "expected_use": "summarization, entity extraction, source linking, longitudinal comparison"
+  },
+  {
+    "filename": "synthetic_report_011.pdf",
+    "patient_id": "SYN-P008",
+    "synthetic_patient_name": "Dev Niral",
+    "record_id": "P008-D02",
+    "date": "2026-10-13",
+    "record_type": "LAB_REPORT",
+    "clinical_focus": "Renal function monitoring",
+    "expected_use": "summarization, entity extraction, source linking, longitudinal comparison"
+  },
+  {
+    "filename": "synthetic_report_004.pdf",
+    "patient_id": "SYN-P009",
+    "synthetic_patient_name": "Tara Solen",
+    "record_id": "P009-D01",
+    "date": "2026-10-06",
+    "record_type": "LAB_REPORT",
+    "clinical_focus": "Liver function monitoring",
+    "expected_use": "summarization, entity extraction, source linking, longitudinal comparison"
+  },
+  {
+    "filename": "synthetic_report_012.pdf",
+    "patient_id": "SYN-P009",
+    "synthetic_patient_name": "Tara Solen",
+    "record_id": "P009-D02",
+    "date": "2026-10-14",
+    "record_type": "LAB_REPORT",
+    "clinical_focus": "Liver function monitoring",
+    "expected_use": "summarization, entity extraction, source linking, longitudinal comparison"
+  },
+  {
+    "filename": "synthetic_report_005.pdf",
+    "patient_id": "SYN-P010",
+    "synthetic_patient_name": "Rhea Kivan",
+    "record_id": "P010-D01",
+    "date": "2026-10-07",
+    "record_type": "LAB_REPORT",
+    "clinical_focus": "Thyroid profile monitoring",
+    "expected_use": "summarization, entity extraction, source linking, longitudinal comparison"
+  },
+  {
+    "filename": "synthetic_report_013.pdf",
+    "patient_id": "SYN-P010",
+    "synthetic_patient_name": "Rhea Kivan",
+    "record_id": "P010-D02",
+    "date": "2026-10-15",
+    "record_type": "LAB_REPORT",
+    "clinical_focus": "Thyroid profile monitoring",
+    "expected_use": "summarization, entity extraction, source linking, longitudinal comparison"
+  },
+  {
+    "filename": "synthetic_report_006.pdf",
+    "patient_id": "SYN-P011",
+    "synthetic_patient_name": "Aman Varel",
+    "record_id": "P011-D01",
+    "date": "2026-10-08",
+    "record_type": "LAB_REPORT",
+    "clinical_focus": "Basic metabolic panel monitoring",
+    "expected_use": "summarization, entity extraction, source linking, longitudinal comparison"
+  },
+  {
+    "filename": "synthetic_report_014.pdf",
+    "patient_id": "SYN-P011",
+    "synthetic_patient_name": "Aman Varel",
+    "record_id": "P011-D02",
+    "date": "2026-10-16",
+    "record_type": "LAB_REPORT",
+    "clinical_focus": "Basic metabolic panel monitoring",
+    "expected_use": "summarization, entity extraction, source linking, longitudinal comparison"
+  },
+  {
+    "filename": "synthetic_report_007.pdf",
+    "patient_id": "SYN-P012",
+    "synthetic_patient_name": "Nila Oran",
+    "record_id": "P012-D01",
+    "date": "2026-10-09",
+    "record_type": "LAB_REPORT",
+    "clinical_focus": "Iron and vitamin panel monitoring",
+    "expected_use": "summarization, entity extraction, source linking, longitudinal comparison"
+  },
+  {
+    "filename": "synthetic_report_015.pdf",
+    "patient_id": "SYN-P012",
+    "synthetic_patient_name": "Nila Oran",
+    "record_id": "P012-D02",
+    "date": "2026-10-17",
+    "record_type": "LAB_REPORT",
+    "clinical_focus": "Iron and vitamin panel monitoring",
+    "expected_use": "summarization, entity extraction, source linking, longitudinal comparison"
+  },
+  {
+    "filename": "synthetic_report_008.pdf",
+    "patient_id": "SYN-P013",
+    "synthetic_patient_name": "Kabir Selan",
+    "record_id": "P013-D01",
+    "date": "2026-10-10",
+    "record_type": "LAB_REPORT",
+    "clinical_focus": "Inflammation panel monitoring",
+    "expected_use": "summarization, entity extraction, source linking, longitudinal comparison"
+  },
+  {
+    "filename": "synthetic_report_016.pdf",
+    "patient_id": "SYN-P013",
+    "synthetic_patient_name": "Kabir Selan",
+    "record_id": "P013-D02",
+    "date": "2026-10-18",
+    "record_type": "LAB_REPORT",
+    "clinical_focus": "Inflammation panel monitoring",
+    "expected_use": "summarization, entity extraction, source linking, longitudinal comparison"
+  },
+  {
+    "filename": "synthetic_report_018.pdf",
+    "patient_id": "SYN-P007",
+    "synthetic_patient_name": "Mira Tovan",
+    "record_id": "P007-D03",
+    "date": "2026-10-20",
+    "record_type": "LAB_REPORT",
+    "clinical_focus": "Diabetes and lipid panel monitoring",
+    "expected_use": "summarization, entity extraction, source linking, longitudinal comparison"
+  },
+  {
+    "filename": "synthetic_report_019.pdf",
+    "patient_id": "SYN-P008",
+    "synthetic_patient_name": "Dev Niral",
+    "record_id": "P008-D03",
+    "date": "2026-10-21",
+    "record_type": "LAB_REPORT",
+    "clinical_focus": "Renal function monitoring",
+    "expected_use": "summarization, entity extraction, source linking, longitudinal comparison"
+  },
+  {
+    "filename": "synthetic_report_020.pdf",
+    "patient_id": "SYN-P009",
+    "synthetic_patient_name": "Tara Solen",
+    "record_id": "P009-D03",
+    "date": "2026-10-22",
+    "record_type": "LAB_REPORT",
+    "clinical_focus": "Liver function monitoring",
+    "expected_use": "summarization, entity extraction, source linking, longitudinal comparison"
+  },
+  {
+    "filename": "synthetic_report_021.pdf",
+    "patient_id": "SYN-P010",
+    "synthetic_patient_name": "Rhea Kivan",
+    "record_id": "P010-D03",
+    "date": "2026-10-23",
+    "record_type": "LAB_REPORT",
+    "clinical_focus": "Thyroid profile monitoring",
+    "expected_use": "summarization, entity extraction, source linking, longitudinal comparison"
+  },
+  {
+    "filename": "synthetic_report_022.pdf",
+    "patient_id": "SYN-P011",
+    "synthetic_patient_name": "Aman Varel",
+    "record_id": "P011-D03",
+    "date": "2026-10-24",
+    "record_type": "LAB_REPORT",
+    "clinical_focus": "Basic metabolic panel monitoring",
+    "expected_use": "summarization, entity extraction, source linking, longitudinal comparison"
+  },
+  {
+    "filename": "synthetic_report_023.pdf",
+    "patient_id": "SYN-P012",
+    "synthetic_patient_name": "Nila Oran",
+    "record_id": "P012-D03",
+    "date": "2026-10-25",
+    "record_type": "LAB_REPORT",
+    "clinical_focus": "Iron and vitamin panel monitoring",
+    "expected_use": "summarization, entity extraction, source linking, longitudinal comparison"
+  },
+  {
+    "filename": "synthetic_report_024.pdf",
+    "patient_id": "SYN-P013",
+    "synthetic_patient_name": "Kabir Selan",
+    "record_id": "P013-D03",
+    "date": "2026-10-26",
+    "record_type": "LAB_REPORT",
+    "clinical_focus": "Inflammation panel monitoring",
+    "expected_use": "summarization, entity extraction, source linking, longitudinal comparison"
+  }
+]

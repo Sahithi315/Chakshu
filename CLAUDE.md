@@ -25,12 +25,25 @@ Out of scope: opening animation, ABDM, HMIS, offline, voice, WhatsApp, handwriti
 ## Environment
 WSL Ubuntu, RTX 3050 Laptop 6 GB (30 W cap), Python 3.12, venv at `.venv/`, torch 2.14.1+cu130 (GPU confirmed), transformers 5.21, pdfplumber. Work in the Linux filesystem, not /mnt/c.
 
+## Data (as of 28 Oct night)
+- Symptom training data = LLM-generated (`source=llm`), NOT team-written: `TRAIN_SYMPTOMS` (500, author LLM_SYMPTOM_01) + `TRAIN_LLM_01` (5), exported to `data/symptoms/raw/*.csv`. Medication/history/lab/combined sheets are skipped for now.
+- Tags other than S/N/D/V (B F M Q U C A E T L P H) are mapped to plain unlabelled text. Body locations ({B}) therefore stay outside the {S} span ("[pain]{S} in [both legs]{B}" -> only "pain" is labelled).
+- Known mismatch: the team's calibration GUIDE says to tag the whole expression ("chest hurts", do not tag a body part alone), while the training codebook splits location out. Humans following the guide will likely produce longer spans than the model learned: expect strict-boundary misses.
+- The LLM data is very templated (500 messages, 96 tag skeletons, 44 distinct symptom strings, ~30% Hinglish markers). Any LLM-vs-LLM number is not a result.
+- Test set: ~40 human-written messages (source=human), due before ~4 pm 29 Oct. Fewer than 50 negated examples is expected: report the count, do not hide it.
+
+## Test-set protocol
+1. Train final models on the LLM data with fixed hyperparameters (`train_all`). Done before the test file exists.
+2. When the human file arrives: convert -> `prepare --test-author <name> --freeze` (author must not appear in train; near-duplicates removed) -> `eval_all` (each system scored ONCE; `outputs/test_scored.jsonl` blocks re-scoring).
+3. Do not retrain or tune after seeing a test score. Report both models (ModernBERT-base = declared main, bert-base-uncased = second row), 3 seeds, the baselines, per-label scores, 95% CIs, counts and failure cases. Small, template-like, team-side data overstates real-world performance. No Hinglish accuracy claims.
+
 ## Stage status
-- Stage 0: done and approved.
-- Stage 1: code done, awaiting approval. Pipeline ran end to end on the 50-line placeholder (`data/placeholder/`, assistant-written, NOT team data; scores hidden). No real scores exist yet.
-  - Timing (bs16, len48, 200 steps): ModernBERT-base bf16 227 ms/step 2.87 GiB, fp16 240 ms/step 2.88 GiB; bert-base-uncased bf16 147 ms/step 2.06 GiB, fp16 155 ms/step 2.06 GiB. No NaN losses.
-  - TODO when team data arrives: convert -> prepare (--test-author) -> freeze -> baseline eval -> curve -> final train -> evaluate. Warn Adit if test < 100 messages or < 50 with negation.
-- Stage 2-4: not started.
+- Stage 0: done. Stage 1: done, awaiting final results (needs the human test file). Stage 2: done, awaiting approval.
+- Stage 1 contents: converter (plain-text mapping of other tags), validator, train-only `prepare`, baselines (`baseline_train` = vocabulary from train spans, `baseline` = weaker hand-written list, `baseline_negspacy`), `train_all` (2 models x 25/50/100% x 3 seeds), `eval_all`, `infer.Extractor`. Timing (bs16, len48, 200 steps): ModernBERT bf16 227 ms/step 2.87 GiB, fp16 240 ms 2.88 GiB; bert bf16 147 ms 2.06 GiB, fp16 155 ms 2.06 GiB.
+- Stage 2 contents: `src/reports/extract.py` (pdfplumber words/coords, inline and card layouts, quote check, "outside listed range" numeric rule, `highlight()` page renderer via pdfplumber), `src/reports/evaluate.py`. Development layouts classic/compact/cards: 108/108 answer-key rows fully correct. Held-out two_column run once: 36/36. The PDFs come from the team's own generator, so this is not a real-world claim. Caveat: I saw the text of one two_column PDF (report 004) before the held-out rule was given.
+- Stage 3 (UI): pre-approved stack = Streamlit, decisions saved to a local JSON file. Not started; needs Adit's go-ahead.
+- Stage 4: not started.
+- Push: not allowed for now (and no GitHub credentials in WSL).
 
 ## Run
 ```

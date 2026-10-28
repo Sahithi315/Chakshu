@@ -10,6 +10,13 @@ pip install -r requirements.txt
 python -c "import torch; print(torch.cuda.is_available())"   # must print True
 ```
 
+## Doctor screen (Stage 3)
+```
+source .venv/bin/activate
+streamlit run app/app.py        # opens http://localhost:8501
+```
+Needs `models/modernbert_f100_s1` (made by `train_all`). Symptom tags come from ModernBERT-base (100% data, seed 1, declared in advance); lab rows come from the Stage 2 extractor. Confirm / Correct / Reject are saved to `data/decisions.json` (local, not committed); a correction keeps the original value. The screen shows no scores.
+
 ## Report extractor (Stage 2)
 ```
 python -m src.reports.evaluate               # development layouts vs the answer key (classic, compact, cards)

@@ -41,7 +41,7 @@ WSL Ubuntu, RTX 3050 Laptop 6 GB (30 W cap), Python 3.12, venv at `.venv/`, torc
 - Stage 0: done. Stage 1: done, awaiting final results (needs the human test file). Stage 2: done, awaiting approval.
 - Stage 1 contents: converter (plain-text mapping of other tags), validator, train-only `prepare`, baselines (`baseline_train` = vocabulary from train spans, `baseline` = weaker hand-written list, `baseline_negspacy`), `train_all` (2 models x 25/50/100% x 3 seeds), `eval_all`, `infer.Extractor`. Timing (bs16, len48, 200 steps): ModernBERT bf16 227 ms/step 2.87 GiB, fp16 240 ms 2.88 GiB; bert bf16 147 ms 2.06 GiB, fp16 155 ms 2.06 GiB.
 - Stage 2 contents: `src/reports/extract.py` (pdfplumber words/coords, inline and card layouts, quote check, "outside listed range" numeric rule, `highlight()` page renderer via pdfplumber), `src/reports/evaluate.py`. Development layouts classic/compact/cards: 108/108 answer-key rows fully correct. Held-out two_column run once: 36/36. The PDFs come from the team's own generator, so this is not a real-world claim. Caveat: I saw the text of one two_column PDF (report 004) before the held-out rule was given.
-- Stage 3 (UI): pre-approved stack = Streamlit, decisions saved to a local JSON file. Not started; needs Adit's go-ahead.
+- Stage 3 (UI): done, awaiting approval. `app/app.py` (Streamlit). Symptoms: ModernBERT-base `models/modernbert_f100_s1` (fixed in advance). Lab: Stage 2 extractor + `highlight()`. Decisions in `data/decisions.json` (gitignored; original kept, history appended). No scores anywhere in the UI. Run: `streamlit run app/app.py`.
 - Stage 4: not started.
 - Push: not allowed for now (and no GitHub credentials in WSL).
 

@@ -4,3 +4,5 @@ __pycache__/
 outputs/
 models/
 .cache/
+data/decisions.json
+data/decisions.json.tmp

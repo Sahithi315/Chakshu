@@ -1,0 +1,6 @@
+# torch must come from the CUDA index:
+#   pip install torch==2.14.1 --index-url https://download.pytorch.org/whl/cu130
+numpy
+transformers
+pdfplumber
+streamlit

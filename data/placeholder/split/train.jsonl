@@ -1,0 +1,38 @@
+{"id": "1", "author": "placeholder_a", "text": "I have had a fever for 3 days and it is severe", "spans": [{"start": 13, "end": 18, "label": "SYMPTOM"}, {"start": 23, "end": 29, "label": "DURATION"}, {"start": 40, "end": 46, "label": "SEVERITY"}]}
+{"id": "2", "author": "placeholder_a", "text": "no cough but headache since yesterday", "spans": [{"start": 3, "end": 8, "label": "NEG_SYMPTOM"}, {"start": 13, "end": 21, "label": "SYMPTOM"}, {"start": 28, "end": 37, "label": "DURATION"}]}
+{"id": "3", "author": "placeholder_a", "text": "mild sore throat for two days", "spans": [{"start": 0, "end": 4, "label": "SEVERITY"}, {"start": 5, "end": 16, "label": "SYMPTOM"}, {"start": 21, "end": 29, "label": "DURATION"}]}
+{"id": "4", "author": "placeholder_a", "text": "I do not have any chest pain", "spans": [{"start": 18, "end": 28, "label": "NEG_SYMPTOM"}]}
+{"id": "5", "author": "placeholder_a", "text": "stomach pain and vomiting for 1 week", "spans": [{"start": 0, "end": 12, "label": "SYMPTOM"}, {"start": 17, "end": 25, "label": "SYMPTOM"}, {"start": 30, "end": 36, "label": "DURATION"}]}
+{"id": "6", "author": "placeholder_a", "text": "denies fever and chills", "spans": [{"start": 7, "end": 12, "label": "NEG_SYMPTOM"}, {"start": 17, "end": 23, "label": "NEG_SYMPTOM"}]}
+{"id": "7", "author": "placeholder_a", "text": "severe back pain since 5 days", "spans": [{"start": 0, "end": 6, "label": "SEVERITY"}, {"start": 7, "end": 16, "label": "SYMPTOM"}, {"start": 23, "end": 29, "label": "DURATION"}]}
+{"id": "8", "author": "placeholder_a", "text": "feeling tired all the time for 2 months", "spans": [{"start": 8, "end": 13, "label": "SYMPTOM"}, {"start": 31, "end": 39, "label": "DURATION"}]}
+{"id": "9", "author": "placeholder_a", "text": "dizziness when I stand up but no fainting", "spans": [{"start": 0, "end": 9, "label": "SYMPTOM"}, {"start": 33, "end": 41, "label": "NEG_SYMPTOM"}]}
+{"id": "10", "author": "placeholder_a", "text": "moderate joint pain in the knees for 3 weeks", "spans": [{"start": 0, "end": 8, "label": "SEVERITY"}, {"start": 9, "end": 19, "label": "SYMPTOM"}, {"start": 37, "end": 44, "label": "DURATION"}]}
+{"id": "11", "author": "placeholder_a", "text": "no shortness of breath and no swelling", "spans": [{"start": 3, "end": 22, "label": "NEG_SYMPTOM"}, {"start": 30, "end": 38, "label": "NEG_SYMPTOM"}]}
+{"id": "12", "author": "placeholder_a", "text": "my cough is mild and started 4 days ago", "spans": [{"start": 3, "end": 8, "label": "SYMPTOM"}, {"start": 12, "end": 16, "label": "SEVERITY"}, {"start": 29, "end": 35, "label": "DURATION"}]}
+{"id": "13", "author": "placeholder_a", "text": "nausea after meals for a week", "spans": [{"start": 0, "end": 6, "label": "SYMPTOM"}, {"start": 23, "end": 29, "label": "DURATION"}]}
+{"id": "14", "author": "placeholder_a", "text": "without rash or itching", "spans": [{"start": 8, "end": 12, "label": "NEG_SYMPTOM"}, {"start": 16, "end": 23, "label": "NEG_SYMPTOM"}]}
+{"id": "15", "author": "placeholder_a", "text": "very severe headache and blurred vision", "spans": [{"start": 0, "end": 11, "label": "SEVERITY"}, {"start": 12, "end": 20, "label": "SYMPTOM"}, {"start": 25, "end": 39, "label": "SYMPTOM"}]}
+{"id": "16", "author": "placeholder_a", "text": "I have diarrhoea since 2 days but no blood", "spans": [{"start": 7, "end": 16, "label": "SYMPTOM"}, {"start": 23, "end": 29, "label": "DURATION"}, {"start": 37, "end": 42, "label": "NEG_SYMPTOM"}]}
+{"id": "17", "author": "placeholder_a", "text": "runny nose and sneezing for 3 days", "spans": [{"start": 0, "end": 10, "label": "SYMPTOM"}, {"start": 15, "end": 23, "label": "SYMPTOM"}, {"start": 28, "end": 34, "label": "DURATION"}]}
+{"id": "18", "author": "placeholder_a", "text": "no fever today", "spans": [{"start": 3, "end": 8, "label": "NEG_SYMPTOM"}]}
+{"id": "19", "author": "placeholder_a", "text": "slight cough at night", "spans": [{"start": 0, "end": 6, "label": "SEVERITY"}, {"start": 7, "end": 12, "label": "SYMPTOM"}]}
+{"id": "20", "author": "placeholder_a", "text": "excessive thirst and frequent urination for 1 month", "spans": [{"start": 0, "end": 16, "label": "SYMPTOM"}, {"start": 21, "end": 39, "label": "SYMPTOM"}, {"start": 44, "end": 51, "label": "DURATION"}]}
+{"id": "21", "author": "placeholder_a", "text": "not having any vomiting", "spans": [{"start": 15, "end": 23, "label": "NEG_SYMPTOM"}]}
+{"id": "22", "author": "placeholder_a", "text": "chest tightness for 2 hours", "spans": [{"start": 0, "end": 15, "label": "SYMPTOM"}, {"start": 20, "end": 27, "label": "DURATION"}]}
+{"id": "23", "author": "placeholder_a", "text": "unbearable toothache since last night", "spans": [{"start": 0, "end": 10, "label": "SEVERITY"}, {"start": 11, "end": 20, "label": "SYMPTOM"}, {"start": 27, "end": 37, "label": "DURATION"}]}
+{"id": "24", "author": "placeholder_a", "text": "no loss of appetite but weight loss over 3 months", "spans": [{"start": 3, "end": 19, "label": "NEG_SYMPTOM"}, {"start": 24, "end": 35, "label": "SYMPTOM"}, {"start": 41, "end": 49, "label": "DURATION"}]}
+{"id": "25", "author": "placeholder_a", "text": "mild fever and body ache", "spans": [{"start": 0, "end": 4, "label": "SEVERITY"}, {"start": 5, "end": 10, "label": "SYMPTOM"}, {"start": 15, "end": 24, "label": "SYMPTOM"}]}
+{"id": "26", "author": "placeholder_a", "text": "I never had wheezing", "spans": [{"start": 12, "end": 20, "label": "NEG_SYMPTOM"}]}
+{"id": "27", "author": "placeholder_a", "text": "burning urination for 5 days", "spans": [{"start": 0, "end": 17, "label": "SYMPTOM"}, {"start": 22, "end": 28, "label": "DURATION"}]}
+{"id": "28", "author": "placeholder_a", "text": "constipation for 10 days", "spans": [{"start": 0, "end": 12, "label": "SYMPTOM"}, {"start": 17, "end": 24, "label": "DURATION"}]}
+{"id": "29", "author": "placeholder_a", "text": "no palpitations and no sweating", "spans": [{"start": 3, "end": 15, "label": "NEG_SYMPTOM"}, {"start": 23, "end": 31, "label": "NEG_SYMPTOM"}]}
+{"id": "30", "author": "placeholder_a", "text": "ear pain on the left side for 2 days", "spans": [{"start": 0, "end": 8, "label": "SYMPTOM"}, {"start": 30, "end": 36, "label": "DURATION"}]}
+{"id": "31", "author": "placeholder_a", "text": "severe vomiting since morning", "spans": [{"start": 0, "end": 6, "label": "SEVERITY"}, {"start": 7, "end": 15, "label": "SYMPTOM"}]}
+{"id": "32", "author": "placeholder_a", "text": "denies cough", "spans": [{"start": 7, "end": 12, "label": "NEG_SYMPTOM"}]}
+{"id": "33", "author": "placeholder_a", "text": "moderate stomach ache and bloating", "spans": [{"start": 0, "end": 8, "label": "SEVERITY"}, {"start": 9, "end": 21, "label": "SYMPTOM"}, {"start": 26, "end": 34, "label": "SYMPTOM"}]}
+{"id": "34", "author": "placeholder_a", "text": "leg swelling for 1 week with no pain", "spans": [{"start": 0, "end": 12, "label": "SYMPTOM"}, {"start": 17, "end": 23, "label": "DURATION"}, {"start": 32, "end": 36, "label": "NEG_SYMPTOM"}]}
+{"id": "35", "author": "placeholder_a", "text": "sleeplessness for a month", "spans": [{"start": 0, "end": 13, "label": "SYMPTOM"}, {"start": 18, "end": 25, "label": "DURATION"}]}
+{"id": "36", "author": "placeholder_a", "text": "no fever and no cough but weakness", "spans": [{"start": 3, "end": 8, "label": "NEG_SYMPTOM"}, {"start": 16, "end": 21, "label": "NEG_SYMPTOM"}, {"start": 26, "end": 34, "label": "SYMPTOM"}]}
+{"id": "37", "author": "placeholder_a", "text": "mild dizziness", "spans": [{"start": 0, "end": 4, "label": "SEVERITY"}, {"start": 5, "end": 14, "label": "SYMPTOM"}]}
+{"id": "38", "author": "placeholder_a", "text": "numbness in the hands since 6 days", "spans": [{"start": 0, "end": 8, "label": "SYMPTOM"}, {"start": 28, "end": 34, "label": "DURATION"}]}

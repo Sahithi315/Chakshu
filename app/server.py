@@ -2,6 +2,9 @@
 Uses Starlette and Uvicorn. Exposes REST API and serves the React frontend.
 """
 from pathlib import Path
+import asyncio
+from contextlib import asynccontextmanager
+from functools import lru_cache
 import json
 import os
 import sys
@@ -17,6 +20,7 @@ from starlette.middleware.cors import CORSMiddleware
 from starlette.responses import JSONResponse, FileResponse
 from starlette.routing import Route, Mount
 from starlette.staticfiles import StaticFiles
+from starlette.exceptions import HTTPException
 
 from src.database.connection import get_db
 from src.database.schema import init_db
@@ -33,9 +37,14 @@ from src.services.report_service import (
     get_report_by_id, ReportValidationError
 )
 from src.services.ocr_service import process_report_file, is_tesseract_available
-from src.services.summary_service import generate_clinical_summary, save_summary
+from src.services.summary_service import generate_clinical_summary, save_summary, build_temporal_reasoning
 from src.services.doctor_service import (
     record_doctor_decision, save_doctor_notes, get_longitudinal_labs
+)
+from src.services.prescription_safety_service import check_prescription_safety
+from src.services.auth_service import (
+    authenticate_staff, create_staff_session, create_patient_session,
+    get_staff_session, get_patient_session, revoke_staff_session
 )
 # Cached symptom extractor
 _extractor = None
@@ -52,7 +61,71 @@ def get_extractor():
     return _extractor
 
 
+@lru_cache(maxsize=512)
+def extract_symptom_text(text):
+    """Reuse symptom extraction for unchanged intake text across queue refreshes."""
+    return get_extractor().extract(text)
+
+
+async def warm_clinical_services():
+    """Load the symptom model before the first doctor opens a patient."""
+    await asyncio.to_thread(get_extractor)
+
+
+@asynccontextmanager
+async def application_lifespan(_app):
+    await warm_clinical_services()
+    yield
+
+
 # ---------------- API HANDLERS ----------------
+
+def bearer_token(request):
+    header = request.headers.get("authorization", "")
+    scheme, _, token = header.partition(" ")
+    return token.strip() if scheme.lower() == "bearer" else ""
+
+
+def require_staff(request, *roles):
+    identity = get_staff_session(bearer_token(request))
+    if not identity:
+        return None, JSONResponse({"error": "Staff authentication required"}, status_code=401)
+    if roles and identity["role"] not in roles:
+        return None, JSONResponse({"error": "You do not have access to this resource"}, status_code=403)
+    return identity, None
+
+
+def require_patient(request, patient_id=None, visit_id=None):
+    identity = get_patient_session(bearer_token(request))
+    if not identity:
+        return None, JSONResponse({"error": "Patient encounter session required"}, status_code=401)
+    if patient_id and identity["patient_id"] != patient_id:
+        return None, JSONResponse({"error": "Patient session does not match this record"}, status_code=403)
+    if visit_id and identity["visit_id"] != visit_id:
+        return None, JSONResponse({"error": "Patient session does not match this visit"}, status_code=403)
+    return identity, None
+
+
+async def staff_login(request):
+    body = await request.json()
+    identity = authenticate_staff(body.get("username", ""), body.get("password", ""))
+    if not identity:
+        return JSONResponse({"error": "Invalid username or password"}, status_code=401)
+    token, expires_at = create_staff_session(identity["staff_id"])
+    return JSONResponse({"token": token, "expires_at": expires_at, "user": identity})
+
+
+async def staff_me(request):
+    identity, error = require_staff(request)
+    return error or JSONResponse({"user": identity})
+
+
+async def staff_logout(request):
+    identity, error = require_staff(request)
+    if error:
+        return error
+    revoke_staff_session(bearer_token(request))
+    return JSONResponse({"status": "signed_out"})
 
 async def health(request):
     return JSONResponse({
@@ -65,21 +138,50 @@ async def health(request):
 
 async def list_visits(request):
     """Retrieve active visit queue."""
-    visits = get_active_visits()
+    identity, error = require_staff(request, "doctor", "nurse")
+    if error:
+        return error
+    needs_vitals = request.query_params.get("needs_vitals", "").lower() in {"1", "true", "yes"}
+    if needs_vitals and identity["role"] != "nurse":
+        return JSONResponse({"error": "The vitals queue is available to nursing staff only"}, status_code=403)
+    visits = get_active_visits(needs_vitals=needs_vitals)
     return JSONResponse(visits)
 
 
 async def get_visit(request):
     """Get complete details for a specific visit."""
+    identity, error = require_staff(request, "doctor")
+    if error:
+        return error
     visit_id = request.path_params["visit_id"]
     data = get_visit_details(visit_id)
     if not data:
         return JSONResponse({"error": "Visit not found"}, status_code=404)
+    intake = data.get("intake") or {}
+    symptom_source = ". ".join(
+        str(value).strip()
+        for value in (
+            intake.get("reason_for_visit"),
+            intake.get("symptoms_text"),
+            intake.get("associated_symptoms")
+        )
+        if str(value or "").strip()
+    )
+    data["symptom_extraction"] = extract_symptom_text(symptom_source) if symptom_source else {
+        "text": "", "symptoms": [], "durations": [], "severities": [], "extractor_mode": get_extractor().mode
+    }
+    if data.get("summary") is not None:
+        data["summary"]["temporal_reasoning"] = build_temporal_reasoning(
+            intake, data.get("vitals") or {}, data.get("past_visits") or []
+        )
     return JSONResponse(data)
 
 
 async def search_patients(request):
     """Search patients by query (phone, name, patient_id) with normalization for hyphens and smart dashes."""
+    identity, error = require_staff(request, "doctor")
+    if error:
+        return error
     q = request.query_params.get("q", "").strip()
     with get_db() as conn:
         if not q:
@@ -117,6 +219,9 @@ async def search_patients(request):
 
 async def get_patient(request):
     """Retrieve patient details and prior visit history safely."""
+    identity, error = require_staff(request, "doctor")
+    if error:
+        return error
     try:
         raw_id = request.path_params.get("patient_id", "")
         patient_id = urllib.parse.unquote(raw_id).strip()
@@ -177,13 +282,18 @@ async def register_patient_endpoint(request):
     )
     save_summary(visit["visit_id"], patient["patient_id"], initial_summary)
     visit["summary"] = initial_summary
+    patient_token, patient_token_expires_at = create_patient_session(
+        patient["patient_id"], visit["visit_id"]
+    )
 
     return JSONResponse({
         "status": "success",
         "patient": patient,
         "visit": visit,
         "is_new": is_new,
-        "past_visits": past_visits
+        "past_visits": past_visits,
+        "patient_token": patient_token,
+        "patient_token_expires_at": patient_token_expires_at
     })
 
 
@@ -195,6 +305,9 @@ async def save_intake_endpoint(request):
 
     if not visit_id or not patient_id:
         return JSONResponse({"error": "visit_id and patient_id are required"}, status_code=400)
+    identity, error = require_patient(request, patient_id=patient_id, visit_id=visit_id)
+    if error:
+        return error
 
     intake_id = save_intake(
         visit_id=visit_id,
@@ -240,6 +353,9 @@ async def save_vitals_endpoint(request):
 
     if not visit_id or not patient_id:
         return JSONResponse({"error": "visit_id and patient_id are required"}, status_code=400)
+    identity, error = require_staff(request, "nurse")
+    if error:
+        return error
 
     record_vitals(
         visit_id=visit_id,
@@ -250,8 +366,21 @@ async def save_vitals_endpoint(request):
         temperature=body.get("temperature"),
         spo2=body.get("spo2"),
         blood_sugar=body.get("blood_sugar"),
-        recorded_by=body.get("recorded_by", "nurse")
+        recorded_by=identity["staff_id"]
     )
+
+    with get_db() as conn:
+        conn.execute(
+            """
+            INSERT INTO nurse_queue_completions (visit_id, patient_id, recorded_by)
+            VALUES (?, ?, ?)
+            ON CONFLICT(visit_id) DO UPDATE SET
+                patient_id = excluded.patient_id,
+                recorded_by = excluded.recorded_by,
+                completed_at = CURRENT_TIMESTAMP
+            """,
+            (visit_id, patient_id, identity["staff_id"])
+        )
 
     # Re-generate and save clinical summary card
     visit_data = get_visit_details(visit_id)
@@ -283,6 +412,9 @@ async def upload_report_endpoint(request):
 
     if not file or not patient_id or not visit_id:
         return JSONResponse({"error": "file, patient_id, and visit_id are required"}, status_code=400)
+    identity, error = require_patient(request, patient_id=patient_id, visit_id=visit_id)
+    if error:
+        return error
 
     filename = file.filename
     content = await file.read()
@@ -301,7 +433,10 @@ async def upload_report_endpoint(request):
 
         # Insert extracted results into DB
         with get_db() as conn:
-            for r in extraction_res.get("extracted_rows", []):
+            extracted_rows = extraction_res.get("extracted_rows", [])
+            if extracted_rows:
+                conn.execute("DELETE FROM extracted_results WHERE report_id = ?", (rep_rec["report_id"],))
+            for r in extracted_rows:
                 eid = f"EXT-{os.urandom(4).hex()}"
                 conn.execute(
                     """
@@ -345,6 +480,10 @@ async def upload_report_endpoint(request):
 
 async def tag_symptoms_endpoint(request):
     """Run symptom extractor on patient text."""
+    patient_identity = get_patient_session(bearer_token(request))
+    staff_identity = get_staff_session(bearer_token(request))
+    if not patient_identity and not staff_identity:
+        return JSONResponse({"error": "Authentication required"}, status_code=401)
     body = await request.json()
     text = body.get("text", "").strip()
     if not text:
@@ -358,6 +497,9 @@ async def tag_symptoms_endpoint(request):
 
 async def save_decision_endpoint(request):
     """Record doctor decision: confirm, correct, or reject."""
+    identity, error = require_staff(request, "doctor")
+    if error:
+        return error
     body = await request.json()
     visit_id = body.get("visit_id")
     patient_id = body.get("patient_id")
@@ -382,12 +524,15 @@ async def save_decision_endpoint(request):
 
 async def save_notes_endpoint(request):
     """Save doctor consultation notes and complete visit."""
+    identity, error = require_staff(request, "doctor")
+    if error:
+        return error
     body = await request.json()
     visit_id = body.get("visit_id")
     patient_id = body.get("patient_id")
     clinical_notes = body.get("clinical_notes", "").strip()
     plan = body.get("plan", "").strip()
-    doctor_id = body.get("doctor_id", "DR-CONSULTANT")
+    doctor_id = identity["staff_id"]
 
     if not visit_id or not patient_id or not clinical_notes:
         return JSONResponse({"error": "visit_id, patient_id, and clinical_notes are required"}, status_code=400)
@@ -421,6 +566,15 @@ async def save_notes_endpoint(request):
     })
 
 
+async def prescription_safety_endpoint(request):
+    """Run non-autonomous checks on doctor-entered structured medicines."""
+    identity, error = require_staff(request, "doctor")
+    if error:
+        return error
+    body = await request.json()
+    return JSONResponse(check_prescription_safety(body.get("medications", []), body.get("allergies", "")))
+
+
 async def checkin_returning_endpoint(request):
     """Check in a returning patient by permanent MRN with phone verification."""
     body = await request.json()
@@ -432,6 +586,11 @@ async def checkin_returning_endpoint(request):
 
     try:
         result = checkin_returning_patient(patient_id, verification_phone=phone or None)
+        token, expires_at = create_patient_session(
+            result["patient"]["patient_id"], result["visit"]["visit_id"]
+        )
+        result["patient_token"] = token
+        result["patient_token_expires_at"] = expires_at
         return JSONResponse(result)
     except ValueError as e:
         return JSONResponse({"error": str(e)}, status_code=400)
@@ -454,6 +613,9 @@ async def lookup_patient_endpoint(request):
 
 async def get_patient_records_endpoint(request):
     """Retrieve full longitudinal profile and chronological visit timeline for Patient Records tab safely."""
+    identity, error = require_staff(request, "doctor")
+    if error:
+        return error
     try:
         raw_id = request.path_params.get("patient_id", "")
         patient_id = urllib.parse.unquote(raw_id).strip()
@@ -473,6 +635,9 @@ async def get_patient_records_endpoint(request):
 
 async def download_report_endpoint(request):
     """Securely serve uploaded report file for viewing or download."""
+    identity, error = require_staff(request, "doctor")
+    if error:
+        return error
     report_id = request.path_params["report_id"]
     rep = get_report_by_id(report_id)
     if not rep:
@@ -487,6 +652,9 @@ async def download_report_endpoint(request):
 
 routes = [
     Route("/api/health", health, methods=["GET"]),
+    Route("/api/auth/staff/login", staff_login, methods=["POST"]),
+    Route("/api/auth/staff/me", staff_me, methods=["GET"]),
+    Route("/api/auth/staff/logout", staff_logout, methods=["POST"]),
     Route("/api/visits", list_visits, methods=["GET"]),
     Route("/api/visits/{visit_id}", get_visit, methods=["GET"]),
     Route("/api/patients", search_patients, methods=["GET"]),
@@ -502,12 +670,24 @@ routes = [
     Route("/api/symptoms/tag", tag_symptoms_endpoint, methods=["POST"]),
     Route("/api/doctor/decision", save_decision_endpoint, methods=["POST"]),
     Route("/api/doctor/notes", save_notes_endpoint, methods=["POST"]),
+    Route("/api/doctor/prescription-safety", prescription_safety_endpoint, methods=["POST"]),
 ]
 
 # Static frontend files mount if production build exists
+class SPAStaticFiles(StaticFiles):
+    """Serve index.html for client-side routes while preserving asset 404s."""
+    async def get_response(self, path, scope):
+        try:
+            return await super().get_response(path, scope)
+        except HTTPException as exc:
+            if exc.status_code == 404 and "." not in Path(path).name:
+                return await super().get_response("index.html", scope)
+            raise
+
+
 dist_dir = ROOT / "frontend" / "dist"
 if dist_dir.is_dir():
-    routes.append(Mount("/", app=StaticFiles(directory=str(dist_dir), html=True), name="static"))
+    routes.append(Mount("/", app=SPAStaticFiles(directory=str(dist_dir), html=True), name="static"))
 
 middleware = [
     Middleware(
@@ -518,7 +698,7 @@ middleware = [
     )
 ]
 
-app = Starlette(debug=True, routes=routes, middleware=middleware)
+app = Starlette(debug=True, routes=routes, middleware=middleware, lifespan=application_lifespan)
 
 if __name__ == "__main__":
     import uvicorn

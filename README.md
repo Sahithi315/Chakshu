@@ -11,12 +11,35 @@ In hospital outpatient departments (OPDs), doctors typically have only 3–5 min
 The **Team 404 Vision Clinical Context Platform** converts the patient's waiting room time (after receiving an OPD token) into a high-yield, structured pre-consultation summary:
 - **Mobile-First Patient Intake**: Patients enter their reason for visit, symptom timeline, chronic conditions, current medications, and known allergies.
 - **Physical Report Scanning & Document Upload**: Upload lab reports (PDF, JPG, PNG) via file selection or direct mobile camera capture.
-- **Automated Clinical Data Extraction & OCR**: Extracts lab test names, observed values, units, reference ranges, and highlights out-of-range parameters.
+- **Automated Clinical Data Extraction & Optional OCR**: Extracts lab test names, observed values, units, reference ranges, and out-of-range parameters. Digital PDFs use `pdfplumber`; photos and scanned PDFs use Tesseract when it is installed.
 - **10–15 Second Single Summary Card**: Deterministically synthesized clinical card adhering to the exact clinician-oriented layout (TODAY, RELEVANT HISTORY, SAME COMPLAINT BEFORE, RED FLAG, CONFIRM IN ROOM).
 - **Doctor Dashboard with Live Patient Search**: Search any patient instantly by Name, Phone, MRN (Patient ID), or Token number.
 - **Clean Laboratory Review**: Structured tabular view of patient lab results without distraction (no inspect report modal).
 - **Doctor Consultation Notes & Plan**: Direct clinical observation entry and treatment plan recording saved permanently to the patient's record.
 - **Nurse Station**: Triage station for staff-assisted check-in and vital signs recording (BP, Pulse, Temp, SpO2, Blood Sugar).
+
+---
+
+## AI and Intelligent Automation Used
+
+Chakshu does **not** call an external generative-AI API at runtime, and it does not require OpenAI, Anthropic, Gemini, or similar API keys. Its intelligent features are local, reviewable, and deliberately non-autonomous:
+
+| Capability | Implementation | Safety boundary |
+| :--- | :--- | :--- |
+| Symptom and negation extraction | ModernBERT-compatible token-classification interface with a local rule-based fallback; the current demo runs in `baseline` mode when no trained checkpoint is installed | Extracts keywords, duration, severity, and negation for clinician review; it does not diagnose |
+| Temporal reasoning | Deterministic comparison of the current complaint, duration, vital signs, prior visits, and follow-up history | Surfaces chronology and change; it does not predict disease or outcome |
+| Clinical brief synthesis | Evidence-linked, deterministic structured summary built from patient intake, nurse vitals, reports, and history | Not a generative-LLM diagnosis or treatment recommendation |
+| Prescription safety assistant | Transparent local rules check incomplete directions, duplicate medicines, recorded allergy terms, and a small documented interaction ruleset | Warns the doctor but never adds, removes, or changes a medicine automatically |
+| Report understanding and OCR | `pdfplumber` for text PDFs, optional Tesseract OCR plus image preprocessing for photos/scanned PDFs, followed by structured lab parsing | Missing OCR is reported explicitly; the system does not invent report values |
+| Red-flag highlighting | Explicit, auditable combinations of symptoms and observations | Attention prompt only; final interpretation remains with clinical staff |
+
+The active capabilities are exposed by the health endpoint:
+
+```bash
+curl http://127.0.0.1:8000/api/health
+```
+
+On the current development machine, the response reports `"model_mode":"baseline"` and `"tesseract_available":false`. Install the Tesseract executable to enable OCR for image-only reports; digitally generated PDFs continue to be parsed without it.
 
 ---
 
@@ -27,13 +50,13 @@ Team_404-Vision/
 ├── frontend/                      # Modern Vite + React 19 Frontend
 │   ├── src/
 │   │   ├── components/
-│   │   │   ├── Navbar.jsx         # Pill navigation header with 4 tabs & doctor profile
+│   │   │   ├── Navbar.jsx         # Role-aware card navigation and session actions
 │   │   │   ├── DoctorDashboard.jsx# Live patient search, tokens, summary card, clean labs, doctor notes
 │   │   │   ├── PatientRecords.jsx # Complete longitudinal visit history, labs & report archive
 │   │   │   ├── SummaryCard.jsx    # Single summary card (10-15s read) with copy button
 │   │   │   ├── PatientIntake.jsx  # 2-option intake (New MRN vs Returning Check-in) & camera upload
 │   │   │   └── NurseStation.jsx   # OPD triage queue & vitals measurement recording
-│   │   ├── App.jsx                # Tab switcher & clinical disclaimer banner
+│   │   ├── App.jsx                # URL routes, role boundary, and protected pages
 │   │   ├── main.jsx               # React entry point
 │   │   └── index.css              # Image 5 theme: soft blue #edf4fa, rounded cards, pills
 │   ├── dist/                      # Compiled production static bundle
@@ -48,10 +71,12 @@ Team_404-Vision/
 │   │   ├── connection.py          # Database connection manager with transaction safety
 │   │   └── seed.py                # Synthetic patient database seeder
 │   ├── services/
-│   │   ├── summary_service.py     # Image 4 deterministic 10-15s single summary card generator
+│   │   ├── auth_service.py        # Staff sessions, password verification, and role checks
+│   │   ├── summary_service.py     # Deterministic brief and temporal context generator
 │   │   ├── patient_service.py     # Patient registration, OPD visits, token issue, vitals, intake
 │   │   ├── report_service.py      # Secure file storage, magic byte validation, SHA-256 deduplication
-│   │   ├── ocr_service.py         # Image preprocessing, Tesseract OCR, tabular regex extraction
+│   │   ├── ocr_service.py         # PDF text extraction and optional Tesseract OCR
+│   │   ├── prescription_safety_service.py # Review-only medication safety checks
 │   │   └── doctor_service.py      # Consultation notes persistence, doctor review decisions
 │   ├── symptoms/
 │   │   ├── infer.py               # Symptom extractor with local path handling & rule fallback
@@ -113,6 +138,26 @@ This single command:
 
 Open your browser at **`http://localhost:8000`** (or `http://127.0.0.1:8000`).
 
+### Role-based routes and demo sign-in
+
+- Role selection: `http://localhost:8000/`
+- Patient check-in: `http://localhost:8000/patient/check-in`
+- Staff sign-in: `http://localhost:8000/staff/login`
+- Doctor queue: `http://localhost:8000/doctor/queue`
+- Nurse queue: `http://localhost:8000/nurse/queue`
+
+Synthetic demo staff accounts:
+
+| Role | Username | Password |
+| :--- | :--- | :--- |
+| Doctor | `doctor.demo` | `Doctor123!` |
+| Nurse | `nurse.demo` | `Nurse123!` |
+
+For non-demo environments, set `CHAKSHU_DOCTOR_PASSWORD` and
+`CHAKSHU_NURSE_PASSWORD` before initializing a fresh database. Staff sessions
+are server-side and role-scoped; patient intake and report uploads use a
+short-lived token tied to the current patient and visit.
+
 ---
 
 ### B. Development Mode (Hot Reload)
@@ -133,17 +178,19 @@ Open **`http://localhost:5173`** (Vite automatically proxies `/api` calls to por
 
 ---
 
-## 5. Pre-Seeded Synthetic Test Patients
+## 5. Synthetic Demonstration Patients
 
-The database comes pre-seeded with synthetic patients for immediate testing:
+The fresh database seed contains coherent fictional records for immediate workflow testing:
 
-| Token | Patient Name | Age / Gender | Presenting Concern | Key Lab Findings | Red Flag |
-| :--- | :--- | :--- | :--- | :--- | :--- |
-| **T-101** | Aarav Nair | 52 / Male | Type 2 diabetes follow-up & foot tingling | HbA1c: 8.8% (High), Fasting Glucose: 168 mg/dL | Mild peripheral neuropathy risk |
-| **T-102** | Priya Sharma | 48 / Female | Hypertension review & episodic headaches | BP: 148/92 mmHg, Serum Creatinine: 1.1 mg/dL | Missed antihypertensive doses |
-| **T-103** | Rajesh Kumar | 61 / Male | Exertional chest tightness & shortness of breath | Total Cholesterol: 242 mg/dL, LDL: 158 mg/dL | **⚠️ RED FLAG**: Exertional chest symptoms |
+| Patient | Age / Gender | Presenting concern | Meaningful context |
+| :--- | :--- | :--- | :--- |
+| Aarav Nair | 52 / Male | Diabetes follow-up with bilateral foot tingling | Current and prior vitals, diabetes history, medication history, a prior completed consultation, and a synthetic laboratory report |
+| Meera Kulkarni | 46 / Female | Hypertension review with episodic headache | Elevated blood pressure, recent missed doses, penicillin rash history, a prior consultation, and a synthetic report |
+| Imran Shaikh | 61 / Male | Dyslipidemia follow-up with fatigue | Current vitals, medication status requiring confirmation, and a synthetic lipid report |
 
-You can also use the **Live Search Bar** to type `"Aarav"`, `"Priya"`, `"Rajesh"`, or any phone number to jump directly to that patient.
+The repository also includes `snehu_illustrative_iron_deficiency_sample.pdf` and `tools/reconcile_demo_data.py`. The reconciliation utility creates a coherent fictional Snehu demonstration record from that teaching report (including haemoglobin 9.8 g/dL, ferritin 8 ng/mL, and TIBC 460 µg/dL) while removing obsolete duplicate demo findings. All names, reports, and clinical details are synthetic.
+
+Use the nurse or doctor search field to find a patient by name, MRN, phone number, or current token.
 
 ---
 
@@ -161,6 +208,22 @@ You can also use the **Live Search Bar** to type `"Aarav"`, `"Priya"`, `"Rajesh"
   - Extracted lab findings are cleanly formatted in an OPD tabular view (Investigation Name, Observed Result, Reference Range, Clinical Status).
   - The doctor sees the extracted clinical values directly without disruptive popups or PDF viewer overlays.
   - Original files are validated (magic bytes, MIME type) and deduplicated via SHA-256 in `data/uploads/`.
+
+### Is OCR present?
+
+Yes. OCR is implemented in `src/services/ocr_service.py`, with two report paths:
+
+- Text-based PDFs are extracted locally with `pdfplumber` and do not need Tesseract.
+- JPG, PNG, and image-only/scanned PDF pages use image preprocessing and Tesseract OCR.
+- If Tesseract is unavailable, the API records a clear warning and returns no fabricated extraction. The original report remains available for review.
+
+Check the local OCR capability directly:
+
+```bash
+python -c "from src.services.ocr_service import is_tesseract_available; print(is_tesseract_available())"
+```
+
+The current development machine returns `False`, so Tesseract must be installed and available on `PATH` before image OCR can run.
 
 ---
 
@@ -236,7 +299,7 @@ When the application previously called `Extractor(MODEL_DIR)` with an uncreated 
 - `src/symptoms/model.py`: Added `is_local_path()` and `validate_local_model_dir()`. Passes `local_files_only=True` to prevent remote HF Hub lookups.
 - Missing checkpoints raise a clean `ModelNotFoundError` with training instructions instead of exposing a raw traceback.
 - `src/symptoms/infer.py`: Implements `fallback_to_baseline=True` using the calibrated rule-based keyword and negation extractor (`src/symptoms/baseline.py`).
-- Lazy model loading in `app/server.py` reduces startup time from 8.5 seconds down to under 0.8 seconds.
+- The extractor is initialized once and cached by the server. Without a validated local checkpoint, the health endpoint reports `model_mode: "baseline"` and the application uses the deterministic fallback rather than attempting a network download.
 
 To fine-tune the planned ModernBERT token classification model:
 ```bash
@@ -250,16 +313,7 @@ python -m src.symptoms.train_all --data data/symptoms/split
 Run all automated unit and integration tests:
 
 ```bash
-python -m unittest discover tests
-```
-
-Output:
-```
-.............................................
-----------------------------------------------------------------------
-Ran 45 tests in 5.171s
-
-OK
+python -m pytest -q
 ```
 
 Tests cover:
@@ -293,12 +347,14 @@ Tests cover:
 - `test_summary_service.py` (3 tests): Image 4 single summary card synthesis, red flag triggers, and gap detection.
 - `test_doctor_workflow.py` (3 tests): Review decisions, doctor consultation notes persistence, and longitudinal lab trends.
 - `test_end_to_end_workflow.py` (3 tests): Complete patient registration -> vitals -> intake -> report upload -> summary -> doctor notes lifecycle.
+- `test_authenticated_lifecycle.py`: Role authentication and the complete patient -> nurse -> doctor -> records lifecycle, including queue removal after completion.
+- `test_prescription_safety.py`: Incomplete directions, duplicate medicines, allergy terms, and documented interaction warnings without autonomous prescribing.
 
 ---
 
-## 9. Security, Privacy & Compliance
+## 11. Security, Privacy & Compliance
 
 - **Multi-tenant Isolation**: All database queries are explicitly scoped to patient and visit identifiers.
 - **Audit Logging**: All view actions, vitals entries, notes saves, and report uploads are logged in `audit_logs`.
 - **Deduplication**: SHA-256 hashing prevents storage of duplicate documents.
-- **Safety Disclaimer**: Prominently displayed across all patient- and doctor-facing views.
+- **Clinical Safety Boundary**: The summary, temporal reasoning, and prescription checks are review aids. They cannot independently diagnose, prescribe, or change medication.

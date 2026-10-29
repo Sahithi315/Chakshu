@@ -30,11 +30,11 @@ SEED_PATIENTS = [
         "allergies": "No known drug allergies",
         "history": "Diagnosed with diabetes in 2022. Non-smoker.",
         "vitals": {"bp_systolic": 136, "bp_diastolic": 84, "heart_rate": 78, "temperature": 98.1, "spo2": 98.0, "blood_sugar": 142.0},
-        "reports": ["synthetic_report_001.pdf", "synthetic_report_002.pdf"],
+        "reports": ["SYN-P001_P001-D04_lab_report.pdf"],
         "prior_visit": {
             "visit_id": "VIS-P001-00",
             "token_number": "T-098",
-            "created_at": "2026-10-08 10:15:00",
+            "created_at": "2025-11-12 10:15:00",
             "reason": "Routine diabetes follow-up & initial bilateral foot numbness",
             "symptoms": "intermittent numbness in toes, mild burning sensation on soles of feet",
             "duration": "3 weeks",
@@ -50,9 +50,9 @@ SEED_PATIENTS = [
     },
     {
         "patient_id": "SYN-P002",
-        "name": "Priya Sharma",
+        "name": "Meera Kulkarni",
         "phone": "9876543211",
-        "age": 48,
+        "age": 46,
         "gender": "Female",
         "reason": "Hypertension routine review and episodic headache",
         "symptoms": "intermittent morning headaches for 3 weeks, mild neck stiffness, no visual changes",
@@ -64,11 +64,11 @@ SEED_PATIENTS = [
         "allergies": "Penicillin (rash)",
         "history": "Family history of early coronary artery disease.",
         "vitals": {"bp_systolic": 148, "bp_diastolic": 92, "heart_rate": 82, "temperature": 97.9, "spo2": 99.0, "blood_sugar": 108.0},
-        "reports": ["synthetic_report_003.pdf"],
+        "reports": ["SYN-P002_P002-D04_vitals_and_labs.pdf"],
         "prior_visit": {
             "visit_id": "VIS-P002-00",
             "token_number": "T-092",
-            "created_at": "2026-09-24 11:30:00",
+            "created_at": "2025-09-08 11:30:00",
             "reason": "Hypertension routine check and episodic occipital tension",
             "symptoms": "throbbing morning headaches for 10 days, work-related stress",
             "duration": "10 days",
@@ -84,21 +84,21 @@ SEED_PATIENTS = [
     },
     {
         "patient_id": "SYN-P003",
-        "name": "Rajesh Kumar",
+        "name": "Imran Shaikh",
         "phone": "9876543212",
-        "age": 58,
+        "age": 61,
         "gender": "Male",
         "reason": "Follow-up for dyslipidemia and generalized fatigue",
         "symptoms": "feeling tired and low energy for 1 month, no shortness of breath, no fever",
         "duration": "1 month",
         "severity": "Mild",
         "associated": "Slight muscle soreness",
-        "conditions": "Hypercholesterolemia, Mild fatty liver",
-        "medications": "Atorvastatin 10 mg at night",
+        "conditions": "Dyslipidemia",
+        "medications": "Atorvastatin 10 mg at night from an older prescription (current status unverified)",
         "allergies": "Unknown / Unconfirmed antibiotic rash in childhood",
         "history": "Sedentary lifestyle, attempting dietary improvements.",
         "vitals": {"bp_systolic": 128, "bp_diastolic": 78, "heart_rate": 74, "temperature": 98.0, "spo2": 98.5, "blood_sugar": 115.0},
-        "reports": ["synthetic_report_004.pdf"]
+        "reports": ["SYN-P003_P003-D04_lab_report.pdf"]
     }
 ]
 
@@ -220,7 +220,16 @@ def seed_database(db_path=None):
                     )
                     # Extract report contents
                     res = process_report_file(rep_path)
-                    for r in res.get("extracted_rows", []):
+                    extracted_rows = res.get("extracted_rows", [])
+                    if not extracted_rows:
+                        stored_rows = [dict(row) for row in conn.execute(
+                            "SELECT test_name AS test, test_value AS value, unit, reference_range, range_note, page, bbox_json, source_line, quote_ok, extraction_method FROM extracted_results WHERE report_id = ?",
+                            (rep_record["report_id"],)
+                        ).fetchall()]
+                        extracted_labs_for_summary.extend(stored_rows)
+                        continue
+                    conn.execute("DELETE FROM extracted_results WHERE report_id = ?", (rep_record["report_id"],))
+                    for r in extracted_rows:
                         eid = f"EXT-{uuid.uuid4().hex[:8]}"
                         conn.execute(
                             """

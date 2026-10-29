@@ -300,15 +300,24 @@ def create_visit(patient_id, allow_duplicate_today=False, db_path=None):
         return dict(visit_row)
 
 
-def get_active_visits(db_path=None):
-    """Retrieve all current hospital visits along with patient information."""
+def get_active_visits(db_path=None, needs_vitals=False):
+    """Retrieve visits, optionally limited to waiting patients without vitals."""
     with get_db(db_path) as conn:
-        rows = conn.execute(
+        queue_filter = """WHERE v.status != 'completed'"""
+        if needs_vitals:
+            queue_filter += """
+              AND NOT EXISTS (
+                  SELECT 1 FROM nurse_queue_completions nqc
+                  WHERE nqc.visit_id = v.visit_id
+              )
             """
+        rows = conn.execute(
+            f"""
             SELECT v.*, p.name as patient_name, p.phone as patient_phone, p.age as patient_age, p.gender as patient_gender
             FROM visits v
             JOIN patients p ON v.patient_id = p.patient_id
-            ORDER BY v.created_at DESC
+            {queue_filter}
+            ORDER BY v.created_at DESC, v.id DESC
             """
         ).fetchall()
         return [dict(r) for r in rows]

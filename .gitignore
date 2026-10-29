@@ -32,8 +32,12 @@ data/hospital.db
 data/hospital.db-wal
 data/hospital.db-shm
 data/uploads/
+data/backups/
 *.sqlite
 *.sqlite3
+
+# Local source image not used by the production asset pipeline
+/Friendly Doctor in a Modern Clinic.png
 
 # Node.js dependencies
 node_modules/

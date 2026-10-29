@@ -4,15 +4,22 @@ import {
   ArrowRight, ShieldCheck, AlertCircle, RefreshCw, X, Plus, FileText,
   Image as ImageIcon, Copy, Check, UserPlus, History, KeyRound, Search
 } from 'lucide-react';
-import SummaryCard from './SummaryCard';
 
-export default function PatientIntake() {
-  const [step, setStep] = useState(1); // 1: Register/Check-in, 2: Questionnaire, 3: Reports, 4: Done
-  const [patient, setPatient] = useState(null);
-  const [visit, setVisit] = useState(null);
+const FLOW_KEY = 'chakshu_patient_encounter';
+const loadPatientFlow = () => {
+  try { return JSON.parse(sessionStorage.getItem(FLOW_KEY) || 'null'); } catch { return null; }
+};
+
+export default function PatientIntake({ activeStep = 1, onStepChange = () => {} }) {
+  const [savedFlow] = useState(loadPatientFlow);
+  const step = activeStep;
+  const setStep = onStepChange;
+  const [patient, setPatient] = useState(savedFlow?.patient || null);
+  const [visit, setVisit] = useState(savedFlow?.visit || null);
+  const [patientToken, setPatientToken] = useState(savedFlow?.patientToken || '');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [generatedSummary, setGeneratedSummary] = useState(null);
-  const [pastVisits, setPastVisits] = useState([]);
+  const [pastVisits, setPastVisits] = useState(savedFlow?.pastVisits || []);
   const [isReturningPatient, setIsReturningPatient] = useState(false);
 
   // Check-in Tab Mode: 'new' | 'returning'
@@ -21,8 +28,8 @@ export default function PatientIntake() {
   // New Patient Form States
   const [phone, setPhone] = useState('');
   const [name, setName] = useState('');
-  const [age, setAge] = useState('35');
-  const [gender, setGender] = useState('Male');
+  const [age, setAge] = useState('');
+  const [gender, setGender] = useState('');
   const [newPatientRegistered, setNewPatientRegistered] = useState(false);
   const [copiedMRN, setCopiedMRN] = useState(false);
 
@@ -45,8 +52,8 @@ export default function PatientIntake() {
   // Step 2 Intake Form States
   const [reason, setReason] = useState('');
   const [symptoms, setSymptoms] = useState('');
-  const [duration, setDuration] = useState('1 to 3 days');
-  const [severity, setSeverity] = useState('Mild (manageable)');
+  const [duration, setDuration] = useState('');
+  const [severity, setSeverity] = useState('');
   const [associated, setAssociated] = useState('');
   const [conditions, setConditions] = useState('');
   const [medications, setMedications] = useState('');
@@ -67,6 +74,15 @@ export default function PatientIntake() {
 
   const videoRef = useRef(null);
   const streamRef = useRef(null);
+
+  useEffect(() => {
+    if (activeStep > 1 && !visit) onStepChange(1);
+  }, [activeStep, visit]);
+
+  const persistEncounter = (nextPatient, nextVisit, token, nextPastVisits = []) => {
+    sessionStorage.setItem(FLOW_KEY, JSON.stringify({ patient: nextPatient, visit: nextVisit, patientToken: token, pastVisits: nextPastVisits }));
+    setPatientToken(token);
+  };
 
   // Stop camera tracks helper
   const stopCamera = () => {
@@ -183,6 +199,7 @@ export default function PatientIntake() {
     try {
       const res = await fetch('/api/reports/upload', {
         method: 'POST',
+        headers: { Authorization: `Bearer ${patientToken}` },
         body: formData
       });
       const data = await res.json();
@@ -229,6 +246,7 @@ export default function PatientIntake() {
     try {
       const res = await fetch('/api/reports/upload', {
         method: 'POST',
+        headers: { Authorization: `Bearer ${patientToken}` },
         body: formData
       });
       const data = await res.json();
@@ -297,6 +315,7 @@ export default function PatientIntake() {
 
       setPatient(data.patient);
       setVisit(data.visit);
+      persistEncounter(data.patient, data.visit, data.patient_token, data.past_visits || []);
       setIsReturningPatient(!data.is_new);
 
       if (data.past_visits && data.past_visits.length > 0) {
@@ -348,6 +367,7 @@ export default function PatientIntake() {
 
       setPatient(data.patient);
       setVisit(data.visit);
+      persistEncounter(data.patient, data.visit, data.patient_token, data.past_visits || []);
       setIsReturningPatient(true);
       if (data.past_visits) {
         setPastVisits(data.past_visits);
@@ -399,7 +419,7 @@ export default function PatientIntake() {
     try {
       const res = await fetch('/api/intake', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${patientToken}` },
         body: JSON.stringify({
           visit_id: visit.visit_id,
           patient_id: patient.patient_id,
@@ -414,10 +434,10 @@ export default function PatientIntake() {
         })
       });
       const data = await res.json();
-      if (data.summary) {
+      if (res.ok && data.summary) {
         setGeneratedSummary(data.summary);
+        setStep(3);
       }
-      setStep(3);
     } catch (err) {
       console.error('Intake failed', err);
     } finally {
@@ -426,9 +446,9 @@ export default function PatientIntake() {
   };
 
   return (
-    <div style={{ maxWidth: '840px', margin: '0 auto' }}>
+    <div className="patient-intake-flow" style={{ maxWidth: '840px', margin: '0 auto' }}>
       {/* Step Pills */}
-      <div style={{ display: 'flex', justifyContent: 'center', gap: '8px', marginBottom: '24px' }}>
+      <div className="patient-step-pills" style={{ display: 'flex', justifyContent: 'center', gap: '8px', marginBottom: '24px' }}>
         {[
           { num: 1, label: '1. Register / Check-in' },
           { num: 2, label: '2. Intake Questions' },
@@ -458,7 +478,7 @@ export default function PatientIntake() {
           {/* PROMINENT PERMANENT PATIENT ID ANNOUNCEMENT (When genuinely new registration occurs) */}
           {newPatientRegistered ? (
             <div className="card" style={{ textAlign: 'center', padding: '36px 24px', background: '#eff6ff', border: '2px solid #bfdbfe' }}>
-              <div style={{
+              <div className="checkin-mode-tabs" style={{
                 width: '56px',
                 height: '56px',
                 background: '#2563eb',
@@ -710,27 +730,32 @@ export default function PatientIntake() {
                       <input
                         type="text"
                         className="form-input"
-                        placeholder="e.g. Ramesh Patel"
+                        placeholder="Full name"
                         value={name}
                         onChange={(e) => setName(e.target.value)}
                         required
                       />
                     </div>
 
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                    <div className="responsive-two-column" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
                       <div className="form-group">
-                        <label className="form-label">Age</label>
+                        <label className="form-label">Age *</label>
                         <input
                           type="number"
                           className="form-input"
+                          placeholder="Enter age"
+                          min="0"
+                          max="130"
                           value={age}
                           onChange={(e) => setAge(e.target.value)}
+                          required
                         />
                       </div>
 
                       <div className="form-group">
-                        <label className="form-label">Gender</label>
-                        <select className="form-select" value={gender} onChange={(e) => setGender(e.target.value)}>
+                        <label className="form-label">Gender *</label>
+                        <select className="form-select" value={gender} onChange={(e) => setGender(e.target.value)} required>
+                          <option value="" disabled>Select gender</option>
                           <option value="Male">Male</option>
                           <option value="Female">Female</option>
                           <option value="Other">Other</option>
@@ -963,10 +988,11 @@ export default function PatientIntake() {
               />
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+            <div className="responsive-two-column" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
               <div className="form-group">
-                <label className="form-label">Duration</label>
-                <select className="form-select" value={duration} onChange={(e) => setDuration(e.target.value)}>
+                <label className="form-label">Duration *</label>
+                <select className="form-select" value={duration} onChange={(e) => setDuration(e.target.value)} required>
+                  <option value="" disabled>Select duration</option>
                   <option value="Less than 1 day">Less than 1 day</option>
                   <option value="1 to 3 days">1 to 3 days</option>
                   <option value="4 to 7 days">4 to 7 days</option>
@@ -976,8 +1002,9 @@ export default function PatientIntake() {
               </div>
 
               <div className="form-group">
-                <label className="form-label">Severity</label>
-                <select className="form-select" value={severity} onChange={(e) => setSeverity(e.target.value)}>
+                <label className="form-label">Severity *</label>
+                <select className="form-select" value={severity} onChange={(e) => setSeverity(e.target.value)} required>
+                  <option value="" disabled>Select severity</option>
                   <option value="Mild (manageable)">Mild (manageable)</option>
                   <option value="Moderate (interferes with routine)">Moderate (interferes with routine)</option>
                   <option value="Severe (unbearable)">Severe (unbearable)</option>
@@ -1454,37 +1481,13 @@ export default function PatientIntake() {
             )}
           </div>
 
-          {/* GENERATED 10-15s SUMMARY CARD PREVIEW */}
-          {generatedSummary && (
-            <div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '10px' }}>
-                <Sparkles size={18} style={{ color: '#2563eb' }} />
-                <h3 style={{ fontSize: '1rem', fontWeight: 700, color: '#0f172a' }}>
-                  Generated Summary Card (Ready for Doctor)
-                </h3>
-              </div>
-              <SummaryCard summary={generatedSummary} patient={patient} visit={visit} />
-            </div>
-          )}
-
           <div style={{ textAlign: 'center', marginTop: '24px' }}>
-            <div style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '8px',
-              background: '#ecfdf5',
-              padding: '12px 24px',
-              borderRadius: '9999px',
-              color: '#065f46',
-              fontWeight: 700,
-              boxShadow: '0 2px 8px rgba(0,0,0,0.04)'
-            }}>
-              <CheckCircle2 size={18} />
-              <span>Check-in Complete! Your Token is {visit?.token_number}. Please wait in OPD lounge.</span>
-            </div>
+            <button type="button" className="btn-success" onClick={() => setStep(4)}><CheckCircle2 size={18} /><span>Finish Check-in</span></button>
           </div>
         </div>
       )}
+
+      {step === 4 && <div className="card patient-complete-card"><CheckCircle2 size={52} /><span className="eyebrow">Check-in submitted</span><h2>Your token is {visit?.token_number}</h2><p>Your intake and attached reports are ready for the care team. Please wait in the OPD lounge until your token is called.</p><div className="patient-complete-meta"><strong>{patient?.name}</strong><span>MRN {patient?.patient_id}</span></div><button type="button" className="btn-secondary" onClick={() => { sessionStorage.removeItem(FLOW_KEY); window.location.assign('/patient/check-in'); }}>Start another check-in</button></div>}
     </div>
   );
 }

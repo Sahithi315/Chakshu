@@ -160,6 +160,49 @@ CREATE TABLE IF NOT EXISTS audit_logs (
     visit_id TEXT,
     details TEXT
 );
+
+CREATE TABLE IF NOT EXISTS staff_users (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    staff_id TEXT UNIQUE NOT NULL,
+    username TEXT UNIQUE NOT NULL,
+    display_name TEXT NOT NULL,
+    role TEXT NOT NULL CHECK(role IN ('doctor', 'nurse')),
+    password_hash TEXT NOT NULL,
+    active INTEGER NOT NULL DEFAULT 1,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS staff_sessions (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    token_hash TEXT UNIQUE NOT NULL,
+    staff_id TEXT NOT NULL REFERENCES staff_users(staff_id) ON DELETE CASCADE,
+    expires_at TIMESTAMP NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX IF NOT EXISTS idx_staff_sessions_token ON staff_sessions(token_hash);
+
+CREATE TABLE IF NOT EXISTS patient_sessions (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    token_hash TEXT UNIQUE NOT NULL,
+    patient_id TEXT NOT NULL REFERENCES patients(patient_id) ON DELETE CASCADE,
+    visit_id TEXT NOT NULL REFERENCES visits(visit_id) ON DELETE CASCADE,
+    expires_at TIMESTAMP NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX IF NOT EXISTS idx_patient_sessions_token ON patient_sessions(token_hash);
+
+CREATE TABLE IF NOT EXISTS nurse_queue_completions (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    visit_id TEXT UNIQUE NOT NULL REFERENCES visits(visit_id) ON DELETE CASCADE,
+    patient_id TEXT NOT NULL REFERENCES patients(patient_id) ON DELETE CASCADE,
+    recorded_by TEXT NOT NULL,
+    completed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX IF NOT EXISTS idx_nurse_queue_completed_visit
+    ON nurse_queue_completions(visit_id);
 """
 
 
@@ -171,6 +214,8 @@ def init_db(db_path=None):
     conn.execute("PRAGMA journal_mode=WAL;")
     conn.execute("PRAGMA foreign_keys=ON;")
     conn.executescript(SCHEMA_SQL)
+    from src.services.auth_service import seed_demo_staff
+    seed_demo_staff(conn)
     conn.commit()
     conn.close()
     return path

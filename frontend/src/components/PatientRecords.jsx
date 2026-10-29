@@ -7,7 +7,7 @@ import {
 } from 'lucide-react';
 import SummaryCard from './SummaryCard';
 
-export default function PatientRecords({ initialPatientId, onBackToDoctor }) {
+export default function PatientRecords({ initialPatientId, onBackToDoctor, apiFetch = fetch }) {
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState([]);
   const [isSearching, setIsSearching] = useState(false);
@@ -36,7 +36,7 @@ export default function PatientRecords({ initialPatientId, onBackToDoctor }) {
     const timer = setTimeout(async () => {
       setIsSearching(true);
       try {
-        const res = await fetch(`/api/patients?q=${encodeURIComponent(searchQuery.trim())}`);
+        const res = await apiFetch(`/api/patients?q=${encodeURIComponent(searchQuery.trim())}`);
         const data = await res.json();
         setSearchResults(data);
       } catch (err) {
@@ -57,7 +57,7 @@ export default function PatientRecords({ initialPatientId, onBackToDoctor }) {
     setIsLoadingRecord(true);
     setRecordError(null);
     try {
-      const res = await fetch(`/api/patients/${encodeURIComponent(cleanId)}/records`);
+      const res = await apiFetch(`/api/patients/${encodeURIComponent(cleanId)}/records`);
       if (!res.ok) {
         const errData = await res.json().catch(() => ({}));
         if (res.status === 404) {
@@ -114,14 +114,31 @@ export default function PatientRecords({ initialPatientId, onBackToDoctor }) {
     }
   };
 
+  const downloadReport = async (report) => {
+    try {
+      const response = await apiFetch(report.download_url);
+      if (!response.ok) throw new Error('Document download was denied');
+      const blobUrl = URL.createObjectURL(await response.blob());
+      const link = document.createElement('a');
+      link.href = blobUrl;
+      link.download = report.filename || 'medical-report';
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(blobUrl);
+    } catch (error) {
+      setRecordError(error.message);
+    }
+  };
+
   const patient = patientRecord?.patient;
   const visits = patientRecord?.visits || [];
   const allReports = patientRecord?.all_reports || [];
 
   return (
-    <div>
+    <div className="patient-records-page">
       {/* Top Action Bar with Search and Return button */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '18px', gap: '12px', flexWrap: 'wrap' }}>
+      <div className="records-top-bar" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '18px', gap: '12px', flexWrap: 'wrap' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
           {onBackToDoctor && (
             <button
@@ -174,6 +191,7 @@ export default function PatientRecords({ initialPatientId, onBackToDoctor }) {
           }}>
             {searchResults.map((p) => (
               <div
+                className="search-result-row"
                 key={p.patient_id}
                 onClick={() => handleSelectPatient(p)}
                 style={{
@@ -470,7 +488,7 @@ export default function PatientRecords({ initialPatientId, onBackToDoctor }) {
                             <div style={{ fontSize: '0.78rem', fontWeight: 700, color: '#2563eb', textTransform: 'uppercase', marginBottom: '6px' }}>
                               📋 Patient Check-In Intake Details
                             </div>
-                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', fontSize: '0.88rem', marginBottom: '8px' }}>
+                            <div className="responsive-two-column" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', fontSize: '0.88rem', marginBottom: '8px' }}>
                               <div><strong>Chief Complaint:</strong> {inData.reason_for_visit || 'Not specified'}</div>
                               <div><strong>Timeline:</strong> {inData.duration || 'Unspecified'} ({inData.severity || 'Unspecified'})</div>
                             </div>
@@ -551,16 +569,15 @@ export default function PatientRecords({ initialPatientId, onBackToDoctor }) {
                                       </span>
                                     </div>
 
-                                    <a
-                                      href={r.download_url}
-                                      target="_blank"
-                                      rel="noopener noreferrer"
+                                    <button
+                                      type="button"
+                                      onClick={() => downloadReport(r)}
                                       className="btn-secondary"
                                       style={{ padding: '4px 10px', fontSize: '0.78rem', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '4px' }}
                                     >
                                       <Download size={13} />
                                       <span>Download Original</span>
-                                    </a>
+                                    </button>
                                   </div>
                                 ))}
                               </div>
@@ -581,20 +598,24 @@ export default function PatientRecords({ initialPatientId, onBackToDoctor }) {
                                       </thead>
                                       <tbody>
                                         {labRows.map((row, lidx) => {
-                                          const isHigh = row.range_note || row.source_line?.toLowerCase().includes('high');
-                                          const isLow = row.source_line?.toLowerCase().includes('low');
+                                          const flagText = `${row.range_note || ''} ${row.source_line || ''}`.toLowerCase();
+                                          const isLow = flagText.includes('low') || flagText.includes('below');
+                                          const isHigh = flagText.includes('high') || flagText.includes('above');
+                                          const needsReview = Boolean(row.range_note) && !isLow && !isHigh;
                                           return (
                                             <tr key={lidx}>
                                               <td style={{ fontWeight: 600 }}>{row.test_name}</td>
-                                              <td style={{ fontWeight: 700, color: isHigh ? '#dc2626' : (isLow ? '#b45309' : '#0f172a') }}>
+                                              <td style={{ fontWeight: 700, color: (isHigh || needsReview) ? '#dc2626' : (isLow ? '#b45309' : '#0f172a') }}>
                                                 {row.test_value} {row.unit}
                                               </td>
                                               <td style={{ color: '#64748b' }}>{row.reference_range || '-'}</td>
                                               <td>
                                                 {isHigh ? (
-                                                  <span className="badge-status badge-high">OUTSIDE RANGE</span>
+                                                  <span className="badge-status badge-high">HIGH</span>
                                                 ) : isLow ? (
                                                   <span className="badge-status badge-low">LOW</span>
+                                                ) : needsReview ? (
+                                                  <span className="badge-status badge-high">REVIEW</span>
                                                 ) : (
                                                   <span className="badge-status badge-normal">IN RANGE</span>
                                                 )}
@@ -616,7 +637,7 @@ export default function PatientRecords({ initialPatientId, onBackToDoctor }) {
                               <div style={{ fontSize: '0.78rem', fontWeight: 700, color: '#2563eb', textTransform: 'uppercase', marginBottom: '6px' }}>
                                 ✨ Generated Summary Card for this Visit
                               </div>
-                              <SummaryCard summary={v.summary} patient={patient} visit={v} />
+                              <SummaryCard summary={v.summary} patient={patient} visit={v} compact />
                             </div>
                           )}
                         </div>
@@ -673,16 +694,15 @@ export default function PatientRecords({ initialPatientId, onBackToDoctor }) {
                         </div>
                       </div>
 
-                      <a
-                        href={r.download_url}
-                        target="_blank"
-                        rel="noopener noreferrer"
+                      <button
+                        type="button"
+                        onClick={() => downloadReport(r)}
                         className="btn-primary"
                         style={{ fontSize: '0.84rem', padding: '8px 16px', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '6px' }}
                       >
                         <Download size={15} />
                         <span>Download / View Document</span>
-                      </a>
+                      </button>
                     </div>
                   ))}
                 </div>

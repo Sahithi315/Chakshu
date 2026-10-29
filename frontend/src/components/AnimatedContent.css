@@ -1,0 +1,13 @@
+.animated-content {
+  width: 100%;
+}
+
+.animated-content > * {
+  will-change: transform, opacity;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animated-content > * {
+    will-change: auto;
+  }
+}

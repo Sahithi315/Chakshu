@@ -1,8 +1,139 @@
 """Pre-consultation clinical summary generator with single-card 10-15s brief matching clinical PRD design."""
 from datetime import datetime
 import json
+import re
 from src.database.connection import get_db
 from src.services.patient_service import log_audit
+
+
+_TEMPORAL_STOP_WORDS = {
+    "and", "the", "with", "from", "this", "that", "patient", "visit", "today",
+    "since", "having", "reported", "reports", "complaint", "follow", "check", "for",
+    "day", "days", "week", "weeks", "month", "months", "hour", "hours", "mild",
+    "moderate", "severe", "less", "than", "sensation", "current", "ongoing"
+}
+
+_TEMPORAL_ALIASES = {
+    "vomit": "vomiting", "vomited": "vomiting", "vomiting": "vomiting", "emesis": "vomiting",
+    "nauseous": "nausea", "nauseated": "nausea", "breathless": "breathlessness",
+    "dyspnea": "breathlessness", "headaches": "headache", "coughing": "cough",
+    "tingling": "tingling", "tingle": "tingling", "numb": "numbness", "numbness": "numbness"
+}
+
+
+def _temporal_keywords(text):
+    words = re.findall(r"[a-zA-Z]+", str(text or "").lower())
+    normalized = []
+    for word in words:
+        word = _TEMPORAL_ALIASES.get(word, word)
+        if word.endswith("s") and len(word) > 5 and word not in {"diabetes", "breathlessness"}:
+            word = word[:-1]
+        if len(word) >= 4 and word not in _TEMPORAL_STOP_WORDS:
+            normalized.append(word)
+    return set(normalized)
+
+
+def _duration_hours(value):
+    text = str(value or "").strip().lower()
+    if not text:
+        return None
+    number_match = re.search(r"(\d+(?:\.\d+)?)", text)
+    word_numbers = {"one": 1, "two": 2, "three": 3, "four": 4, "five": 5, "six": 6}
+    amount = float(number_match.group(1)) if number_match else next((n for word, n in word_numbers.items() if word in text), None)
+    if amount is None:
+        return None
+    multiplier = 1 if "hour" in text else 24 if "day" in text else 168 if "week" in text else 720 if "month" in text else None
+    if multiplier is None:
+        return None
+    hours = amount * multiplier
+    return hours * 0.75 if "less than" in text else hours
+
+
+def build_temporal_reasoning(intake_data, vitals_data=None, returning_history=None):
+    """Compare current evidence with prior visits without producing a diagnosis."""
+    intake = intake_data or {}
+    vitals = vitals_data or {}
+    history = returning_history or []
+    current_text = " ".join(str(intake.get(key) or "") for key in (
+        "reason_for_visit", "symptoms_text", "associated_symptoms"
+    ))
+    current_terms = _temporal_keywords(current_text)
+
+    result = {
+        "status": "no_prior_visits" if not history else "no_related_presentation",
+        "headline": "No earlier hospital visit is available for comparison." if not history else "No similar symptom wording was found in earlier visits.",
+        "evidence_terms": [],
+        "similar_visit": None,
+        "changes": [],
+        "vital_trends": []
+    }
+
+    candidates = []
+    for index, prior in enumerate(history):
+        prior_intake = prior.get("intake") or {}
+        prior_text = " ".join(str(prior_intake.get(key) or "") for key in (
+            "reason_for_visit", "symptoms_text", "associated_symptoms"
+        ))
+        overlap = sorted(current_terms & _temporal_keywords(prior_text))
+        if overlap:
+            candidates.append((len(overlap), -index, overlap, prior, prior_intake))
+
+    if not candidates:
+        return result
+
+    _, _, overlap, prior, prior_intake = max(candidates, key=lambda candidate: (candidate[0], candidate[1]))
+    prior_date = str(prior.get("created_at") or "")[:10] or "an earlier visit"
+    result.update({
+        "status": "related_presentation_found",
+        "headline": f"Related symptom wording was documented on {prior_date}.",
+        "evidence_terms": overlap,
+        "similar_visit": {
+            "visit_id": prior.get("visit_id"),
+            "date": prior_date,
+            "reason": prior_intake.get("reason_for_visit") or prior_intake.get("symptoms_text") or "Earlier presentation",
+            "duration": prior_intake.get("duration") or "Not recorded",
+            "severity": prior_intake.get("severity") or "Not recorded",
+            "status": prior.get("status")
+        }
+    })
+
+    current_duration = _duration_hours(intake.get("duration"))
+    prior_duration = _duration_hours(prior_intake.get("duration"))
+    if current_duration and prior_duration:
+        if current_duration > prior_duration * 1.25:
+            result["changes"].append("Current duration is longer than the related earlier presentation.")
+        elif current_duration < prior_duration * 0.75:
+            result["changes"].append("Current duration is shorter than the related earlier presentation.")
+        else:
+            result["changes"].append("Current and earlier durations are broadly similar.")
+
+    severity_rank = {"mild": 1, "moderate": 2, "severe": 3}
+    current_severity = severity_rank.get(str(intake.get("severity") or "").lower())
+    prior_severity = severity_rank.get(str(prior_intake.get("severity") or "").lower())
+    if current_severity and prior_severity:
+        direction = "higher" if current_severity > prior_severity else "lower" if current_severity < prior_severity else "unchanged"
+        result["changes"].append(f"Reported severity is {direction} compared with that visit.")
+
+    prior_vitals = prior.get("vitals") or {}
+    vital_specs = [
+        ("Blood pressure", "bp_systolic", "mmHg", 5),
+        ("Pulse", "heart_rate", "bpm", 5),
+        ("Temperature", "temperature", "°F", 0.4),
+        ("SpO₂", "spo2", "%", 1),
+        ("Blood sugar", "blood_sugar", "mg/dL", 10)
+    ]
+    for label, key, unit, meaningful_delta in vital_specs:
+        current_value, previous_value = vitals.get(key), prior_vitals.get(key)
+        if current_value is None or previous_value is None:
+            continue
+        delta = round(float(current_value) - float(previous_value), 1)
+        direction = "stable" if abs(delta) < meaningful_delta else "higher" if delta > 0 else "lower"
+        result["vital_trends"].append({
+            "label": label, "current": current_value, "previous": previous_value,
+            "unit": unit, "delta": delta, "direction": direction
+        })
+
+    return result
 
 
 def _detect_red_flags(symptoms_lower, vitals, conditions_lower):
@@ -257,6 +388,8 @@ def generate_clinical_summary(intake_data, vitals_data=None, extracted_labs=None
         if vitals.get("blood_sugar"):
             nurse_vitals_summary.append(f"Blood Sugar: {vitals['blood_sugar']} mg/dL")
 
+    temporal_reasoning = build_temporal_reasoning(intake, vitals, history)
+
     payload = {
         "generated_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
         "model_mode": "evidence_linked_single_card",
@@ -286,6 +419,7 @@ def generate_clinical_summary(intake_data, vitals_data=None, extracted_labs=None
             "in_range_results": normal_labs,
             "total_extracted": len(labs)
         },
+        "temporal_reasoning": temporal_reasoning,
         "information_gaps": confirm_in_room,
         "concise_brief": today_text
     }

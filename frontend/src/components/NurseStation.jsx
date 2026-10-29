@@ -1,51 +1,48 @@
-import React, { useState, useEffect } from 'react';
-import { Activity, Heart, Thermometer, Droplet, CheckCircle2, User } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import { Activity, AlertTriangle, CheckCircle2, Search, UserRound } from 'lucide-react';
+import AnimatedList from './AnimatedList';
 
-export default function NurseStation() {
+export default function NurseStation({ apiFetch = fetch, user }) {
   const [visits, setVisits] = useState([]);
   const [selectedVisitId, setSelectedVisitId] = useState('');
+  const [queueFilter, setQueueFilter] = useState('');
   const [loading, setLoading] = useState(true);
-
-  // Vitals state
   const [bpSys, setBpSys] = useState(120);
   const [bpDia, setBpDia] = useState(80);
   const [hr, setHr] = useState(74);
   const [temp, setTemp] = useState(98.6);
   const [spo2, setSpo2] = useState(98.5);
   const [bs, setBs] = useState(110);
-  const [nurseId, setNurseId] = useState('nurse_anita');
-
   const [savedSuccess, setSavedSuccess] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showSaveConfirmation, setShowSaveConfirmation] = useState(false);
 
   const fetchVisits = async () => {
     try {
-      const res = await fetch('/api/visits');
-      const data = await res.json();
+      const response = await apiFetch('/api/visits?needs_vitals=1');
+      const data = await response.json();
       setVisits(data);
-      if (data.length > 0 && !selectedVisitId) {
-        setSelectedVisitId(data[0].visit_id);
-      }
-    } catch (e) {
-      console.error('Failed to load queue', e);
+      setSelectedVisitId(current => data.some(visit => visit.visit_id === current) ? current : (data[0]?.visit_id || ''));
+    } catch (error) {
+      console.error('Failed to load queue', error);
     } finally {
       setLoading(false);
     }
   };
 
-  useEffect(() => {
-    fetchVisits();
-  }, []);
+  useEffect(() => { fetchVisits(); }, []);
 
-  const handleSaveVitals = async (e) => {
-    e.preventDefault();
-    if (!selectedVisitId) return;
-    const selectedVisit = visits.find(v => v.visit_id === selectedVisitId);
+  const handleSaveVitals = event => {
+    event.preventDefault();
+    if (activeVisit) setShowSaveConfirmation(true);
+  };
+
+  const confirmSaveVitals = async () => {
+    const selectedVisit = visits.find(visit => visit.visit_id === selectedVisitId);
     if (!selectedVisit) return;
-
     setIsSubmitting(true);
     try {
-      const res = await fetch('/api/vitals', {
+      const response = await apiFetch('/api/vitals', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -56,163 +53,97 @@ export default function NurseStation() {
           heart_rate: parseInt(hr) || null,
           temperature: parseFloat(temp) || null,
           spo2: parseFloat(spo2) || null,
-          blood_sugar: parseFloat(bs) || null,
-          recorded_by: nurseId
+          blood_sugar: parseFloat(bs) || null
         })
       });
-      if (res.ok) {
+      if (response.ok) {
+        setShowSaveConfirmation(false);
         setSavedSuccess(true);
+        setBpSys(120);
+        setBpDia(80);
+        setHr(74);
+        setTemp(98.6);
+        setSpo2(98.5);
+        setBs(110);
+        await fetchVisits();
         setTimeout(() => setSavedSuccess(false), 3000);
       }
-    } catch (err) {
-      console.error('Failed to save vitals', err);
+    } catch (error) {
+      console.error('Failed to save vitals', error);
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  if (loading) {
-    return <div style={{ padding: '40px', textAlign: 'center', color: '#64748b' }}>Loading triage queue...</div>;
-  }
+  if (loading) return <div className="route-loading">Loading allotted patients...</div>;
 
-  const activeV = visits.find(v => v.visit_id === selectedVisitId);
+  const activeVisit = visits.find(visit => visit.visit_id === selectedVisitId);
+  const filter = queueFilter.trim().toLowerCase();
+  const filteredVisits = visits.filter(visit => !filter || [
+    visit.patient_name, visit.patient_id, visit.token_number
+  ].some(value => String(value || '').toLowerCase().includes(filter)));
+  const animatedPatients = filteredVisits.map((visit, index) => ({
+    ...visit,
+    id: visit.visit_id,
+    title: visit.patient_name,
+    description: `${visit.patient_id} · ${visit.patient_age} yrs${index === 0 && !filter ? ' · Newest' : ''}`,
+    meta: visit.token_number
+  }));
+  const selectedPatientIndex = animatedPatients.findIndex(visit => visit.visit_id === selectedVisitId);
 
-  return (
-    <div style={{ maxWidth: '820px', margin: '0 auto' }}>
-      <div className="card">
-        <div className="card-title">
-          <Activity size={22} style={{ color: '#10b981' }} />
-          <span>Nurse Station: OPD Vitals Triage</span>
+  return <div className="nurse-workspace">
+    <section className="card nurse-queue-panel">
+      <div className="card-title"><UserRound size={22} style={{ color: '#2563eb' }} /><span>Newly allotted patients</span></div>
+      <div className="card-subtitle">Newest check-ins appear first. Type a name, patient ID, or token to narrow the list instantly.</div>
+      <div className="nurse-queue-filter"><Search size={18} /><input value={queueFilter} onChange={event => setQueueFilter(event.target.value)} placeholder="Name, patient ID, or token" aria-label="Filter allotted patients" /></div>
+      {animatedPatients.length === 0 ? <div className="nurse-queue-empty">No allotted patient matches this entry.</div> : <AnimatedList
+        items={animatedPatients}
+        selectedIndex={selectedPatientIndex}
+        onItemSelect={visit => setSelectedVisitId(visit.visit_id)}
+        animation="pop"
+        theme="light"
+        selectOnHover={false}
+        maxHeight={500}
+        width="100%"
+      />}
+    </section>
+
+    <section className="card nurse-vitals-panel">
+      <div className="card-title"><Activity size={22} style={{ color: '#10b981' }} /><span>Record patient vitals</span></div>
+      <div className="card-subtitle">Select an allotted patient from the list and record their measurements.</div>
+      {savedSuccess && <div className="nurse-save-success"><CheckCircle2 size={18} /><span>Vitals recorded successfully. The doctor brief has been updated.</span></div>}
+      {!activeVisit && <div className="nurse-queue-empty">Choose a patient from the allotted list to record vitals.</div>}
+      {activeVisit && <form onSubmit={handleSaveVitals}>
+        <div className="selected-nurse-patient"><strong>{activeVisit.token_number} · {activeVisit.patient_name}</strong><span>{activeVisit.patient_id} · {activeVisit.patient_age} y/o · {activeVisit.patient_gender}</span></div>
+        <div className="nurse-vitals-grid">
+          <div className="form-group"><label className="form-label">Blood Pressure</label><div className="bp-inputs"><input type="number" className="form-input" placeholder="Systolic" value={bpSys} onChange={event => setBpSys(event.target.value)} required /><span>/</span><input type="number" className="form-input" placeholder="Diastolic" value={bpDia} onChange={event => setBpDia(event.target.value)} required /></div></div>
+          <div className="form-group"><label className="form-label">Heart Rate (bpm)</label><input type="number" className="form-input" value={hr} onChange={event => setHr(event.target.value)} required /></div>
+          <div className="form-group"><label className="form-label">Temperature (°F)</label><input type="number" step="0.1" className="form-input" value={temp} onChange={event => setTemp(event.target.value)} required /></div>
+          <div className="form-group"><label className="form-label">SpO₂ (%)</label><input type="number" step="0.5" className="form-input" value={spo2} onChange={event => setSpo2(event.target.value)} required /></div>
+          <div className="form-group"><label className="form-label">Blood Sugar (mg/dL)</label><input type="number" className="form-input" value={bs} onChange={event => setBs(event.target.value)} required /></div>
+          <div className="form-group"><label className="form-label">Recorded by</label><input className="form-input" value={`${user?.display_name || 'Authenticated nurse'} (${user?.staff_id || ''})`} readOnly /></div>
         </div>
-        <div className="card-subtitle">
-          Record physical measurements for waiting patients before doctor consultation.
+        <button type="submit" className="btn-success nurse-save-button" disabled={isSubmitting}>Review & Save Patient Vitals</button>
+      </form>}
+    </section>
+    {showSaveConfirmation && activeVisit && <div className="nurse-confirm-backdrop" role="presentation">
+      <div className="nurse-confirm-dialog" role="dialog" aria-modal="true" aria-labelledby="nurse-confirm-title">
+        <div className="nurse-confirm-icon"><AlertTriangle size={24} /></div>
+        <h3 id="nurse-confirm-title">Confirm vitals submission</h3>
+        <p>You are about to save these measurements for <strong>{activeVisit.patient_name}</strong> ({activeVisit.patient_id}), token <strong>{activeVisit.token_number}</strong>.</p>
+        <div className="nurse-confirm-values">
+          <span>BP <strong>{bpSys}/{bpDia}</strong></span>
+          <span>Pulse <strong>{hr} bpm</strong></span>
+          <span>Temperature <strong>{temp} °F</strong></span>
+          <span>SpO₂ <strong>{spo2}%</strong></span>
+          <span>Blood sugar <strong>{bs} mg/dL</strong></span>
         </div>
-
-        {savedSuccess && (
-          <div style={{ background: '#ecfdf5', border: '1px solid #a7f3d0', padding: '12px 16px', borderRadius: '12px', color: '#065f46', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '20px' }}>
-            <CheckCircle2 size={18} />
-            <span>Vitals recorded successfully! Patient's Single Summary Card updated for Dr. Sharma.</span>
-          </div>
-        )}
-
-        <form onSubmit={handleSaveVitals}>
-          {/* Patient Selector */}
-          <div className="form-group">
-            <label className="form-label">Select Patient from OPD Queue *</label>
-            <select
-              className="form-select"
-              value={selectedVisitId}
-              onChange={(e) => setSelectedVisitId(e.target.value)}
-              style={{ fontWeight: 700 }}
-            >
-              {visits.map((v) => (
-                <option key={v.visit_id} value={v.visit_id}>
-                  {v.token_number} - {v.patient_name} ({v.patient_id}) [{v.status.toUpperCase()}]
-                </option>
-              ))}
-            </select>
-          </div>
-
-          {activeV && (
-            <div style={{ background: '#f8fafc', padding: '12px 16px', borderRadius: '12px', border: '1px solid #e2e8f0', marginBottom: '20px', fontSize: '0.88rem' }}>
-              <strong>Patient:</strong> {activeV.patient_name} ({activeV.patient_age} y/o, {activeV.patient_gender}) · 📞 {activeV.patient_phone}
-            </div>
-          )}
-
-          {/* Vitals Inputs */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '16px' }}>
-            <div className="form-group">
-              <label className="form-label">Blood Pressure (Systolic / Diastolic)</label>
-              <div style={{ display: 'flex', gap: '8px' }}>
-                <input
-                  type="number"
-                  className="form-input"
-                  placeholder="Systolic"
-                  value={bpSys}
-                  onChange={(e) => setBpSys(e.target.value)}
-                  required
-                />
-                <span style={{ alignSelf: 'center', color: '#64748b', fontWeight: 700 }}>/</span>
-                <input
-                  type="number"
-                  className="form-input"
-                  placeholder="Diastolic"
-                  value={bpDia}
-                  onChange={(e) => setBpDia(e.target.value)}
-                  required
-                />
-              </div>
-            </div>
-
-            <div className="form-group">
-              <label className="form-label">Heart Rate (Pulse bpm)</label>
-              <input
-                type="number"
-                className="form-input"
-                value={hr}
-                onChange={(e) => setHr(e.target.value)}
-                required
-              />
-            </div>
-
-            <div className="form-group">
-              <label className="form-label">Body Temperature (°F)</label>
-              <input
-                type="number"
-                step="0.1"
-                className="form-input"
-                value={temp}
-                onChange={(e) => setTemp(e.target.value)}
-                required
-              />
-            </div>
-
-            <div className="form-group">
-              <label className="form-label">SpO2 Oxygen (%)</label>
-              <input
-                type="number"
-                step="0.5"
-                className="form-input"
-                value={spo2}
-                onChange={(e) => setSpo2(e.target.value)}
-                required
-              />
-            </div>
-
-            <div className="form-group">
-              <label className="form-label">Random Blood Sugar (mg/dL)</label>
-              <input
-                type="number"
-                step="1"
-                className="form-input"
-                value={bs}
-                onChange={(e) => setBs(e.target.value)}
-                required
-              />
-            </div>
-
-            <div className="form-group">
-              <label className="form-label">Triage Nurse Staff ID</label>
-              <input
-                type="text"
-                className="form-input"
-                value={nurseId}
-                onChange={(e) => setNurseId(e.target.value)}
-                required
-              />
-            </div>
-          </div>
-
-          <button
-            type="submit"
-            className="btn-success"
-            style={{ width: '100%', marginTop: '16px' }}
-            disabled={isSubmitting}
-          >
-            <span>{isSubmitting ? 'Recording Vitals...' : 'Save Patient Vitals to Record'}</span>
-          </button>
-        </form>
+        <p className="nurse-confirm-note">After confirmation, this patient will be removed from the nurse queue and the next patient will load automatically.</p>
+        <div className="nurse-confirm-actions">
+          <button type="button" className="btn-secondary" onClick={() => setShowSaveConfirmation(false)} disabled={isSubmitting}>Go Back</button>
+          <button type="button" className="btn-success" onClick={confirmSaveVitals} disabled={isSubmitting}>{isSubmitting ? 'Saving...' : 'Confirm & Save'}</button>
+        </div>
       </div>
-    </div>
-  );
+    </div>}
+  </div>;
 }

@@ -1,11 +1,22 @@
-import React, { useState, useEffect } from 'react';
-import { Search, User, FileText, Activity, Save, CheckCircle2, AlertCircle, Sparkles, Clock, Calendar, FolderArchive } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { Search, User, FileText, Activity, Save, CheckCircle2, AlertCircle, Sparkles, Clock, Calendar, FolderArchive, Plus, Trash2, ShieldAlert, ShieldCheck } from 'lucide-react';
 import SummaryCard from './SummaryCard';
 
-export default function DoctorDashboard({ onOpenPatientRecords }) {
+const orderedActiveQueue = queue => [...queue]
+  .filter(visit => String(visit.status || '').toLowerCase() !== 'completed')
+  .sort((left, right) => {
+    const timeOrder = String(left.created_at || '').localeCompare(String(right.created_at || ''));
+    if (timeOrder !== 0) return timeOrder;
+    const leftToken = Number(String(left.token_number || '').replace(/\D/g, '')) || Number.MAX_SAFE_INTEGER;
+    const rightToken = Number(String(right.token_number || '').replace(/\D/g, '')) || Number.MAX_SAFE_INTEGER;
+    return leftToken - rightToken;
+  });
+
+export default function DoctorDashboard({ onOpenPatientRecords, apiFetch = fetch }) {
   const [visits, setVisits] = useState([]);
   const [selectedVisitId, setSelectedVisitId] = useState(null);
   const [visitData, setVisitData] = useState(null);
+  const [visitLoading, setVisitLoading] = useState(false);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState([]);
@@ -14,17 +25,42 @@ export default function DoctorDashboard({ onOpenPatientRecords }) {
   const [clinicalNotes, setClinicalNotes] = useState('');
   const [clinicalPlan, setClinicalPlan] = useState('');
   const [savingNotes, setSavingNotes] = useState(false);
-  const [notesSavedSuccess, setNotesSavedSuccess] = useState(false);
+  const [completionNotice, setCompletionNotice] = useState('');
+  const [medications, setMedications] = useState([{ name: '', strength: '', dose: '', frequency: '', duration: '' }]);
+  const [safetyResult, setSafetyResult] = useState(null);
+  const visitCacheRef = useRef(new Map());
+  const visitRequestsRef = useRef(new Map());
+  const detailRequestRef = useRef(0);
+
+  const requestVisitDetails = visitId => {
+    if (visitCacheRef.current.has(visitId)) return Promise.resolve(visitCacheRef.current.get(visitId));
+    if (visitRequestsRef.current.has(visitId)) return visitRequestsRef.current.get(visitId);
+    const request = apiFetch(`/api/visits/${visitId}`)
+      .then(async response => {
+        if (!response.ok) throw new Error('Unable to load patient details');
+        const data = await response.json();
+        visitCacheRef.current.set(visitId, data);
+        return data;
+      })
+      .finally(() => visitRequestsRef.current.delete(visitId));
+    visitRequestsRef.current.set(visitId, request);
+    return request;
+  };
+
+  const prefetchVisit = visitId => {
+    requestVisitDetails(visitId).catch(error => console.error('Patient prefetch failed', error));
+  };
 
   // Fetch active queue
   const fetchVisits = async () => {
     try {
-      const res = await fetch('/api/visits');
+      const res = await apiFetch('/api/visits');
       const data = await res.json();
-      setVisits(data);
-      if (data.length > 0 && !selectedVisitId) {
-        setSelectedVisitId(data[0].visit_id);
-      }
+      const queue = orderedActiveQueue(Array.isArray(data) ? data : []);
+      setVisits(queue);
+      setSelectedVisitId(current => queue.some(visit => visit.visit_id === current) ? current : (queue[0]?.visit_id || null));
+      window.setTimeout(() => queue.slice(0, 3).forEach(visit => prefetchVisit(visit.visit_id)), 120);
+      return queue;
     } catch (err) {
       console.error('Failed to fetch visits', err);
     } finally {
@@ -38,11 +74,42 @@ export default function DoctorDashboard({ onOpenPatientRecords }) {
 
   // Fetch selected visit details
   useEffect(() => {
-    if (!selectedVisitId) return;
+    if (!selectedVisitId) {
+      setVisitData(null);
+      setVisitLoading(false);
+      return;
+    }
+    setMedications([{ name: '', strength: '', dose: '', frequency: '', duration: '' }]);
+    setSafetyResult(null);
+    const requestId = ++detailRequestRef.current;
+    const cached = visitCacheRef.current.get(selectedVisitId);
+    const queuePatient = visits.find(visit => visit.visit_id === selectedVisitId);
+
+    if (cached) {
+      setVisitData(cached);
+      setClinicalNotes(cached.doctor_notes?.clinical_notes || '');
+      setClinicalPlan(cached.doctor_notes?.plan || '');
+      setVisitLoading(false);
+      return;
+    }
+
+    setVisitData(queuePatient ? {
+      ...queuePatient,
+      intake: null,
+      vitals: null,
+      reports: [],
+      extracted_results: [],
+      past_visits: [],
+      summary: null,
+      symptom_extraction: null
+    } : null);
+    setClinicalNotes('');
+    setClinicalPlan('');
+    setVisitLoading(true);
     const fetchDetails = async () => {
       try {
-        const res = await fetch(`/api/visits/${selectedVisitId}`);
-        const data = await res.json();
+        const data = await requestVisitDetails(selectedVisitId);
+        if (requestId !== detailRequestRef.current) return;
         setVisitData(data);
         if (data.doctor_notes) {
           setClinicalNotes(data.doctor_notes.clinical_notes || '');
@@ -51,13 +118,39 @@ export default function DoctorDashboard({ onOpenPatientRecords }) {
           setClinicalNotes('');
           setClinicalPlan('');
         }
-        setNotesSavedSuccess(false);
       } catch (err) {
         console.error('Failed to fetch visit details', err);
+      } finally {
+        if (requestId === detailRequestRef.current) setVisitLoading(false);
       }
     };
     fetchDetails();
   }, [selectedVisitId]);
+
+  useEffect(() => {
+    const hasMedicineInput = medications.some(medicine => Object.values(medicine).some(value => String(value || '').trim()));
+    if (!hasMedicineInput || !visitData) {
+      setSafetyResult(null);
+      return;
+    }
+    const timer = setTimeout(async () => {
+      try {
+        const response = await apiFetch('/api/doctor/prescription-safety', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ medications, allergies: visitData.intake?.known_allergies || '' })
+        });
+        if (response.ok) setSafetyResult(await response.json());
+      } catch (error) {
+        console.error('Prescription safety check failed', error);
+      }
+    }, 350);
+    return () => clearTimeout(timer);
+  }, [medications, visitData]);
+
+  const updateMedication = (index, field, value) => setMedications(current => current.map((medicine, itemIndex) => itemIndex === index ? { ...medicine, [field]: value } : medicine));
+  const addMedication = () => setMedications(current => [...current, { name: '', strength: '', dose: '', frequency: '', duration: '' }]);
+  const removeMedication = index => setMedications(current => current.length === 1 ? [{ name: '', strength: '', dose: '', frequency: '', duration: '' }] : current.filter((_, itemIndex) => itemIndex !== index));
 
   // Live patient search handler
   useEffect(() => {
@@ -67,7 +160,7 @@ export default function DoctorDashboard({ onOpenPatientRecords }) {
     }
     const timer = setTimeout(async () => {
       try {
-        const res = await fetch(`/api/patients?q=${encodeURIComponent(searchQuery)}`);
+        const res = await apiFetch(`/api/patients?q=${encodeURIComponent(searchQuery)}`);
         const data = await res.json();
         setSearchResults(data);
       } catch (err) {
@@ -86,19 +179,8 @@ export default function DoctorDashboard({ onOpenPatientRecords }) {
     if (match) {
       setSelectedVisitId(match.visit_id);
     } else {
-      // Create a new visit for this patient if not in current queue
-      try {
-        const res = await fetch('/api/patients/register', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ phone: patient.phone, name: patient.name, age: patient.age, gender: patient.gender })
-        });
-        const created = await res.json();
-        await fetchVisits();
-        setSelectedVisitId(created.visit.visit_id);
-      } catch (e) {
-        console.error('Failed to open patient', e);
-      }
+      // Searching records must not silently create a new clinical encounter.
+      if (onOpenPatientRecords) onOpenPatientRecords(patient.patient_id);
     }
   };
 
@@ -108,7 +190,7 @@ export default function DoctorDashboard({ onOpenPatientRecords }) {
     if (!visitData || !clinicalNotes.trim()) return;
     setSavingNotes(true);
     try {
-      const res = await fetch('/api/doctor/notes', {
+      const res = await apiFetch('/api/doctor/notes', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -116,17 +198,18 @@ export default function DoctorDashboard({ onOpenPatientRecords }) {
           patient_id: visitData.patient_id,
           clinical_notes: clinicalNotes.trim(),
           plan: clinicalPlan.trim(),
-          doctor_id: 'DR-SHARMA'
+          medications: medications.filter(medicine => medicine.name.trim()),
         })
       });
       if (res.ok) {
-        setNotesSavedSuccess(true);
+        const completedVisitId = visitData.visit_id;
+        const completedPatientName = visitData.patient_name;
+        const remainingQueue = orderedActiveQueue(visits.filter(visit => visit.visit_id !== completedVisitId));
+        setVisits(remainingQueue);
+        setVisitData(null);
+        setCompletionNotice(`${completedPatientName} was completed and removed from the consultation queue.`);
+        setSelectedVisitId(remainingQueue[0]?.visit_id || null);
         await fetchVisits();
-        const updatedRes = await fetch(`/api/visits/${visitData.visit_id}`);
-        if (updatedRes.ok) {
-          const updatedData = await updatedRes.json();
-          setVisitData(updatedData);
-        }
       }
     } catch (err) {
       console.error('Failed to save notes', err);
@@ -152,7 +235,8 @@ export default function DoctorDashboard({ onOpenPatientRecords }) {
   const labRows = visitData?.extracted_results || [];
 
   return (
-    <div>
+    <div className="doctor-dashboard-page">
+      <div className="doctor-patient-switcher">
       {/* SEARCH BAR (Image 5 style) */}
       <div className="search-wrapper">
         <Search className="search-icon" size={20} />
@@ -181,6 +265,7 @@ export default function DoctorDashboard({ onOpenPatientRecords }) {
           }}>
             {searchResults.map((p) => (
               <div
+                className="search-result-row"
                 key={p.patient_id}
                 onClick={() => handleSelectPatientSearchResult(p)}
                 style={{
@@ -210,42 +295,65 @@ export default function DoctorDashboard({ onOpenPatientRecords }) {
         )}
       </div>
 
-      {/* OPD TOKEN QUEUE CHIPS */}
-      <div className="queue-chips">
-        {visits.map((v) => {
+      {/* ORDERED OPD CONSULTATION QUEUE */}
+      <div className="doctor-queue-panel">
+        <div className="doctor-queue-heading">
+          <div><Clock size={16} /><strong>Consultation queue</strong></div>
+          <span>{visits.length} {visits.length === 1 ? 'patient' : 'patients'} waiting</span>
+        </div>
+        <div className="queue-chips">
+        {visits.map((v, index) => {
           const isActive = v.visit_id === selectedVisitId;
           return (
             <button
               key={v.visit_id}
               className={`queue-chip ${isActive ? 'active' : ''}`}
               onClick={() => setSelectedVisitId(v.visit_id)}
+              onPointerEnter={() => prefetchVisit(v.visit_id)}
+              onFocus={() => prefetchVisit(v.visit_id)}
             >
+              <span className="queue-order">{String(index + 1).padStart(2, '0')}</span>
               <span className="token-pill">{v.token_number}</span>
-              <span>{v.patient_name}</span>
-              <span style={{ fontSize: '0.74rem', opacity: 0.8 }}>({v.status})</span>
+              <span className="queue-patient-name">{v.patient_name}</span>
+              <span className="queue-status">{v.status || 'waiting'}</span>
             </button>
           );
         })}
+        {visits.length === 0 && <div className="doctor-queue-empty">Queue clear</div>}
+        </div>
+      </div>
       </div>
 
+      {completionNotice && <div className="doctor-completion-notice" role="status">
+        <CheckCircle2 size={17} />
+        <span>{completionNotice}</span>
+        <button type="button" onClick={() => setCompletionNotice('')} aria-label="Dismiss completion message">×</button>
+      </div>}
+
+      {visitLoading && visitData && <div className="doctor-data-loading" role="status" aria-live="polite">
+        <span className="doctor-data-loading-spinner" />
+        <span><strong>{visitData.patient_name}</strong> selected · loading clinical details</span>
+      </div>}
+
       {visitData ? (
+        <div className="doctor-consultation-view">
+          <SummaryCard summary={visitData.summary} patient={patient} visit={visitData} symptomExtraction={visitData.symptom_extraction} />
         <div className="doctor-layout-grid">
           {/* LEFT / CENTER COLUMN */}
-          <div>
-            {/* 1. THE 10-15s SINGLE SUMMARY CARD (Exact Image 4 format) */}
-            <SummaryCard summary={visitData.summary} patient={patient} visit={visitData} />
+          <div className="doctor-support-column">
 
             {/* 2. REASON FOR CURRENT VISIT & INTAKE DETAILS */}
-            <div className="card" style={{ marginBottom: '24px' }}>
-              <div className="card-title">
+            <details className="doctor-detail-section">
+              <summary className="doctor-detail-summary">
                 <FileText size={18} style={{ color: '#2563eb' }} />
-                <span>Current Visit & Patient-Reported Intake</span>
-              </div>
+                <span><strong>Patient-reported intake details</strong><small>Original check-in responses</small></span>
+              </summary>
+              <div className="doctor-detail-body">
               <div className="card-subtitle">
                 Recorded during check-in · Token: <strong>{visitData.token_number}</strong>
               </div>
 
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px', marginBottom: '16px' }}>
+              <div className="responsive-two-column" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px', marginBottom: '16px' }}>
                 <div style={{ background: '#f8fafc', padding: '12px 16px', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
                   <div style={{ fontSize: '0.75rem', fontWeight: 700, color: '#64748b', textTransform: 'uppercase' }}>Main Reason for Visit</div>
                   <div style={{ fontSize: '0.98rem', fontWeight: 700, color: '#0f172a', marginTop: '2px' }}>
@@ -273,21 +381,19 @@ export default function DoctorDashboard({ onOpenPatientRecords }) {
                 <div><strong>Current Medicines:</strong> {intake.current_medications || 'None declared'}</div>
                 <div><strong>Known Allergies:</strong> <span style={{ color: intake.known_allergies?.toLowerCase().includes('allergy') || intake.known_allergies?.toLowerCase().includes('penicillin') ? '#dc2626' : 'inherit', fontWeight: 600 }}>{intake.known_allergies || 'Not recorded'}</span></div>
               </div>
-            </div>
+              </div>
+            </details>
 
             {/* 3. MEDICAL REPORTS & LABORATORY FINDINGS (CLEAN DISPLAY - NO INSPECT OPTION!) */}
-            <div className="card" style={{ marginBottom: '24px' }}>
-              <div className="card-title">
+            <details className="doctor-detail-section">
+              <summary className="doctor-detail-summary">
                 <Activity size={18} style={{ color: '#2563eb' }} />
-                <span>Medical Reports & Laboratory Findings</span>
-              </div>
-              <div className="card-subtitle">
-                Extracted from patient's uploaded PDF reports and physical scans. Clean tabular review (no inspect viewer).
-              </div>
-
+                <span><strong>Reports and laboratory findings</strong><small>{labRows.length} extracted result{labRows.length === 1 ? '' : 's'}</small></span>
+              </summary>
+              <div className="doctor-detail-body">
               {labRows.length === 0 ? (
                 <div style={{ padding: '24px', textAlign: 'center', color: '#64748b', background: '#f8fafc', borderRadius: '14px' }}>
-                  No laboratory records extracted for this visit yet. Upload a report via Patient Check-in.
+                  No laboratory results available for this visit.
                 </div>
               ) : (
                 <div className="lab-table-container">
@@ -302,20 +408,24 @@ export default function DoctorDashboard({ onOpenPatientRecords }) {
                     </thead>
                     <tbody>
                       {labRows.map((row, idx) => {
-                        const isHigh = row.range_note || row.source_line?.toLowerCase().includes('high') || row.source_line?.toLowerCase().includes('outside');
-                        const isLow = row.source_line?.toLowerCase().includes('low');
+                        const flagText = `${row.range_note || ''} ${row.source_line || ''}`.toLowerCase();
+                        const isLow = flagText.includes('low') || flagText.includes('below');
+                        const isHigh = flagText.includes('high') || flagText.includes('above');
+                        const needsReview = Boolean(row.range_note) && !isLow && !isHigh;
                         return (
                           <tr key={idx}>
                             <td style={{ fontWeight: 600 }}>{row.test_name}</td>
-                            <td style={{ fontWeight: 700, color: isHigh ? '#dc2626' : (isLow ? '#b45309' : '#0f172a') }}>
+                            <td style={{ fontWeight: 700, color: (isHigh || needsReview) ? '#dc2626' : (isLow ? '#b45309' : '#0f172a') }}>
                               {row.test_value} <span style={{ fontSize: '0.8rem', color: '#64748b' }}>{row.unit}</span>
                             </td>
                             <td style={{ color: '#64748b' }}>{row.reference_range || '-'}</td>
                             <td>
                               {isHigh ? (
-                                <span className="badge-status badge-high">OUTSIDE RANGE</span>
+                                <span className="badge-status badge-high">HIGH</span>
                               ) : isLow ? (
                                 <span className="badge-status badge-low">LOW</span>
+                              ) : needsReview ? (
+                                <span className="badge-status badge-high">REVIEW</span>
                               ) : (
                                 <span className="badge-status badge-normal">IN RANGE</span>
                               )}
@@ -327,15 +437,17 @@ export default function DoctorDashboard({ onOpenPatientRecords }) {
                   </table>
                 </div>
               )}
-            </div>
+              </div>
+            </details>
 
             {/* 4. PAST CONSULTATIONS & DOCTOR NOTES HISTORY */}
-            <div className="card" style={{ marginBottom: '24px' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px' }}>
-                <div className="card-title" style={{ margin: 0 }}>
-                  <Clock size={18} style={{ color: '#2563eb' }} />
-                  <span>Past Consultations & Doctor Notes History</span>
-                </div>
+            <details className="doctor-detail-section">
+              <summary className="doctor-detail-summary">
+                <Clock size={18} style={{ color: '#2563eb' }} />
+                <span><strong>Past consultations</strong><small>{visitData.past_visits?.length || 0} earlier visit{visitData.past_visits?.length === 1 ? '' : 's'}</small></span>
+              </summary>
+              <div className="doctor-detail-body">
+              <div className="doctor-history-actions">
 
                 {onOpenPatientRecords && visitData.patient_id && (
                   <button
@@ -456,13 +568,14 @@ export default function DoctorDashboard({ onOpenPatientRecords }) {
                   })}
                 </div>
               )}
-            </div>
+              </div>
+            </details>
           </div>
 
           {/* RIGHT COLUMN: DOCTOR CONSULTATION NOTES & VITALS */}
           <div>
             {/* VITALS CARD */}
-            <div className="card" style={{ marginBottom: '24px' }}>
+            <div className="card doctor-vitals-card" style={{ marginBottom: '24px' }}>
               <div className="card-title">
                 <Activity size={18} style={{ color: '#10b981' }} />
                 <span>Nurse Vitals Measurement</span>
@@ -508,25 +621,19 @@ export default function DoctorDashboard({ onOpenPatientRecords }) {
               </div>
             </div>
 
-            {/* DOCTOR CONSULTATION NOTES & CLINICAL PLAN (Retained as requested) */}
-            <div className="card">
+            {/* DOCTOR CONSULTATION NOTES & CLINICAL PLAN */}
+            <div className="card doctor-prescription-card">
               <div className="card-title">
-                <span>✍️ Doctor Consultation Notes & Plan</span>
+                <Save size={19} style={{ color: '#2563eb' }} />
+                <span>Doctor Assessment &amp; Prescription</span>
               </div>
               <div className="card-subtitle">
-                Record findings and advice. Saved to the patient's permanent hospital record.
+                Enter examination findings first, followed by the prescription, advice, and follow-up plan.
               </div>
-
-              {notesSavedSuccess && (
-                <div style={{ background: '#ecfdf5', border: '1px solid #a7f3d0', padding: '10px 14px', borderRadius: '10px', color: '#065f46', fontSize: '0.88rem', display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '14px' }}>
-                  <CheckCircle2 size={16} />
-                  <span>Consultation notes saved successfully! Visit marked completed.</span>
-                </div>
-              )}
 
               <form onSubmit={handleSaveNotes}>
                 <div className="form-group">
-                  <label className="form-label">Clinical Examination & Observations *</label>
+                  <label className="form-label">Examination findings and clinical assessment *</label>
                   <textarea
                     className="form-textarea"
                     rows={4}
@@ -538,7 +645,31 @@ export default function DoctorDashboard({ onOpenPatientRecords }) {
                 </div>
 
                 <div className="form-group">
-                  <label className="form-label">Diagnosis, Advice & Prescription Plan</label>
+                  <div className="prescription-builder-header">
+                    <div><label className="form-label">Medicines</label><span>Enter each medicine separately for safety review.</span></div>
+                    <button type="button" className="btn-secondary" onClick={addMedication}><Plus size={15} />Add medicine</button>
+                  </div>
+                  <div className="prescription-medicine-list">
+                    {medications.map((medicine, index) => <div className="prescription-medicine-row" key={index}>
+                      <div className="prescription-medicine-number">{index + 1}</div>
+                      <input className="form-input" placeholder="Medicine name" value={medicine.name} onChange={event => updateMedication(index, 'name', event.target.value)} />
+                      <input className="form-input" placeholder="Strength" value={medicine.strength} onChange={event => updateMedication(index, 'strength', event.target.value)} />
+                      <input className="form-input" placeholder="Dose" value={medicine.dose} onChange={event => updateMedication(index, 'dose', event.target.value)} />
+                      <input className="form-input" placeholder="Frequency" value={medicine.frequency} onChange={event => updateMedication(index, 'frequency', event.target.value)} />
+                      <input className="form-input" placeholder="Duration" value={medicine.duration} onChange={event => updateMedication(index, 'duration', event.target.value)} />
+                      <button type="button" className="prescription-remove" onClick={() => removeMedication(index)} aria-label={`Remove medicine ${index + 1}`}><Trash2 size={16} /></button>
+                    </div>)}
+                  </div>
+
+                  {safetyResult && <div className={`prescription-safety-panel ${safetyResult.issues.length ? 'has-issues' : 'is-clear'}`}>
+                    <div className="prescription-safety-title">{safetyResult.issues.length ? <ShieldAlert size={18} /> : <ShieldCheck size={18} />}<strong>{safetyResult.issues.length ? 'Safety review needed' : 'No issues found by the limited checks'}</strong></div>
+                    {safetyResult.issues.map(issue => <div className="prescription-safety-issue" key={issue.id}><strong>{issue.title}</strong><span>{issue.message}</span></div>)}
+                    <p>{safetyResult.coverage_note}</p>
+                  </div>}
+                </div>
+
+                <div className="form-group">
+                  <label className="form-label">Additional prescription, advice, and follow-up plan</label>
                   <textarea
                     className="form-textarea"
                     rows={3}
@@ -555,11 +686,12 @@ export default function DoctorDashboard({ onOpenPatientRecords }) {
                   disabled={savingNotes}
                 >
                   <Save size={16} />
-                  <span>{savingNotes ? 'Saving Notes...' : 'Save Notes & Complete Consultation'}</span>
+                  <span>{savingNotes ? 'Saving consultation...' : 'Save Prescription & Complete Consultation'}</span>
                 </button>
               </form>
             </div>
           </div>
+        </div>
         </div>
       ) : (
         <div className="card" style={{ textAlign: 'center', padding: '60px 20px', color: '#64748b' }}>

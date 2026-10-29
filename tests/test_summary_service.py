@@ -126,6 +126,36 @@ class TestSummaryService(unittest.TestCase):
         self.assertIn("adherence to previous advice", confirm_text.lower())
         self.assertIn("Early diabetic neuropathy", confirm_text)
 
+    def test_temporal_reasoning_compares_related_visit_and_vitals(self):
+        summary = generate_clinical_summary(
+            intake_data={
+                "reason_for_visit": "Vomiting sensation",
+                "symptoms_text": "Vomiting since morning with nausea",
+                "duration": "less than 1 day",
+                "severity": "Moderate"
+            },
+            vitals_data={"heart_rate": 96, "temperature": 99.1, "spo2": 98},
+            returning_history=[{
+                "visit_id": "VIS-OLDER",
+                "created_at": "2026-09-12 09:00:00",
+                "status": "completed",
+                "intake": {
+                    "reason_for_visit": "Vomiting and nausea",
+                    "symptoms_text": "Two days of vomiting",
+                    "duration": "2 days",
+                    "severity": "Mild"
+                },
+                "vitals": {"heart_rate": 82, "temperature": 98.6, "spo2": 98}
+            }]
+        )
+
+        temporal = summary["temporal_reasoning"]
+        self.assertEqual(temporal["status"], "related_presentation_found")
+        self.assertIn("vomiting", temporal["evidence_terms"])
+        self.assertEqual(temporal["similar_visit"]["visit_id"], "VIS-OLDER")
+        self.assertTrue(any("shorter" in item.lower() for item in temporal["changes"]))
+        self.assertTrue(any(item["label"] == "Pulse" and item["direction"] == "higher" for item in temporal["vital_trends"]))
+
 
 if __name__ == "__main__":
     unittest.main()

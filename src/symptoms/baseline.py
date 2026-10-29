@@ -51,9 +51,10 @@ def _is_negated(text, start):
 def from_train(train_jsonl):
     """Symptom vocabulary from the training spans only; returns predict(text)."""
     vocab = set()
-    for line in open(train_jsonl, encoding="utf-8"):
-        r = json.loads(line)
-        vocab |= {r["text"][s["start"]:s["end"]].lower() for s in r["spans"] if s["label"] in ("SYMPTOM", "NEG_SYMPTOM")}
+    with open(train_jsonl, encoding="utf-8") as f:
+        for line in f:
+            r = json.loads(line)
+            vocab |= {r["text"][s["start"]:s["end"]].lower() for s in r["spans"] if s["label"] in ("SYMPTOM", "NEG_SYMPTOM")}
     vocab = sorted(vocab, key=len, reverse=True)
     return lambda text: predict(text, vocab)
 

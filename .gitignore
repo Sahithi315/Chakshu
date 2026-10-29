@@ -1,15 +1,48 @@
+# Python virtual environments
 .venv/
+venv/
+
+# Python cache and compiled files
 __pycache__/
 *.pyc
+*.pyo
+*.pyd
+*.py[cod]
+
+# Environment variables and secrets
+.env
+.env.*
+!.env.example
+
+# Generated outputs and temporary files
 outputs/
+output/
+tmp/
+*.log
+*.tmp
+
+# Local models and caches
 models/
 .cache/
+
+# Local database and patient data
 data/decisions.json
 data/decisions.json.tmp
+data/hospital.db
+data/hospital.db-wal
+data/hospital.db-shm
+data/uploads/
+*.sqlite
+*.sqlite3
+
+# Node.js dependencies
 node_modules/
-output/
-outputs/
-tmp/
-__pycache__/
-*.py[cod]
+frontend/node_modules/
+
+# Office temporary files
 ~$*.xlsx
+
+# Testing and coverage
+.pytest_cache/
+.coverage
+htmlcov/

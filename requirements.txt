@@ -1,6 +1,11 @@
-# torch must come from the CUDA index:
-#   pip install torch==2.14.1 --index-url https://download.pytorch.org/whl/cu130
-numpy
-transformers
-pdfplumber
-streamlit
+# Core deep learning framework (install with appropriate CUDA/CPU index):
+#   pip install torch==2.14.1 --index-url https://download.pytorch.org/whl/cu130  (or cpu)
+torch>=2.11.0
+numpy>=1.24.0
+transformers>=4.40.0
+pdfplumber>=0.11.0
+pypdfium2>=4.30.0
+Pillow>=10.0.0
+pytesseract>=0.3.10
+streamlit>=1.30.0
+openpyxl>=3.1.0

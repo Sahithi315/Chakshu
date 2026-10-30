@@ -1,6 +1,9 @@
 """Fast and robust ASGI backend server for CareVision.
+
 Uses Starlette and Uvicorn. Exposes REST API and serves the React frontend.
 """
+
+import uuid
 from pathlib import Path
 import asyncio
 from contextlib import asynccontextmanager
@@ -428,14 +431,24 @@ async def upload_report_endpoint(request):
             group_id=group_id
         )
 
-        # Extract lab records via structured PDF or OCR
+        # Extract lab records, medications, and findings via structured PDF or OCR
         extraction_res = process_report_file(rep_rec["storage_path"])
+        doc_type = extraction_res.get("doc_type", "Medical Report")
+        ext_status = extraction_res.get("status", "completed").capitalize()
+        findings_count = extraction_res.get("findings_count", 0)
 
-        # Insert extracted results into DB
+        # Insert extracted items into DB
         with get_db() as conn:
+            conn.execute(
+                """
+                UPDATE reports SET doc_type = ?, extraction_status = ?, findings_count = ?, error_message = ?
+                WHERE report_id = ?
+                """,
+                (doc_type, ext_status, findings_count, extraction_res.get("message", ""), rep_rec["report_id"])
+            )
+
             extracted_rows = extraction_res.get("extracted_rows", [])
-            if extracted_rows:
-                conn.execute("DELETE FROM extracted_results WHERE report_id = ?", (rep_rec["report_id"],))
+            conn.execute("DELETE FROM extracted_results WHERE report_id = ?", (rep_rec["report_id"],))
             for r in extracted_rows:
                 eid = f"EXT-{os.urandom(4).hex()}"
                 conn.execute(
@@ -449,6 +462,41 @@ async def upload_report_endpoint(request):
                      r.get("unit", ""), r.get("reference_range", ""), r.get("range_note", ""),
                      r.get("page", 1), json.dumps(r.get("bbox", [])), r.get("source_line", ""),
                      1 if r.get("quote_ok", True) else 0, r.get("extraction_method", "ocr"))
+                )
+
+            med_rows = extraction_res.get("extracted_medications", [])
+            conn.execute("DELETE FROM extracted_medications WHERE report_id = ?", (rep_rec["report_id"],))
+            for m in med_rows:
+                mid = f"MED-{uuid.uuid4().hex[:8].upper()}"
+                conn.execute(
+                    """
+                    INSERT INTO extracted_medications (
+                        med_id, report_id, patient_id, visit_id, medicine_name, dosage,
+                        frequency, timing, duration, route, instructions, source_line, extraction_method
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    """,
+                    (mid, rep_rec["report_id"], patient_id, visit_id, m["medicine_name"],
+                     m.get("dosage", "Not specified"), m.get("frequency", "Not specified"),
+                     m.get("timing", "Not specified"), m.get("duration", "Not specified"),
+                     m.get("route", "Not specified"), m.get("instructions", "Not specified"),
+                     m.get("source_line", ""), m.get("extraction_method", "ocr"))
+                )
+
+            findings = extraction_res.get("document_findings", [])
+            conn.execute("DELETE FROM document_findings WHERE report_id = ?", (rep_rec["report_id"],))
+            for f in findings:
+                fid = f"FND-{uuid.uuid4().hex[:8].upper()}"
+                conn.execute(
+                    """
+                    INSERT INTO document_findings (
+                        finding_id, report_id, patient_id, visit_id, category, title, detail,
+                        severity, is_automated, source_line
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    """,
+                    (fid, rep_rec["report_id"], patient_id, visit_id,
+                     f.get("category", "diagnostic_observation"), f.get("title", "Clinical Finding"),
+                     f.get("detail", ""), f.get("severity", "info"),
+                     1 if f.get("is_automated", 1) else 0, f.get("source_line", ""))
                 )
 
         # Recompile summary card
@@ -635,9 +683,12 @@ async def get_patient_records_endpoint(request):
 
 async def download_report_endpoint(request):
     """Securely serve uploaded report file for viewing or download."""
-    identity, error = require_staff(request, "doctor")
-    if error:
-        return error
+    token = bearer_token(request) or request.query_params.get("token", "")
+    identity = get_staff_session(token) or get_patient_session(token)
+    if not identity:
+        identity, error = require_staff(request, "doctor")
+        if error:
+            return error
     report_id = request.path_params["report_id"]
     rep = get_report_by_id(report_id)
     if not rep:

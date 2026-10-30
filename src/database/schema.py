@@ -203,6 +203,45 @@ CREATE TABLE IF NOT EXISTS nurse_queue_completions (
 
 CREATE INDEX IF NOT EXISTS idx_nurse_queue_completed_visit
     ON nurse_queue_completions(visit_id);
+
+CREATE TABLE IF NOT EXISTS extracted_medications (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    med_id TEXT UNIQUE NOT NULL,
+    report_id TEXT NOT NULL REFERENCES reports(report_id) ON DELETE CASCADE,
+    patient_id TEXT NOT NULL REFERENCES patients(patient_id) ON DELETE CASCADE,
+    visit_id TEXT NOT NULL REFERENCES visits(visit_id) ON DELETE CASCADE,
+    medicine_name TEXT NOT NULL,
+    dosage TEXT,
+    frequency TEXT,
+    timing TEXT,
+    duration TEXT,
+    route TEXT,
+    instructions TEXT,
+    source_line TEXT,
+    extraction_method TEXT DEFAULT 'ocr',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX IF NOT EXISTS idx_extracted_meds_visit ON extracted_medications(visit_id);
+CREATE INDEX IF NOT EXISTS idx_extracted_meds_patient ON extracted_medications(patient_id);
+
+CREATE TABLE IF NOT EXISTS document_findings (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    finding_id TEXT UNIQUE NOT NULL,
+    report_id TEXT NOT NULL REFERENCES reports(report_id) ON DELETE CASCADE,
+    patient_id TEXT NOT NULL REFERENCES patients(patient_id) ON DELETE CASCADE,
+    visit_id TEXT NOT NULL REFERENCES visits(visit_id) ON DELETE CASCADE,
+    category TEXT NOT NULL,
+    title TEXT NOT NULL,
+    detail TEXT,
+    severity TEXT DEFAULT 'info',
+    is_automated INTEGER DEFAULT 1,
+    source_line TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX IF NOT EXISTS idx_doc_findings_visit ON document_findings(visit_id);
+CREATE INDEX IF NOT EXISTS idx_doc_findings_patient ON document_findings(patient_id);
 """
 
 
@@ -214,6 +253,18 @@ def init_db(db_path=None):
     conn.execute("PRAGMA journal_mode=WAL;")
     conn.execute("PRAGMA foreign_keys=ON;")
     conn.executescript(SCHEMA_SQL)
+    try:
+        report_cols = [c[1] for c in conn.execute("PRAGMA table_info(reports)").fetchall()]
+        if "doc_type" not in report_cols:
+            conn.execute("ALTER TABLE reports ADD COLUMN doc_type TEXT DEFAULT 'Medical Report'")
+        if "extraction_status" not in report_cols:
+            conn.execute("ALTER TABLE reports ADD COLUMN extraction_status TEXT DEFAULT 'Completed'")
+        if "findings_count" not in report_cols:
+            conn.execute("ALTER TABLE reports ADD COLUMN findings_count INTEGER DEFAULT 0")
+        if "error_message" not in report_cols:
+            conn.execute("ALTER TABLE reports ADD COLUMN error_message TEXT")
+    except Exception:
+        pass
     from src.services.auth_service import seed_demo_staff
     seed_demo_staff(conn)
     conn.commit()

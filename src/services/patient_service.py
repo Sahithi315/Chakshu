@@ -2,6 +2,8 @@
 from datetime import datetime
 import hashlib
 import json
+import os
+from pathlib import Path
 import re
 import uuid
 from src.database.connection import get_db
@@ -323,6 +325,84 @@ def get_active_visits(db_path=None, needs_vitals=False):
         return [dict(r) for r in rows]
 
 
+
+def sync_unprocessed_reports(visit_id, conn):
+    """Ensure any uploaded report for visit has been processed for labs, meds, and findings."""
+    try:
+        from src.services.ocr_service import process_report_file
+        rep_rows = conn.execute("SELECT * FROM reports WHERE visit_id = ?", (visit_id,)).fetchall()
+        for r in rep_rows:
+            r_dict = dict(r)
+            rid = r_dict["report_id"]
+            storage_path = Path(r_dict.get("storage_path", ""))
+            if not storage_path.exists():
+                continue
+
+            has_labs = conn.execute("SELECT 1 FROM extracted_results WHERE report_id = ? LIMIT 1", (rid,)).fetchone()
+            has_meds = conn.execute("SELECT 1 FROM extracted_medications WHERE report_id = ? LIMIT 1", (rid,)).fetchone()
+
+            if not has_labs and not has_meds:
+                res = process_report_file(str(storage_path))
+                doc_type = res.get("doc_type", "Medical Report")
+                status = res.get("status", "completed").capitalize()
+                findings_count = res.get("findings_count", 0)
+
+                conn.execute(
+                    """
+                    UPDATE reports SET doc_type = ?, extraction_status = ?, findings_count = ?, error_message = ?
+                    WHERE report_id = ?
+                    """,
+                    (doc_type, status, findings_count, res.get("message", ""), rid)
+                )
+
+                for lab in res.get("extracted_rows", []):
+                    eid = f"EXT-{os.urandom(4).hex()}"
+                    conn.execute(
+                        """
+                        INSERT OR IGNORE INTO extracted_results (
+                            extract_id, report_id, patient_id, visit_id, test_name, test_value,
+                            unit, reference_range, range_note, page, bbox_json, source_line, quote_ok, extraction_method
+                        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                        """,
+                        (eid, rid, r_dict["patient_id"], visit_id, lab["test"], lab["value"],
+                         lab.get("unit", ""), lab.get("reference_range", ""), lab.get("range_note", ""),
+                         lab.get("page", 1), json.dumps(lab.get("bbox", [])), lab.get("source_line", ""),
+                         1 if lab.get("quote_ok", True) else 0, lab.get("extraction_method", "ocr"))
+                    )
+
+                for med in res.get("extracted_medications", []):
+                    mid = f"MED-{uuid.uuid4().hex[:8].upper()}"
+                    conn.execute(
+                        """
+                        INSERT INTO extracted_medications (
+                            med_id, report_id, patient_id, visit_id, medicine_name, dosage,
+                            frequency, timing, duration, route, instructions, source_line, extraction_method
+                        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                        """,
+                        (mid, rid, r_dict["patient_id"], visit_id, med["medicine_name"],
+                         med.get("dosage", "Not specified"), med.get("frequency", "Not specified"),
+                         med.get("timing", "Not specified"), med.get("duration", "Not specified"),
+                         med.get("route", "Not specified"), med.get("instructions", "Not specified"),
+                         med.get("source_line", ""), med.get("extraction_method", "ocr"))
+                    )
+
+                for f_item in res.get("document_findings", []):
+                    fid = f"FND-{uuid.uuid4().hex[:8].upper()}"
+                    conn.execute(
+                        """
+                        INSERT INTO document_findings (
+                            finding_id, report_id, patient_id, visit_id, category, title, detail,
+                            severity, is_automated, source_line
+                        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                        """,
+                        (fid, rid, r_dict["patient_id"], visit_id, f_item.get("category", "diagnostic_observation"),
+                         f_item.get("title", "Clinical Finding"), f_item.get("detail", ""), f_item.get("severity", "info"),
+                         1 if f_item.get("is_automated", 1) else 0, f_item.get("source_line", ""))
+                    )
+    except Exception:
+        pass
+
+
 def get_visit_details(visit_id, db_path=None):
     """Retrieve complete details for a specific visit."""
     with get_db(db_path) as conn:
@@ -345,11 +425,55 @@ def get_visit_details(visit_id, db_path=None):
         vitals_row = conn.execute("SELECT * FROM vitals WHERE visit_id = ?", (visit_id,)).fetchone()
         visit["vitals"] = dict(vitals_row) if vitals_row else None
 
-        rep_rows = conn.execute("SELECT * FROM reports WHERE visit_id = ?", (visit_id,)).fetchall()
-        visit["reports"] = [dict(r) for r in rep_rows]
+        sync_unprocessed_reports(visit_id, conn)
 
-        ext_rows = conn.execute("SELECT * FROM extracted_results WHERE visit_id = ?", (visit_id,)).fetchall()
+        rep_rows = conn.execute("SELECT * FROM reports WHERE visit_id = ? ORDER BY created_at ASC", (visit_id,)).fetchall()
+        v_reports = []
+        for r in rep_rows:
+            rd = dict(r)
+            rd["download_url"] = f"/api/reports/{rd['report_id']}/file"
+            if not rd.get("doc_type"):
+                rd["doc_type"] = "Medical Report"
+            if not rd.get("extraction_status"):
+                rd["extraction_status"] = "Completed"
+            v_reports.append(rd)
+        visit["reports"] = v_reports
+
+        ext_rows = conn.execute(
+            """
+            SELECT er.*, r.filename as source_document
+            FROM extracted_results er
+            LEFT JOIN reports r ON er.report_id = r.report_id
+            WHERE er.visit_id = ?
+            ORDER BY er.id ASC
+            """,
+            (visit_id,)
+        ).fetchall()
         visit["extracted_results"] = [dict(r) for r in ext_rows]
+
+        med_rows = conn.execute(
+            """
+            SELECT em.*, r.filename as source_document
+            FROM extracted_medications em
+            LEFT JOIN reports r ON em.report_id = r.report_id
+            WHERE em.visit_id = ?
+            ORDER BY em.id ASC
+            """,
+            (visit_id,)
+        ).fetchall()
+        visit["extracted_medications"] = [dict(r) for r in med_rows]
+
+        find_rows = conn.execute(
+            """
+            SELECT df.*, r.filename as source_document
+            FROM document_findings df
+            LEFT JOIN reports r ON df.report_id = r.report_id
+            WHERE df.visit_id = ?
+            ORDER BY df.id ASC
+            """,
+            (visit_id,)
+        ).fetchall()
+        visit["document_findings"] = [dict(r) for r in find_rows]
 
         sum_row = conn.execute("SELECT * FROM summaries WHERE visit_id = ?", (visit_id,)).fetchone()
         visit["summary"] = json.loads(sum_row["summary_json"]) if sum_row else None
@@ -420,11 +544,44 @@ def get_patient_history(patient_id, exclude_visit_id=None, db_path=None):
             notes = conn.execute("SELECT * FROM doctor_notes WHERE visit_id = ?", (vid,)).fetchone()
             v["doctor_notes"] = dict(notes) if notes else None
 
-            reports = conn.execute("SELECT * FROM reports WHERE visit_id = ?", (vid,)).fetchall()
-            v["reports"] = [dict(r) for r in reports]
+            rep_rows = conn.execute("SELECT * FROM reports WHERE visit_id = ? ORDER BY created_at ASC", (vid,)).fetchall()
+            v["reports"] = [dict(r) for r in rep_rows]
 
-            labs = conn.execute("SELECT * FROM extracted_results WHERE visit_id = ?", (vid,)).fetchall()
+            labs = conn.execute(
+                """
+                SELECT er.*, r.filename as source_document
+                FROM extracted_results er
+                LEFT JOIN reports r ON er.report_id = r.report_id
+                WHERE er.visit_id = ?
+                ORDER BY er.id ASC
+                """,
+                (vid,)
+            ).fetchall()
             v["extracted_results"] = [dict(r) for r in labs]
+
+            meds = conn.execute(
+                """
+                SELECT em.*, r.filename as source_document
+                FROM extracted_medications em
+                LEFT JOIN reports r ON em.report_id = r.report_id
+                WHERE em.visit_id = ?
+                ORDER BY em.id ASC
+                """,
+                (vid,)
+            ).fetchall()
+            v["extracted_medications"] = [dict(r) for r in meds]
+
+            findings = conn.execute(
+                """
+                SELECT df.*, r.filename as source_document
+                FROM document_findings df
+                LEFT JOIN reports r ON df.report_id = r.report_id
+                WHERE df.visit_id = ?
+                ORDER BY df.id ASC
+                """,
+                (vid,)
+            ).fetchall()
+            v["document_findings"] = [dict(r) for r in findings]
 
             summary = conn.execute("SELECT * FROM summaries WHERE visit_id = ?", (vid,)).fetchone()
             v["summary"] = json.loads(summary["summary_json"]) if summary else None
@@ -633,8 +790,41 @@ def get_patient_complete_timeline(patient_id, db_path=None):
                 all_reports.append(rd)
             v["reports"] = v_reports
 
-            labs = conn.execute("SELECT * FROM extracted_results WHERE visit_id = ? ORDER BY id ASC", (vid,)).fetchall()
+            labs = conn.execute(
+                """
+                SELECT er.*, r.filename as source_document
+                FROM extracted_results er
+                LEFT JOIN reports r ON er.report_id = r.report_id
+                WHERE er.visit_id = ?
+                ORDER BY er.id ASC
+                """,
+                (vid,)
+            ).fetchall()
             v["extracted_results"] = [dict(l) for l in labs]
+
+            meds = conn.execute(
+                """
+                SELECT em.*, r.filename as source_document
+                FROM extracted_medications em
+                LEFT JOIN reports r ON em.report_id = r.report_id
+                WHERE em.visit_id = ?
+                ORDER BY em.id ASC
+                """,
+                (vid,)
+            ).fetchall()
+            v["extracted_medications"] = [dict(m) for m in meds]
+
+            findings = conn.execute(
+                """
+                SELECT df.*, r.filename as source_document
+                FROM document_findings df
+                LEFT JOIN reports r ON df.report_id = r.report_id
+                WHERE df.visit_id = ?
+                ORDER BY df.id ASC
+                """,
+                (vid,)
+            ).fetchall()
+            v["document_findings"] = [dict(f) for f in findings]
 
             summary_row = conn.execute("SELECT * FROM summaries WHERE visit_id = ?", (vid,)).fetchone()
             if summary_row and summary_row["summary_json"]:

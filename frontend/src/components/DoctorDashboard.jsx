@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Search, User, FileText, Activity, Save, CheckCircle2, AlertCircle, Sparkles, Clock, Calendar, FolderArchive, Plus, Trash2, ShieldAlert, ShieldCheck } from 'lucide-react';
+import { Search, User, FileText, Activity, Save, CheckCircle2, AlertCircle, Sparkles, Clock, Calendar, FolderArchive, Plus, Trash2, ShieldAlert, ShieldCheck, Pill, Eye } from 'lucide-react';
 import SummaryCard from './SummaryCard';
 
 const orderedActiveQueue = queue => [...queue]
@@ -99,6 +99,8 @@ export default function DoctorDashboard({ onOpenPatientRecords, apiFetch = fetch
       vitals: null,
       reports: [],
       extracted_results: [],
+      extracted_medications: [],
+      document_findings: [],
       past_visits: [],
       summary: null,
       symptom_extraction: null
@@ -233,6 +235,9 @@ export default function DoctorDashboard({ onOpenPatientRecords, apiFetch = fetch
   const intake = visitData?.intake || {};
   const vitals = visitData?.vitals || {};
   const labRows = visitData?.extracted_results || [];
+  const extractedMeds = visitData?.extracted_medications || [];
+  const docFindings = visitData?.document_findings || [];
+  const uploadedDocs = visitData?.reports || [];
 
   return (
     <div className="doctor-dashboard-page">
@@ -384,8 +389,8 @@ export default function DoctorDashboard({ onOpenPatientRecords, apiFetch = fetch
               </div>
             </details>
 
-            {/* 3. MEDICAL REPORTS & LABORATORY FINDINGS (CLEAN DISPLAY - NO INSPECT OPTION!) */}
-            <details className="doctor-detail-section">
+            {/* B. REPORTS AND LABORATORY FINDINGS */}
+            <details className="doctor-detail-section" open={labRows.length > 0}>
               <summary className="doctor-detail-summary">
                 <Activity size={18} style={{ color: '#2563eb' }} />
                 <span><strong>Reports and laboratory findings</strong><small>{labRows.length} extracted result{labRows.length === 1 ? '' : 's'}</small></span>
@@ -403,17 +408,18 @@ export default function DoctorDashboard({ onOpenPatientRecords, apiFetch = fetch
                         <th>Investigation / Test Name</th>
                         <th>Observed Result</th>
                         <th>Reference Range</th>
-                        <th>Clinical Status</th>
+                        <th>Abnormality Status</th>
+                        <th>Source Document</th>
                       </tr>
                     </thead>
                     <tbody>
                       {labRows.map((row, idx) => {
-                        const flagText = `${row.range_note || ''} ${row.source_line || ''}`.toLowerCase();
-                        const isLow = flagText.includes('low') || flagText.includes('below');
-                        const isHigh = flagText.includes('high') || flagText.includes('above');
+                        const flagText = `${row.range_note || ''} ${row.status || ''} ${row.source_line || ''}`.toLowerCase();
+                        const isLow = (row.status && row.status.toLowerCase() === 'low') || flagText.includes('low') || flagText.includes('below');
+                        const isHigh = (row.status && row.status.toLowerCase() === 'high') || flagText.includes('high') || flagText.includes('above') || flagText.includes('significant');
                         const needsReview = Boolean(row.range_note) && !isLow && !isHigh;
                         return (
-                          <tr key={idx}>
+                          <tr key={idx} style={{ background: isHigh ? '#fff5f5' : isLow ? '#fffbeb' : 'inherit' }}>
                             <td style={{ fontWeight: 600 }}>{row.test_name}</td>
                             <td style={{ fontWeight: 700, color: (isHigh || needsReview) ? '#dc2626' : (isLow ? '#b45309' : '#0f172a') }}>
                               {row.test_value} <span style={{ fontSize: '0.8rem', color: '#64748b' }}>{row.unit}</span>
@@ -427,8 +433,11 @@ export default function DoctorDashboard({ onOpenPatientRecords, apiFetch = fetch
                               ) : needsReview ? (
                                 <span className="badge-status badge-high">REVIEW</span>
                               ) : (
-                                <span className="badge-status badge-normal">IN RANGE</span>
+                                <span className="badge-status badge-normal">NORMAL</span>
                               )}
+                            </td>
+                            <td style={{ fontSize: '0.78rem', color: '#64748b' }}>
+                              {row.source_document || 'Uploaded Report'}
                             </td>
                           </tr>
                         );
@@ -437,6 +446,211 @@ export default function DoctorDashboard({ onOpenPatientRecords, apiFetch = fetch
                   </table>
                 </div>
               )}
+              </div>
+            </details>
+
+            {/* C. MEDICATIONS EXTRACTED FROM REPORTS */}
+            <details className="doctor-detail-section" open={extractedMeds.length > 0}>
+              <summary className="doctor-detail-summary">
+                <Pill size={18} style={{ color: '#2563eb' }} />
+                <span><strong>Medications Extracted from Reports</strong><small>{extractedMeds.length} prescription item{extractedMeds.length === 1 ? '' : 's'}</small></span>
+              </summary>
+              <div className="doctor-detail-body">
+                <div className="card-subtitle" style={{ marginBottom: '12px' }}>
+                  Prescription medicines identified from uploaded documents. Clearly distinguished from patient-reported current medications.
+                </div>
+
+                {extractedMeds.length === 0 ? (
+                  <div style={{ padding: '24px', textAlign: 'center', color: '#64748b', background: '#f8fafc', borderRadius: '14px' }}>
+                    No prescription medications extracted from uploaded documents for this visit.
+                  </div>
+                ) : (
+                  <div className="lab-table-container">
+                    <table className="lab-table">
+                      <thead>
+                        <tr>
+                          <th>Medicine Name</th>
+                          <th>Dosage &amp; Strength</th>
+                          <th>Frequency</th>
+                          <th>Timing</th>
+                          <th>Duration</th>
+                          <th>Route</th>
+                          <th>Instructions</th>
+                          <th>Source Document</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {extractedMeds.map((med, mIdx) => (
+                          <tr key={med.med_id || mIdx}>
+                            <td style={{ fontWeight: 700, color: '#0f172a' }}>{med.medicine_name}</td>
+                            <td style={{ fontWeight: 600, color: med.dosage !== 'Not specified' ? '#2563eb' : '#94a3b8' }}>
+                              {med.dosage || 'Not specified'}
+                            </td>
+                            <td style={{ color: med.frequency !== 'Not specified' ? '#0f172a' : '#94a3b8' }}>
+                              {med.frequency || 'Not specified'}
+                            </td>
+                            <td style={{ color: med.timing !== 'Not specified' ? '#0f172a' : '#94a3b8' }}>
+                              {med.timing || 'Not specified'}
+                            </td>
+                            <td style={{ color: med.duration !== 'Not specified' ? '#0f172a' : '#94a3b8' }}>
+                              {med.duration || 'Not specified'}
+                            </td>
+                            <td style={{ color: med.route !== 'Not specified' ? '#0f172a' : '#94a3b8' }}>
+                              {med.route || 'Not specified'}
+                            </td>
+                            <td style={{ fontSize: '0.82rem', color: med.instructions !== 'Not specified' ? '#475569' : '#94a3b8' }}>
+                              {med.instructions || 'Not specified'}
+                            </td>
+                            <td style={{ fontSize: '0.78rem', color: '#64748b' }}>
+                              {med.source_document || 'Prescription Upload'}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </div>
+            </details>
+
+            {/* D. IMPORTANT MEDICAL FINDINGS & CLINICAL INSIGHTS */}
+            <details className="doctor-detail-section" open={docFindings.length > 0}>
+              <summary className="doctor-detail-summary">
+                <AlertCircle size={18} style={{ color: '#2563eb' }} />
+                <span><strong>Important Medical Findings</strong><small>{docFindings.length} observation{docFindings.length === 1 ? '' : 's'}</small></span>
+              </summary>
+              <div className="doctor-detail-body">
+                <div className="card-subtitle" style={{ marginBottom: '12px' }}>
+                  Critical observations and preliminary automated findings. Automated insights require clinician verification and are not confirmed diagnoses.
+                </div>
+
+                {docFindings.length === 0 ? (
+                  <div style={{ padding: '24px', textAlign: 'center', color: '#64748b', background: '#f8fafc', borderRadius: '14px' }}>
+                    No abnormal findings or explicit diagnostic remarks detected in uploaded documents for this visit.
+                  </div>
+                ) : (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                    {docFindings.map((f, fIdx) => {
+                      const isInsight = f.category === 'insight' || Boolean(f.is_automated);
+                      const isHigh = f.severity === 'high';
+                      const isWarning = f.severity === 'warning';
+                      return (
+                        <div
+                          key={f.finding_id || fIdx}
+                          style={{
+                            background: isHigh ? '#fef2f2' : isWarning ? '#fffbeb' : '#f8fafc',
+                            border: isHigh ? '1px solid #fecaca' : isWarning ? '1px solid #fde68a' : '1px solid #e2e8f0',
+                            borderLeft: isHigh ? '4px solid #dc2626' : isWarning ? '4px solid #f59e0b' : '4px solid #3b82f6',
+                            borderRadius: '12px',
+                            padding: '12px 16px'
+                          }}
+                        >
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px', flexWrap: 'wrap', gap: '6px' }}>
+                            <span style={{ fontWeight: 700, fontSize: '0.9rem', color: isHigh ? '#991b1b' : isWarning ? '#92400e' : '#0f172a' }}>
+                              {f.title}
+                            </span>
+                            {isInsight ? (
+                              <span style={{ fontSize: '0.7rem', background: '#eff6ff', color: '#1d4ed8', padding: '2px 8px', borderRadius: '9999px', fontWeight: 600 }}>
+                                Automated Insight · Requires Verification
+                              </span>
+                            ) : (
+                              <span style={{ fontSize: '0.7rem', background: '#f1f5f9', color: '#475569', padding: '2px 8px', borderRadius: '9999px', fontWeight: 600 }}>
+                                Document Text Finding
+                              </span>
+                            )}
+                          </div>
+                          <div style={{ fontSize: '0.88rem', color: '#334155', lineHeight: 1.45 }}>
+                            {f.detail}
+                          </div>
+                          {f.source_document && (
+                            <div style={{ fontSize: '0.75rem', color: '#64748b', marginTop: '6px' }}>
+                              Source: <strong>{f.source_document}</strong>
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            </details>
+
+            {/* E. UPLOADED DOCUMENTS AND EXTRACTION STATUS */}
+            <details className="doctor-detail-section">
+              <summary className="doctor-detail-summary">
+                <FolderArchive size={18} style={{ color: '#2563eb' }} />
+                <span><strong>Uploaded Documents &amp; Extraction Status</strong><small>{uploadedDocs.length} file{uploadedDocs.length === 1 ? '' : 's'}</small></span>
+              </summary>
+              <div className="doctor-detail-body">
+                <div className="card-subtitle" style={{ marginBottom: '12px' }}>
+                  All medical reports, prescriptions, and laboratory files uploaded for this patient encounter.
+                </div>
+
+                {uploadedDocs.length === 0 ? (
+                  <div style={{ padding: '24px', textAlign: 'center', color: '#64748b', background: '#f8fafc', borderRadius: '14px' }}>
+                    No medical documents uploaded for this visit yet.
+                  </div>
+                ) : (
+                  <div className="lab-table-container">
+                    <table className="lab-table">
+                      <thead>
+                        <tr>
+                          <th>Document Name</th>
+                          <th>Detected Type</th>
+                          <th>Extraction Status</th>
+                          <th>Extracted Findings</th>
+                          <th>Action</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {uploadedDocs.map((doc, dIdx) => {
+                          const status = (doc.extraction_status || 'Completed').toLowerCase();
+                          const isCompleted = status === 'completed' || status === 'success';
+                          const isFailed = status === 'failed' || status === 'error';
+                          return (
+                            <tr key={doc.report_id || dIdx}>
+                              <td style={{ fontWeight: 600, color: '#0f172a' }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                  <FileText size={16} style={{ color: '#2563eb' }} />
+                                  <span>{doc.filename}</span>
+                                </div>
+                              </td>
+                              <td style={{ color: '#334155' }}>
+                                <span style={{ background: '#f1f5f9', padding: '3px 8px', borderRadius: '6px', fontSize: '0.8rem', fontWeight: 600 }}>
+                                  {doc.doc_type || (doc.file_type === 'pdf' ? 'Laboratory Report' : 'Medical Image')}
+                                </span>
+                              </td>
+                              <td>
+                                {isCompleted ? (
+                                  <span className="badge-status badge-normal">COMPLETED</span>
+                                ) : isFailed ? (
+                                  <span className="badge-status badge-high">FAILED</span>
+                                ) : (
+                                  <span className="badge-status badge-low">PROCESSING</span>
+                                )}
+                              </td>
+                              <td style={{ fontWeight: 700, color: '#0f172a' }}>
+                                {doc.findings_count != null ? doc.findings_count : (labRows.length + extractedMeds.length)} items
+                              </td>
+                              <td>
+                                <a
+                                  href={`/api/reports/${doc.report_id}/file`}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="btn-secondary"
+                                  style={{ fontSize: '0.78rem', padding: '5px 12px', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '6px' }}
+                                >
+                                  <Eye size={13} />
+                                  <span>View Document</span>
+                                </a>
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
               </div>
             </details>
 

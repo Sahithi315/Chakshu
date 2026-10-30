@@ -21,9 +21,9 @@ export default function RoleSelection() {
   return <section className="role-boundary">
     <div className="role-landing-visual">
       <OrbitImages images={orbitImages} radiusX={255} radiusY={190} rotation={-8} duration={36} itemSize={72} depth={0.5} showPath centerContent={<div className="role-mission">
-        <span className="eyebrow">Care, clearly connected</span>
+        <span className="eyebrow">Intelligent Hospital Assistant</span>
         <h1>One simple path from check-in to care.</h1>
-        <p>Keep every patient, vital sign, and clinical decision moving with the right care team.</p>
+        <p>CareVision keeps every patient, vital sign, and care decision moving with the right hospital team.</p>
       </div>} />
     </div>
 

@@ -74,12 +74,12 @@ export default function Navbar() {
     ];
   }, [user]);
 
-  const logo = <><span className="card-nav__brand-mark"><Stethoscope size={20} /></span><span>Clinical Context</span></>;
+  const logo = <><span className="card-nav__brand-mark"><Stethoscope size={20} /></span><span>CareVision</span></>;
 
   return <>
     <CardNav
       logo={logo}
-      logoAlt="Clinical Context home"
+      logoAlt="CareVision home"
       items={items}
       cta={user ? { label: 'Sign out', onClick: requestLogout } : { label: 'Home', href: '/' }}
       cardEffect="rise"

@@ -1,4 +1,6 @@
-# Team 404 Vision: AI-Assisted Hospital Pre-Consultation Platform
+# CareVision
+
+**Intelligent Hospital Assistant**
 
 > **Clinical Disclaimer**: Prototype for documentation and preparation assistance only. Synthetic data used. **This platform must never independently diagnose patients, prescribe medication, or replace clinical judgment.**
 
@@ -8,7 +10,7 @@
 
 In hospital outpatient departments (OPDs), doctors typically have only 3–5 minutes per patient. Much of that time is lost asking repetitive intake questions, deciphering crumpled paper lab reports, or searching through unorganized records.
 
-The **Team 404 Vision Clinical Context Platform** converts the patient's waiting room time (after receiving an OPD token) into a high-yield, structured pre-consultation summary:
+**CareVision** converts the patient's waiting room time (after receiving an OPD token) into a high-yield, structured pre-consultation summary:
 - **Mobile-First Patient Intake**: Patients enter their reason for visit, symptom timeline, chronic conditions, current medications, and known allergies.
 - **Physical Report Scanning & Document Upload**: Upload lab reports (PDF, JPG, PNG) via file selection or direct mobile camera capture.
 - **Automated Clinical Data Extraction & Optional OCR**: Extracts lab test names, observed values, units, reference ranges, and out-of-range parameters. Digital PDFs use `pdfplumber`; photos and scanned PDFs use Tesseract when it is installed.

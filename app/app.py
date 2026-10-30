@@ -1,4 +1,4 @@
-"""Clinical Context Platform: AI-Assisted Hospital Pre-Consultation Platform.
+"""CareVision: Intelligent Hospital Assistant.
 Run from repository root:  python -m streamlit run app/app.py
 """
 import glob
@@ -68,7 +68,7 @@ STATES = {
 }
 
 st.set_page_config(
-    page_title="Team 404 Vision: Clinical Context Platform",
+    page_title="CareVision",
     page_icon="🏥",
     layout="wide"
 )
@@ -232,8 +232,8 @@ def show_source(item):
 # ==========================================
 # SIDEBAR NAVIGATION & SYSTEM HEALTH
 # ==========================================
-st.sidebar.title("🏥 Team 404 Vision")
-st.sidebar.caption("AI-Assisted Hospital Pre-Consultation Platform")
+st.sidebar.title("🏥 CareVision")
+st.sidebar.caption("Intelligent Hospital Assistant")
 
 nav_choice = st.sidebar.radio(
     "Navigation Role",
@@ -787,7 +787,7 @@ elif nav_choice == "⚙️ System Status & Audits":
 if __name__ == "__main__":
     import uvicorn
     print("\n=======================================================")
-    print(" Team 404 Vision: AI-Assisted Hospital Platform")
+    print(" CareVision: Intelligent Hospital Assistant")
     print(" Modern Vite + React Frontend & Starlette REST API")
     print(" Launching server at http://127.0.0.1:8000")
     print("=======================================================\n")

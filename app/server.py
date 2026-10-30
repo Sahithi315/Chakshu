@@ -1,4 +1,4 @@
-"""Fast and robust ASGI backend server for Team 404 Vision platform.
+"""Fast and robust ASGI backend server for CareVision.
 Uses Starlette and Uvicorn. Exposes REST API and serves the React frontend.
 """
 from pathlib import Path
@@ -702,5 +702,5 @@ app = Starlette(debug=True, routes=routes, middleware=middleware, lifespan=appli
 
 if __name__ == "__main__":
     import uvicorn
-    print("Starting Clinical Context Platform API on http://127.0.0.1:8000")
+    print("Starting CareVision API on http://127.0.0.1:8000")
     uvicorn.run("app.server:app", host="127.0.0.1", port=8000, reload=False)

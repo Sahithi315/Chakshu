@@ -53,3 +53,12 @@ def test_extractor_uses_hindi_rules_for_hindi_text():
     res = Extractor(fallback_to_baseline=True).extract("mujhe 3 din se bukhar hai")
     assert res["extractor_mode"] == "hindi_rules" and res["symptoms"][0]["english"] == "fever"
     assert Extractor(fallback_to_baseline=True).extract("fever for 3 days")["extractor_mode"] == "baseline"
+
+
+def test_muril_is_opt_in_and_falls_back(monkeypatch):
+    ex = Extractor(fallback_to_baseline=True)
+    assert ex.extract("mujhe bukhar hai")["extractor_mode"] == "hindi_rules"  # default
+    monkeypatch.setenv("CHAKSHU_HINDI_MODEL", "muril")
+    res = ex.extract("mujhe 3 din se bukhar hai")
+    assert res["extractor_mode"] in ("hindi_muril", "hindi_rules")  # rules if models/muril_hindi_v1 is missing
+    assert res["symptoms"][0]["negated"] is False

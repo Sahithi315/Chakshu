@@ -538,7 +538,6 @@ async def tag_symptoms_endpoint(request):
         return JSONResponse({"symptoms": [], "durations": [], "severities": []})
 
     extractor = get_extractor()
-    spans = extractor.spans([text])[0]
     extracted = extractor.extract(text)
     return JSONResponse(extracted)
 

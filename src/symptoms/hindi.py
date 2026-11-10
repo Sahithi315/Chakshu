@@ -5,65 +5,23 @@
 
 Same output shape as infer.structure(), plus an "english" name on each symptom.
 """
+import csv
 import re
 import unicodedata
+from pathlib import Path
 
-# english name: "hindi spellings | english spellings" (the english name itself always matches)
-LEXICON = {
-    "fever": "बुखार, bukhar, bukhaar, bukar, bhukar, taap, tap, jwar, ज्वर | temperature",
-    "headache": "सिर दर्द, सिरदर्द, सर दर्द, सिर में दर्द, सर में दर्द, sar dard, sir dard, sardard, sirdard, sar me dard, sir me dard, sar mein dard, sir mein dard | head pain",
-    "stomach pain": "पेट दर्द, पेट में दर्द, pet dard, pet me dard, pet mein dard, pait dard, pet ma dard | stomach ache, stomach pain",
-    "cough": "खांसी, खाँसी, khansi, khaansi, khasi, khaasi, kasi | cough",
-    "cold": "जुकाम, सर्दी, zukam, jukam, zukaam, sardi, nazla | cold",
-    "runny nose": "नाक बहना, naak behna, naak beh rahi, naak beh raha, naak bah rahi | runny nose",
-    "blocked nose": "नाक बंद, naak band, naak bandh | blocked nose",
-    "sore throat": "गले में दर्द, गला खराब, gale me dard, gale mein dard, gala dard, gala kharab, gale me kharash | sore throat, throat pain",
-    "vomiting": "उल्टी, ulti, ulty, ulti hona, ulti jaisa | vomiting, vomit",
-    "nausea": "जी मिचलाना, मिचली, ji michlana, jee michlana, ji machlana, ji michlata | nausea",
-    "loose motions": "दस्त, पेट खराब, dast, patle dast, pet kharab, pet kharaab | loose motions, loose motion, diarrhea, diarrhoea",
-    "dizziness": "चक्कर आना, चक्कर, chakkar aana, chakkar aa rahe hain, chakkar, sir ghoomna, sar ghumna | dizziness, dizzy",
-    "weakness": "कमजोरी, कमज़ोरी, kamzori, kamjori, kamzoori | weakness",
-    "tiredness": "थकान, थकावट, thakan, thakaan, thakawat | tiredness, fatigue",
-    "body ache": "बदन दर्द, शरीर दर्द, बदन में दर्द, badan dard, sharir dard, badan me dard, badan mein dard, badan toot raha | body ache, body pain",
-    "breathlessness": "सांस फूलना, सांस लेने में दिक्कत, saans phoolna, saans phoolti, saans lene me dikkat, saans me takleef, dam phoolna | breathlessness, shortness of breath",
-    "chest pain": "सीने में दर्द, छाती में दर्द, seene me dard, seene mein dard, chhati me dard, chati me dard | chest pain",
-    "burning urination": "पेशाब में जलन, peshab me jalan, peshab mein jalan, urine me jalan | burning urination",
-    "frequent urination": "बार बार पेशाब, baar baar peshab | frequent urination",
-    "itching": "खुजली, khujli, khujali | itching",
-    "swelling": "सूजन, sujan, soojan | swelling",
-    "loss of appetite": "भूख नहीं लगती, भूख कम, bhookh nahi lagti, bhook nahi lagti, bhookh kam, bhook kam | loss of appetite",
-    "sleeplessness": "नींद नहीं आती, neend nahi aati, neend kam | insomnia, sleeplessness",
-    "back pain": "कमर दर्द, कमर में दर्द, पीठ दर्द, kamar dard, kamar me dard, kamar mein dard, peeth dard, peeth me dard | back pain, backache",
-    "joint pain": "जोड़ों में दर्द, jodon me dard, jodo me dard, jodon mein dard | joint pain",
-    "knee pain": "घुटने में दर्द, ghutne me dard, ghutne mein dard | knee pain",
-    "neck pain": "गर्दन में दर्द, गर्दन दर्द, gardan me dard, gardan dard | neck pain",
-    "shoulder pain": "कंधे में दर्द, kandhe me dard, kandhe mein dard | shoulder pain",
-    "leg pain": "पैर में दर्द, टांग में दर्द, pair me dard, taang me dard, per me dard | leg pain",
-    "hand pain": "हाथ में दर्द, haath me dard, hath me dard | hand pain",
-    "ear pain": "कान में दर्द, कान दर्द, kaan me dard, kaan dard, kaan mein dard | ear pain, earache",
-    "tooth pain": "दांत दर्द, दांत में दर्द, daant dard, daant me dard, dant dard | toothache, tooth pain",
-    "eye pain": "आंख में दर्द, aankh me dard, aankhon me dard | eye pain",
-    "burning eyes": "आंखों में जलन, aankhon me jalan, aankh me jalan | burning eyes",
-    "blurred vision": "धुंधला दिखना, dhundhla dikhna, dhundhla dikhai | blurred vision",
-    "rash": "चकत्ते, दाने, chakatte, daane, dane | rash",
-    "acidity": "एसिडिटी, खट्टी डकार, khatti dakar | acidity, gas",
-    "heartburn": "सीने में जलन, seene me jalan, seene mein jalan | heartburn",
-    "constipation": "कब्ज, कब्ज़, kabz, kabj | constipation",
-    "chills": "ठंड लगना, कंपकंपी, thand lagna, thand lag rahi, kapkapi | chills",
-    "sweating": "पसीना, pasina | sweating",
-    "palpitations": "धड़कन तेज, dhadkan tez, dhadkan badh | palpitations",
-    "uneasiness": "घबराहट, ghabrahat, ghabrahat hona | uneasiness",
-    "weight loss": "वजन कम, wazan kam, wajan kam | weight loss",
-    "blood in stool": "मल में खून, potty me khoon, stool me khoon | blood in stool",
-    "cramps": "ऐंठन, मरोड़, ainthan, maroda, marod | cramps",
-    "sneezing": "छींक, chheenk, chhink, chheenkein | sneezing",
-    "numbness": "सुन्न, sunn, sunn pad | numbness",
-    "tingling": "झुनझुनी, jhunjhuni | tingling",
-    "fainting": "बेहोशी, बेहोश, behoshi, behosh | fainting",
-    "muscle pain": "मांसपेशियों में दर्द, maspeshi dard, maspeshiyon me dard | muscle pain",
-    "burning sensation": "जलन, jalan | burning sensation",
-    "pain": "दर्द, dard | pain, ache",
-}
+LEXICON_CSV = Path(__file__).resolve().parents[2] / "data" / "symptoms" / "hindi" / "lexicon_review.csv"  # edit this file to change the lexicon
+
+
+def load_lexicon(path=LEXICON_CSV):
+    """english name -> {"deva": [...], "roman": [...], "english": [...]} from the review CSV (variants separated by ;)."""
+    with open(path, encoding="utf-8", newline="") as f:
+        return {r["english"]: {"deva": r["devanagari"].split(";") if r["devanagari"] else [],
+                               "roman": r["roman"].split(";") if r["roman"] else [],
+                               "english": r["english_variants"].split(";") if r["english_variants"] else []} for r in csv.DictReader(f)}
+
+
+LEXICON = load_lexicon()
 NUMBERS = set("ek do teen char chaar paanch panch chhe chheh saat aath nau das barah pandrah bees tees ten एक दो तीन चार पाँच पांच छह छः सात आठ नौ दस बारह पंद्रह बीस".split())
 UNITS = set("din dino hafta hafte haftah mahina mahine mahinon saal sal ghanta ghante ghanton day days week weeks month months year years hour hours hr hrs "
             "दिन दिनों हफ्ता हफ्ते सप्ताह महीना महीने महीनों साल घंटा घंटे घंटों".split())
@@ -86,12 +44,10 @@ def norm(word):
 def _build():
     """phrase (tuple of normalised words) -> (english, is_english_spelling)."""
     table = {}
-    for english, spellings in LEXICON.items():
-        hindi, _, eng = spellings.partition("|")
-        for group, is_eng in ((hindi, False), (eng, True), (english, True)):
-            for s in group.split(","):
-                if s.strip():
-                    table[tuple(norm(w) for w in s.split())] = (english, is_eng)
+    for english, v in LEXICON.items():
+        for spellings, is_eng in ((v["deva"] + v["roman"], False), (v["english"] + [english], True)):
+            for sp in spellings:
+                table[tuple(norm(w) for w in sp.split())] = (english, is_eng)
     return table
 
 
@@ -100,6 +56,7 @@ MAX_WORDS = max(map(len, TABLE))
 SEVERITY_TABLE = {tuple(norm(w) for w in s.split()) for s in SEVERITY}
 SETS = [{norm(w) for w in s} for s in (NUMBERS, UNITS, TIME_WORDS, NEGATION, BREAKS, AFFIRM, FUNCTION_WORDS)]
 NUMS, UNITS_N, TIMES, NEGS, BRKS, AFFS, FUNCS = SETS
+INSIDE = {k: v for k, v in TABLE.items() if set(k) & NEGS}  # 'bhookh nahi lagti': the nahi is part of the complaint
 DIGITS = re.compile(r"^[0-9०-९]+$")
 
 
@@ -181,9 +138,18 @@ def extract(text):
     for a, b, (english, _) in found:
         own = set(range(a, b + 1))
         res["symptoms"].append({"text": text[toks[a][0]:toks[b][1]], "start": toks[a][0], "end": toks[b][1], "english": english,
-                                "negated": _negated(toks, a, b, text, symptom_idx - own)})
+                                "negated": tuple(words[a:b + 1]) not in INSIDE and _negated(toks, a, b, text, symptom_idx - own)})
     for a, b, _ in _phrases(words, {k: 1 for k in SEVERITY_TABLE}, used):
         res["severities"].append({"text": text[toks[a][0]:toks[b][1]], "start": toks[a][0], "end": toks[b][1]})
     for key in ("symptoms", "durations", "severities"):
         res[key].sort(key=lambda s: s["start"])
     return res
+
+
+def keep_inside_negation(text, symptoms):
+    """Post-rule for model output: 'bhookh nahi lagti' is one positive symptom, whatever the model tagged."""
+    toks = tokens(text)
+    found = [(toks[a][0], toks[b][1], v[0]) for a, b, v in _phrases([t[2] for t in toks], INSIDE, set())]
+    kept = [s for s in symptoms if not any(s["start"] < end and start < s["end"] for start, end, _ in found)]
+    return sorted(kept + [{"text": text[start:end], "start": start, "end": end, "english": eng, "negated": False} for start, end, eng in found],
+                  key=lambda s: s["start"])

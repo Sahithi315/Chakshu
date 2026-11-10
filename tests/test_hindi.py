@@ -19,7 +19,7 @@ CASES = [
     ("bhookh nahi lagti aur neend nahi aati", {"loss of appetite": False, "sleeplessness": False}, [], []),
     ("subah se chakkar aa rahe hain, halka bukhar", {"dizziness": False, "fever": False}, ["subah"], ["halka"]),
     ("bukhaar 5 din se hai, sardi nahin hai", {"fever": False, "cold": True}, ["5 din"], []),
-    ("pair me sujan hai, kamzori bhi hai", {"swelling": False, "weakness": False}, [], []),
+    ("pair me sujan hai, kamzori bhi hai", {"swollen feet": False, "weakness": False}, [], []),
     ("mera sir dard bahut zyada hai 2 ghante se", {"headache": False}, ["2 ghante"], ["bahut zyada"]),
     ("gale me dard hai par khansi nahi", {"sore throat": False, "cough": True}, [], []),
     ("बिना बुखार के कमजोरी है", {"fever": True, "weakness": False}, [], []),
@@ -28,6 +28,10 @@ CASES = [
     ("kaan me dard hai tez", {"ear pain": False}, [], ["tez"]),
     ("kabz hai aur pet kharab nahi hai", {"constipation": False, "loose motions": True}, [], []),
     ("mujhe chakkar aur ulti ho rahi hai", {"dizziness": False, "vomiting": False}, [], []),
+    ("bhookh nahi lagti, bukhar nahi hai", {"loss of appetite": False, "fever": True}, [], []),
+    ("pet saaf nahi hota aur neend nahi aati", {"constipation": False, "sleeplessness": False}, [], []),
+    ("मुझे सांस नहीं आती, खांसी नहीं है", {"breathlessness": False, "cough": True}, [], []),
+    ("koi peshab nahi aata 2 din se", {"difficulty urinating": False}, ["2 din"], []),
 ]
 
 
@@ -62,3 +66,10 @@ def test_muril_is_opt_in_and_falls_back(monkeypatch):
     res = ex.extract("mujhe 3 din se bukhar hai")
     assert res["extractor_mode"] in ("hindi_muril", "hindi_rules")  # rules if models/muril_hindi_v1 is missing
     assert res["symptoms"][0]["negated"] is False
+
+
+def test_model_output_keeps_nahi_phrases_positive():
+    from src.symptoms.hindi import keep_inside_negation
+    model_says = [{"text": "bhookh", "start": 0, "end": 6, "negated": True}, {"text": "bukhar", "start": 19, "end": 25, "negated": True}]
+    out = keep_inside_negation("bhookh nahi lagti, bukhar nahi hai", model_says)
+    assert [(s["text"], s["negated"]) for s in out] == [("bhookh nahi lagti", False), ("bukhar", True)]

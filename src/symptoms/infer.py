@@ -83,6 +83,7 @@ class Extractor:
             res = structure(text, self._muril.spans([text])[0])
             for s in res["symptoms"]:
                 s["english"] = hindi.TABLE.get(tuple(hindi.norm(w) for w in s["text"].split()), ("",))[0]
+            res["symptoms"] = hindi.keep_inside_negation(text, res["symptoms"])
             return {**res, "extractor_mode": "hindi_muril"}
         return {**hindi.extract(text), "extractor_mode": "hindi_rules"}
 

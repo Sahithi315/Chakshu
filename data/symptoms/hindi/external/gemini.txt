@@ -1,0 +1,50 @@
+mujhe [kal se]{D} [sir me dard]{S} hai aur [bukhar]{N} nahi hai
+[2 din]{D} se [pet me dard]{S} hai aur [ulti]{N} nahi aa rahi
+[subah se]{D} [chakkar aa rahe hain]{S} aur [khoon ki kami]{S} lagti hai
+[ek hafte se]{D} [saans lene me dikkat]{S} hai par [khansi]{N} nahi hai
+[kal raat se]{D} [gale me kharash]{S} hai aur [bukhar]{N} bilkul nahi hai
+[3 din]{D} se [kamzorii]{S} hai aur [bhookh nahi lagti]{S}
+[do mahine se]{D} [peeth me dard]{S} hai aur [sotan]{N} nahi hai
+[aaj subah se]{D} [aankhon me jalan]{S} hai aur [pani]{N} nahi nikal raha
+[ek din se]{D} [kaan me dard]{S} hai aur [sunai nahi deta]{S}
+[tin din se]{D} [ulti aur dast]{S} hai par [bukhar]{N} nahi hai
+[pichhle ek hafte se]{D} [skin par rash]{S} hai aur [khujli]{N} bhi hai
+[kal se]{D} [chhaati me jalan]{S} hai aur [saans ki takleef]{N} nahi hai
+[2 din se]{D} [daant me dard]{S} hai aur [sujan]{S} bhi hai par [khoon]{N} nahi aa raha
+[teen hafte se]{D} [neend nahi aati]{S} aur [sir dard]{S} rehta hai
+[subah se]{D} [pair me sujan]{S} hai aur [dard]{N} nahi hai
+[ek mahine se]{D} [vajan kam ho raha hai]{S} aur [bhookh nahi lagti]{N}
+[kal raat se]{D} [pet kharab]{S} hai aur [gas]{S} ban rahi hai
+[2 din se]{D} [peshab me jalan]{S} hai aur [bukhar]{N} nahi hai
+[teen din se]{D} [jodo me dard]{S} hai aur [sujan]{S} bhi hai
+[aaj se]{D} [naak band hai]{S} aur [zukam]{S} hai par [bukhar]{N} nahi hai
+मुझे [kal se]{D} [pet dard]{S} है और [ulti]{N} नहीं है
+[3 din]{D} से [tez bukhar]{S} है और [khansi]{N} नहीं है
+[ek hafte]{D} से [sir me dard]{S} है और [chakkar]{S} आ रहे हैं
+[kal raat]{D} से [saans phool rahi hai]{S} और [dard]{N} नहीं है
+[do din]{D} से [ulti ho rahi hai]{S} और [bhookh]{N} नहीं लग रही
+[paanch din]{D} से [gale me dard]{S} है और [zukam]{N} नहीं है
+[subah]{D} से [aankh me dard]{S} है और [laalpan]{S} भी है
+[2 hafte]{D} से [neend nahi aati]{S} और [thakawat]{S} है
+[ek mahine]{D} से [kamzorii]{S} है और [vajan]{N} नहीं घट रहा
+[kal se]{D} [kaan me dard]{S} है और [bahav]{N} नहीं है
+[tin din]{D} से [skin infection]{S} है और [jalan]{S} है
+[aaj]{D} से [peeth me dard]{S} है और [sunapan]{S} है
+[2 din se]{D} [heavy fever]{S} hai aur [cold]{S} bilkul nahi hai
+[kal se]{D} [stomach pain]{S} hai aur [vomiting]{N} nahi ho rahi
+[3 days se]{D} [throat infection]{S} hai aur [cough]{N} nahi hai
+[ek hafte se]{D} [back pain]{S} hai aur [swelling]{N} nahi hai
+[subah se]{D} [headache]{S} hai aur [dizziness]{S} bhi hai
+[2 months se]{D} [joint pain]{S} hai aur [fever]{N} nahi hai
+[kal raat se]{D} [chest pain]{S} hai par [heart attack]{N} nahi lagta
+[3 din se]{D} [urine infection]{S} hai aur [burning]{S} hai
+[ek din se]{D} [skin rash]{S} hai aur [itching]{S} bhi hai
+[aaj se]{D} [ear pain]{S} hai aur [pus]{N} nahi hai
+[2 weeks se]{D} [hair fall]{S} hai aur [tension]{S} bhi hai
+[kal se]{D} [eye irritation]{S} hai aur [redness]{S} hai
+mujhe [2din]{D} se [fever]{S} hai aur [cold]{N} nahi hai
+[kalrat]{D} se [petme dard]{S} hai [ulti]{N} nahi
+[ekhafte]{D} se [sirdard]{S} hai [chakkar]{N} nahi
+[3din]{D} se [khansi]{S} hai aur [bukhar]{N} nahi
+[subah]{D} se [saansme takleef]{S} hai [dard]{N} nahi
+[2din]{D} se [haathpair me dard]{S} hai [sujan]{N} nahi

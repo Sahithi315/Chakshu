@@ -41,20 +41,24 @@ NUMS = {"roman": "ek do teen char paanch saat das".split(), "deva": "एक द�
 DEVA_DIGITS = str.maketrans("0123456789", "०१२३४५६७८९")
 SEVS = {"roman": ["bahut", "bahut zyada", "thoda", "thoda sa", "halka", "tez", "bahut tez", "kaafi", "zyada", "severe", "mild", "very"],
         "deva": ["बहुत", "बहुत ज्यादा", "थोड़ा", "थोड़ा सा", "हल्का", "तेज", "बहुत तेज", "काफी", "ज्यादा"]}
-BAD_WORDS = hindi.NEGS | hindi.AFFS | {"rahi", "raha", "rahe", "pad", "badh", "रहा", "रही"}
-SYMPTOMS = {}  # english -> {"roman": [...], "deva": [...]}
-for eng, spellings in hindi.LEXICON.items():
-    hin, _, en = spellings.partition("|")
-    clean = lambda vs: [v.strip() for v in vs if v.strip() and not set(map(hindi.norm, v.split())) & BAD_WORDS]
-    hin_list = clean(hin.split(","))
-    SYMPTOMS[eng] = {"roman": [v for v in hin_list if v.isascii()], "deva": [v for v in hin_list if not v.isascii()],
-                     "english": clean(en.split(",") + [eng])}
+BAD_WORDS = hindi.AFFS | {"rahi", "raha", "rahe", "pad", "badh", "रहा", "रही"}  # verbs that would clash with the pattern's own "hai"
+SYMPTOMS = {}  # english -> {"roman": [...], "deva": [...], "english": [...]}
+for eng, v in hindi.LEXICON.items():
+    clean = lambda vs: [x for x in vs + ([eng] if vs is v["english"] else []) if not set(map(hindi.norm, x.split())) & BAD_WORDS]
+    SYMPTOMS[eng] = {k: clean(v[k]) for k in ("roman", "deva", "english")}
+# 'bhookh nahi lagti' style variants: the nahi is part of the complaint, so they only go in positive slots
+INSIDE = {e for e, v in SYMPTOMS.items() if any(set(map(hindi.norm, x.split())) & hindi.NEGS for k in v for x in v[k])}
 
 
-def symptom(rng, script, names):
+def symptom(rng, script, names, negated=False):
+    """One spelling of a randomly chosen symptom; negated slots never get a 'nahi'-inside spelling."""
     eng = rng.choice(names)
-    pool = SYMPTOMS[eng]["deva"] if script == "deva" else SYMPTOMS[eng]["roman"] if SYMPTOMS[eng]["roman"] and rng.random() < 0.7 else SYMPTOMS[eng]["english"]
-    return rng.choice(pool or SYMPTOMS[eng]["english"])
+    v = SYMPTOMS[eng]
+    pool = v["deva"] if script == "deva" else v["roman"] if v["roman"] and rng.random() < 0.7 else v["english"]
+    pool = pool or v["english"]
+    if negated:
+        pool = [x for x in pool if not set(map(hindi.norm, x.split())) & hindi.NEGS]
+    return rng.choice(pool) if pool else None
 
 
 def duration(rng, script):
@@ -83,10 +87,12 @@ def message(rng, pattern, script, names):
     def pick(slot):
         if slot[0] == "D": return duration(rng, script), "DURATION"
         if slot[0] == "V": return rng.choice(SEVS[script]), "SEVERITY"
+        neg = slot[0] == "N"
         while True:
-            name = rng.choice(names)
-            if name not in used:
-                used.add(name); return symptom(rng, script, [name]), "SYMPTOM"
+            name = rng.choice([n for n in names if n in INSIDE] if not neg and rng.random() < 0.2 and any(n in INSIDE for n in names) else names)
+            text = symptom(rng, script, [name], neg)
+            if name not in used and text:
+                used.add(name); return text, "SYMPTOM"
     pre = [(rng.choice(FILLERS) + " ", None, 0)] if rng.random() < 0.2 else []
     for part in re.split(r"(\{\w+\})", pattern):
         if part.startswith("{"):

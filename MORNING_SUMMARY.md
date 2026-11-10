@@ -2,18 +2,18 @@
 
 ## Step 0 (git)
 - Started on branch `main`, last commit `e7f55de`, local identical to origin/main, clean tree. No backup branch needed.
-- Work is on local branch `multilingual-hindi`. **Local only: you must push it and open the PR yourself.**
+- Work is on local branch `multilingual-hindi`. **Local, not pushed: you must push it and open the PR yourself.**
 - Baseline `pytest` before my changes: 5 failures already present (4 in `test_document_intelligence.py`, 1 in `test_report_pipeline.py::test_filename_sanitization_and_path_traversal`), 53 passed. Not touched by me.
 - Installed `pytest` and ran `npm ci` (frontend/node_modules) because both were missing.
 
 ## Stage A: rule-based Hindi extractor
-- Commit `188c515`. New: `src/symptoms/hindi.py` (lexicon of ~55 symptoms, duration, severity, negation window rules), hooked in `Extractor.extract` (mode `hindi_rules`), `tests/test_hindi.py` (28 tests, all pass). Full suite after: same 5 old failures, 81 passed.
-- Frontend: `SummaryCard.jsx` now shows the English name in brackets next to Hindi symptom chips; rebuilt `frontend/dist` (had to run `npm ci` first).
+- Commit `188c515` (Stage B `3c5f6fd`, Stage C `b228c96`). New: `src/symptoms/hindi.py` (lexicon of ~55 symptoms, duration, severity, negation window rules), hooked in `Extractor.extract` (mode `hindi_rules`), `tests/test_hindi.py` (28 tests, all pass). Full suite after: same 5 old failures, 81 passed.
+- Frontend: `SummaryCard.jsx` now shows the English name in brackets next to Hindi symptom chips; rebuilt `frontend/dist` (ran `npm ci` beforehand).
 - I also removed one unused `spans = extractor.spans(...)` line in `/api/symptoms/tag` (it ran the model for nothing).
-- Known limits of the rules: "aur" ends a negation window (so "bukhar aur khansi nahi hai" only negates khansi); a symptom followed directly by another symptom and then "nahi" is not negated; "pet me thoda sa dard" splits the symptom; unseen words are simply missed.
+- Known limits of the rules: "aur" ends a negation window (so "bukhar aur khansi nahi hai" negates just khansi); a symptom followed directly by another symptom and then "nahi" is not negated; "pet me thoda sa dard" splits the symptom; unseen words are simply missed.
 
 ## Stage B: synthetic data + MuRIL
-- `tools/generate_hindi_symptoms.py` -> `data/symptoms/hindi/{all,train,dev}.jsonl`. 1500 rows (600 Roman, 450 Devanagari, 450 English copied from the existing LLM train set), 42 sentence patterns (32 train, 10 dev-only), validated with `load_validated`: 0 bad rows. Dev = 225 Hindi rows with the 10 unseen patterns and 8 symptoms never used in training (tooth pain, hand pain, numbness, tingling, cramps, sneezing, palpitations, burning eyes).
+- `tools/generate_hindi_symptoms.py` -> `data/symptoms/hindi/{all,train,dev}.jsonl`. 1500 rows (600 Roman, 450 Devanagari, 450 English copied from the existing LLM train set), 43 sentence patterns (33 train, 10 dev), validated with `load_validated`: 0 bad rows. Dev = 225 Hindi rows with the 10 unseen patterns and 8 symptoms never used in training (tooth pain, hand pain, numbness, tingling, cramps, sneezing, palpitations, burning eyes).
 - MuRIL (`google/muril-base-cased`): fast tokenizer with offsets, existing span alignment works unchanged (no code change in train.py/model.py).
 - Training: fp16, bs 16, max length 128, lr 5e-5, seed 0. One epoch about 24-34 s; 12 epochs = 268 s. GPU memory not measured.
 - DECISION: 5 epochs (as asked) left the model under-trained (it never predicted NEG_SYMPTOM, dev micro F1 0.72). I kept that run as `models/muril_hindi_v1_5ep` and retrained with 12 epochs into `models/muril_hindi_v1` (micro 0.92). I looked at the dev split to decide this, so the dev numbers are mildly tuned. No real test set was involved.
@@ -61,8 +61,8 @@ Rules miss "धुंधला दिखता" (lexicon has "धुंधला
 ## Decisions I made without you
 - 12 epochs instead of 5 for MuRIL (see Stage B). 5-epoch model kept as `models/muril_hindi_v1_5ep`.
 - MuRIL is opt-in rather than default (see Stage C).
-- Used the first English word per entry as the `english` name; "dard" alone maps to "pain", "jalan" to "burning sensation".
-- Language check also accepts one function word plus a Hindi-spelled symptom ("bukhar hai"), not only two function words.
+- Each lexicon entry has one canonical `english` name; "dard" alone maps to "pain", "jalan" to "burning sensation".
+- Language check also accepts one function word plus a Hindi-spelled symptom ("bukhar hai"), not just two function words.
 - Installed pytest and ran `npm ci`; `frontend/dist` is tracked, so the rebuild shows as changed files in the Stage A commit.
 - Did not touch `../Team_404-Vision`, `main`, or anything already in `models/`.
 

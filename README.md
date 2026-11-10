@@ -380,7 +380,7 @@ Retrain
 ```
 python tools/generate_hindi_symptoms.py
 python -m src.symptoms.train --model google/muril-base-cased --data data/symptoms/hindi --out models/muril_hindi_v1 --epochs 12 --bs 16 --dtype fp16
-python tools/score_hindi_dev.py models/muril_hindi_v1   # synthetic sanity check only
+python tools/score_hindi_dev.py models/muril_hindi_v1   # synthetic sanity check, not accuracy
 ```
 
 Limits

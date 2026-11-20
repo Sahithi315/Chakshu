@@ -30,6 +30,98 @@ def record_doctor_decision(visit_id, patient_id, item_id, part_type, decision, c
             """,
             (visit_id, patient_id, item_id, part_type, decision, corrected_json)
         )
+
+        # Synchronize verification status directly on extracted_medications if reviewing a medication
+        if part_type == "medication" or str(item_id).startswith("MED-"):
+            if decision == "confirmed":
+                c.execute(
+                    """
+                    UPDATE extracted_medications
+                    SET verification_status = 'confirmed', verified_at = CURRENT_TIMESTAMP
+                    WHERE med_id = ?
+                    """,
+                    (item_id,)
+                )
+            elif decision == "rejected":
+                c.execute(
+                    """
+                    UPDATE extracted_medications
+                    SET verification_status = 'rejected', verified_at = CURRENT_TIMESTAMP
+                    WHERE med_id = ?
+                    """,
+                    (item_id,)
+                )
+            elif decision == "corrected":
+                # Snapshot original OCR fields separately before applying doctor corrections (only once)
+                existing_med = c.execute(
+                    """
+                    SELECT medicine_name, medicine_type, strength, dosage, frequency, timing,
+                           duration, quantity, route, instructions, raw_text, confidence,
+                           original_ocr_json
+                    FROM extracted_medications WHERE med_id = ?
+                    """,
+                    (item_id,)
+                ).fetchone()
+                orig_ocr_snapshot = None
+                if existing_med and not existing_med["original_ocr_json"]:
+                    orig_ocr_snapshot = json.dumps({
+                        "medicine_name": existing_med["medicine_name"],
+                        "medicine_type": existing_med["medicine_type"],
+                        "strength": existing_med["strength"],
+                        "dosage": existing_med["dosage"],
+                        "frequency": existing_med["frequency"],
+                        "timing": existing_med["timing"],
+                        "duration": existing_med["duration"],
+                        "quantity": existing_med["quantity"],
+                        "route": existing_med["route"],
+                        "instructions": existing_med["instructions"],
+                        "raw_text": existing_med["raw_text"],
+                        "confidence": existing_med["confidence"],
+                    })
+
+                corr_name = None
+                corr_dosage = None
+                corr_freq = None
+                corr_timing = None
+                corr_duration = None
+                corr_route = None
+                corr_inst = None
+                corr_type = None
+                corr_strength = None
+                corr_qty = None
+                if isinstance(corrected_value, dict):
+                    corr_name = corrected_value.get("medicine_name")
+                    corr_dosage = corrected_value.get("dosage")
+                    corr_freq = corrected_value.get("frequency")
+                    corr_timing = corrected_value.get("timing")
+                    corr_duration = corrected_value.get("duration")
+                    corr_route = corrected_value.get("route")
+                    corr_inst = corrected_value.get("instructions")
+                    corr_type = corrected_value.get("medicine_type")
+                    corr_strength = corrected_value.get("strength")
+                    corr_qty = corrected_value.get("quantity")
+                c.execute(
+                    """
+                    UPDATE extracted_medications
+                    SET verification_status = 'corrected',
+                        corrected_data_json = ?,
+                        original_ocr_json = COALESCE(original_ocr_json, ?),
+                        medicine_name = COALESCE(?, medicine_name),
+                        dosage = COALESCE(?, dosage),
+                        frequency = COALESCE(?, frequency),
+                        timing = COALESCE(?, timing),
+                        duration = COALESCE(?, duration),
+                        route = COALESCE(?, route),
+                        instructions = COALESCE(?, instructions),
+                        medicine_type = COALESCE(?, medicine_type),
+                        strength = COALESCE(?, strength),
+                        quantity = COALESCE(?, quantity),
+                        verified_at = CURRENT_TIMESTAMP
+                    WHERE med_id = ?
+                    """,
+                    (corrected_json, orig_ocr_snapshot, corr_name, corr_dosage, corr_freq, corr_timing, corr_duration, corr_route, corr_inst, corr_type, corr_strength, corr_qty, item_id)
+                )
+
         log_audit(
             "doctor", f"decision_{decision}", patient_id, visit_id=visit_id,
             details=f"Item {item_id} ({part_type}) marked {decision}",

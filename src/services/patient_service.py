@@ -342,9 +342,17 @@ def sync_unprocessed_reports(visit_id, conn):
             has_meds = conn.execute("SELECT 1 FROM extracted_medications WHERE report_id = ? LIMIT 1", (rid,)).fetchone()
 
             if not has_labs and not has_meds:
-                res = process_report_file(str(storage_path))
+                try:
+                    res = process_report_file(str(storage_path))
+                except Exception as ocr_err:
+                    conn.execute(
+                        "UPDATE reports SET extraction_status = 'Failed', error_message = ? WHERE report_id = ?",
+                        (str(ocr_err), rid)
+                    )
+                    continue
+
                 doc_type = res.get("doc_type", "Medical Report")
-                status = res.get("status", "completed").capitalize()
+                status = "Completed" if res.get("status") in ["success", "warning"] else "Failed"
                 findings_count = res.get("findings_count", 0)
 
                 conn.execute(
@@ -355,6 +363,7 @@ def sync_unprocessed_reports(visit_id, conn):
                     (doc_type, status, findings_count, res.get("message", ""), rid)
                 )
 
+                conn.execute("DELETE FROM extracted_results WHERE report_id = ?", (rid,))
                 for lab in res.get("extracted_rows", []):
                     eid = f"EXT-{os.urandom(4).hex()}"
                     conn.execute(
@@ -370,34 +379,60 @@ def sync_unprocessed_reports(visit_id, conn):
                          1 if lab.get("quote_ok", True) else 0, lab.get("extraction_method", "ocr"))
                     )
 
+                conn.execute("DELETE FROM extracted_medications WHERE report_id = ?", (rid,))
                 for med in res.get("extracted_medications", []):
                     mid = f"MED-{uuid.uuid4().hex[:8].upper()}"
+                    sr_json = json.dumps(med["source_region"]) if med.get("source_region") else None
+                    fc_json = json.dumps(med["field_confidences"]) if med.get("field_confidences") else None
+                    orig_ocr = json.dumps({
+                        "medicine_name": med["medicine_name"],
+                        "medicine_type": med.get("medicine_type", "Not specified"),
+                        "strength": med.get("strength", "Not specified"),
+                        "dosage": med.get("dosage", "Not specified"),
+                        "frequency": med.get("frequency", "Not specified"),
+                        "timing": med.get("timing", "Not specified"),
+                        "duration": med.get("duration", "Not specified"),
+                        "quantity": med.get("quantity", "Not specified"),
+                        "route": med.get("route", "Not specified"),
+                        "raw_text": med.get("raw_text", med.get("source_line", "")),
+                        "confidence": float(med.get("confidence", 80.0)),
+                    })
                     conn.execute(
                         """
                         INSERT INTO extracted_medications (
                             med_id, report_id, patient_id, visit_id, medicine_name, dosage,
-                            frequency, timing, duration, route, instructions, source_line, extraction_method
-                        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                            frequency, timing, duration, route, instructions, source_line,
+                            raw_text, confidence, confidence_level, is_handwritten, page,
+                            verification_status, extraction_method, medicine_type, strength, quantity,
+                            source_region_json, field_confidences_json, original_ocr_json
+                        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                         """,
                         (mid, rid, r_dict["patient_id"], visit_id, med["medicine_name"],
                          med.get("dosage", "Not specified"), med.get("frequency", "Not specified"),
                          med.get("timing", "Not specified"), med.get("duration", "Not specified"),
                          med.get("route", "Not specified"), med.get("instructions", "Not specified"),
-                         med.get("source_line", ""), med.get("extraction_method", "ocr"))
+                         med.get("source_line", ""), med.get("raw_text", med.get("source_line", "")),
+                         float(med.get("confidence", 80.0)), med.get("confidence_level", "medium"),
+                         int(med.get("is_handwritten", 0)), int(med.get("page", 1)),
+                         med.get("verification_status", "unverified"), med.get("extraction_method", "ocr"),
+                         med.get("medicine_type", "Not specified"), med.get("strength", "Not specified"),
+                         med.get("quantity", "Not specified"), sr_json, fc_json, orig_ocr)
                     )
 
+                conn.execute("DELETE FROM document_findings WHERE report_id = ?", (rid,))
                 for f_item in res.get("document_findings", []):
                     fid = f"FND-{uuid.uuid4().hex[:8].upper()}"
+                    f_sr_json = json.dumps(f_item["source_region"]) if f_item.get("source_region") else None
                     conn.execute(
                         """
                         INSERT INTO document_findings (
                             finding_id, report_id, patient_id, visit_id, category, title, detail,
-                            severity, is_automated, source_line
-                        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                            severity, is_automated, source_line, source_region_json
+                        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                         """,
                         (fid, rid, r_dict["patient_id"], visit_id, f_item.get("category", "diagnostic_observation"),
                          f_item.get("title", "Clinical Finding"), f_item.get("detail", ""), f_item.get("severity", "info"),
-                         1 if f_item.get("is_automated", 1) else 0, f_item.get("source_line", ""))
+                         1 if f_item.get("is_automated", 1) else 0, f_item.get("source_line", ""), f_sr_json)
                     )
     except Exception:
         pass
@@ -473,7 +508,16 @@ def get_visit_details(visit_id, db_path=None):
             """,
             (visit_id,)
         ).fetchall()
-        visit["document_findings"] = [dict(r) for r in find_rows]
+        parsed_findings = []
+        for fr in find_rows:
+            fd = dict(fr)
+            if fd.get("source_region_json"):
+                try:
+                    fd["source_region"] = json.loads(fd["source_region_json"])
+                except Exception:
+                    fd["source_region"] = None
+            parsed_findings.append(fd)
+        visit["document_findings"] = parsed_findings
 
         sum_row = conn.execute("SELECT * FROM summaries WHERE visit_id = ?", (visit_id,)).fetchone()
         visit["summary"] = json.loads(sum_row["summary_json"]) if sum_row else None
@@ -491,6 +535,53 @@ def get_visit_details(visit_id, db_path=None):
             }
             for r in dec_rows
         }
+
+        med_list = []
+        for r in med_rows:
+            m = dict(r)
+            clevel = m.get("confidence_level", "medium")
+            is_unc = bool(clevel in ["low", "unclear"] or "unclear" in (m.get("medicine_name") or "").lower())
+            m["is_uncertain"] = is_unc
+            m["review_status"] = "review_needed" if is_unc else "auto_extracted"
+            med_id = m.get("med_id")
+            dec = visit["decisions"].get(med_id)
+            if dec:
+                m["verification_status"] = dec["decision"]
+                if dec.get("corrected_value") and isinstance(dec["corrected_value"], dict):
+                    for field, val in dec["corrected_value"].items():
+                        if val:
+                            m[field] = val
+            elif m.get("corrected_data_json"):
+                try:
+                    cdata = json.loads(m["corrected_data_json"])
+                    for field, val in cdata.items():
+                        if val:
+                            m[field] = val
+                except Exception:
+                    pass
+            if not m.get("medicine_type"):
+                m["medicine_type"] = "Tablet" if any(p in (m.get("source_line") or "").lower() for p in ["tab", "tb"]) else "Not specified"
+            if not m.get("strength"):
+                m["strength"] = m.get("dosage") or "Not specified"
+            if not m.get("quantity"):
+                m["quantity"] = "Not specified"
+            if m.get("source_region_json"):
+                try:
+                    m["source_region"] = json.loads(m["source_region_json"])
+                except Exception:
+                    m["source_region"] = None
+            if m.get("field_confidences_json"):
+                try:
+                    m["field_confidences"] = json.loads(m["field_confidences_json"])
+                except Exception:
+                    m["field_confidences"] = None
+            if m.get("original_ocr_json"):
+                try:
+                    m["original_ocr"] = json.loads(m["original_ocr_json"])
+                except Exception:
+                    m["original_ocr"] = None
+            med_list.append(m)
+        visit["extracted_medications"] = med_list
 
     # Attach longitudinal past visits (prior consultations with doctor notes, problems, and labs)
     past = get_patient_history(visit["patient_id"], exclude_visit_id=visit_id, db_path=db_path)

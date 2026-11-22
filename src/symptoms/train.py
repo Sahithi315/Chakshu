@@ -4,6 +4,7 @@ python -m src.symptoms.train --model answerdotai/ModernBERT-base --data data/sym
 """
 import argparse, json, random, time
 import torch
+from . import model as model_module
 from .model import load, encode, collate
 
 
@@ -45,5 +46,7 @@ if __name__ == "__main__":
     ap.add_argument("--frac", type=float, default=1.0); ap.add_argument("--epochs", type=int, default=10)
     ap.add_argument("--bs", type=int, default=16); ap.add_argument("--lr", type=float, default=5e-5)
     ap.add_argument("--seed", type=int, default=0); ap.add_argument("--dtype", default="bf16", choices=["bf16", "fp16"])
+    ap.add_argument("--maxlen", type=int, default=model_module.MAXLEN)
     a = ap.parse_args()
+    model_module.MAXLEN = a.maxlen  # encode() reads it at call time
     train(a.model, a.data, a.frac, a.out, a.epochs, a.bs, a.lr, a.seed, a.dtype)

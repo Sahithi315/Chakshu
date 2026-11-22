@@ -75,16 +75,18 @@ def looks_hindi(text):
                                            for i in range(len(words)) for n in range(1, MAX_WORDS + 1)))
 
 
-def _phrases(words, table, used):
-    """Longest-first, left-to-right phrase matches as (first_token, last_token, value)."""
+def _phrases(words, table, used, skip=frozenset()):
+    """Longest-first, left-to-right phrase matches as (first_token, last_token, value).
+    Tokens in `skip` (severity words) may sit inside a phrase: 'sir me bahut dard' matches 'sir me dard'; they stay unused."""
     out, i = [], 0
     while i < len(words):
-        for n in range(min(MAX_WORDS, len(words) - i), 0, -1):
-            hit = tuple(words[i:i + n])
-            if hit in table and not any(j in used for j in range(i, i + n)):
-                out.append((i, i + n - 1, table[hit]))
-                used.update(range(i, i + n))
-                i += n - 1
+        for j in range(min(i + MAX_WORDS + 3, len(words)) - 1, i - 1, -1):
+            hit = tuple(w for k, w in enumerate(words[i:j + 1], i) if k in (i, j) or k not in skip)
+            own = [k for k in range(i, j + 1) if k in (i, j) or k not in skip]
+            if hit in table and not any(k in used for k in own):
+                out.append((i, j, table[hit]))
+                used.update(own)
+                i = j
                 break
         i += 1
     return out
@@ -133,12 +135,13 @@ def extract(text):
     res = {"text": text, "symptoms": [], "durations": [], "severities": []}
     for a, b in _durations(toks, used):
         res["durations"].append({"text": text[toks[a][0]:toks[b][1]], "start": toks[a][0], "end": toks[b][1]})
-    found = _phrases(words, TABLE, used)
+    severity_idx = {k for a, b, _ in _phrases(words, {k: 1 for k in SEVERITY_TABLE}, set()) for k in range(a, b + 1)}
+    found = _phrases(words, TABLE, used, severity_idx)
     symptom_idx = {j for a, b, _ in found for j in range(a, b + 1)}
     for a, b, (english, _) in found:
         own = set(range(a, b + 1))
         res["symptoms"].append({"text": text[toks[a][0]:toks[b][1]], "start": toks[a][0], "end": toks[b][1], "english": english,
-                                "negated": tuple(words[a:b + 1]) not in INSIDE and _negated(toks, a, b, text, symptom_idx - own)})
+                                "negated": not set(words[a:b + 1]) & NEGS and _negated(toks, a, b, text, symptom_idx - own)})
     for a, b, _ in _phrases(words, {k: 1 for k in SEVERITY_TABLE}, used):
         res["severities"].append({"text": text[toks[a][0]:toks[b][1]], "start": toks[a][0], "end": toks[b][1]})
     for key in ("symptoms", "durations", "severities"):

@@ -33,6 +33,6 @@ About 5 minutes on an RTX 3050 6 GB. WSL has crashed during this run before; clo
 - Rules and training data come from the same hand-written lexicon, and all data is synthetic. Dev scores show that the code runs; they are circular, not accuracy.
 - Not tested on real patient text. No accuracy claims for Hindi or Hinglish.
 - Spellings outside the lexicon are missed. "aur" ends a negation window ("bukhar aur khansi nahi hai" negates just khansi).
-- A severity word inside a body-part phrase splits it: "सिर में बहुत दर्द" gives "दर्द (pain)", not headache; "pet me thoda sa dard" likewise.
+- Severity words may sit inside a lexicon phrase ("सिर में बहुत दर्द", "pet me thoda sa dard", "seene me tez dard"): the full phrase is the symptom and the inner word the severity. Other words inside a phrase ("sir me abhi dard") still split it.
 - MuRIL stays opt-in: on demo sentences it split or cut some phrases ("pet me | dard", "chakkar aa") and gives no English name itself (looked up from the lexicon).
 - Kannada is not done. It would need its own lexicon, script check (U+0C80-0CFF), negation rules ("illa"), generator patterns and real test sentences.

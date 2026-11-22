@@ -32,6 +32,15 @@ CASES = [
     ("pet saaf nahi hota aur neend nahi aati", {"constipation": False, "sleeplessness": False}, [], []),
     ("मुझे सांस नहीं आती, खांसी नहीं है", {"breathlessness": False, "cough": True}, [], []),
     ("koi peshab nahi aata 2 din se", {"difficulty urinating": False}, ["2 din"], []),
+    # severity word inside a body-part + pain phrase: whole phrase is the symptom, the inner word is the severity
+    ("मुझे दो दिन से सिर में बहुत दर्द है, उल्टी नहीं", {"headache": False, "vomiting": True}, ["दो दिन"], ["बहुत"]),
+    ("sir me bahut dard hai", {"headache": False}, [], ["bahut"]),
+    ("pet me thoda dard hai kal se", {"stomach pain": False}, ["kal"], ["thoda"]),
+    ("pet me thoda sa dard", {"stomach pain": False}, [], ["thoda sa"]),
+    ("seene me tez dard hai", {"chest pain": False}, [], ["tez"]),
+    ("sir me kaafi dard hai, bukhar nahi", {"headache": False, "fever": True}, [], ["kaafi"]),
+    ("sar me bahut zyada dard nahi hai", {"headache": True}, [], ["bahut zyada"]),
+    ("dhadkan tez hai", {"palpitations": False}, [], []),
 ]
 
 
@@ -73,3 +82,10 @@ def test_model_output_keeps_nahi_phrases_positive():
     model_says = [{"text": "bhookh", "start": 0, "end": 6, "negated": True}, {"text": "bukhar", "start": 19, "end": 25, "negated": True}]
     out = keep_inside_negation("bhookh nahi lagti, bukhar nahi hai", model_says)
     assert [(s["text"], s["negated"]) for s in out] == [("bhookh nahi lagti", False), ("bukhar", True)]
+
+
+def test_inner_severity_keeps_full_phrase_span():
+    text = "mujhe sir me bahut dard hai"
+    res = extract(text)
+    assert [(s["text"], s["start"], s["english"]) for s in res["symptoms"]] == [("sir me bahut dard", 6, "headache")]
+    assert [(v["text"], v["start"]) for v in res["severities"]] == [("bahut", 13)]

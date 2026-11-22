@@ -4,6 +4,7 @@ import {
   ArrowRight, ShieldCheck, AlertCircle, RefreshCw, X, Plus, FileText,
   Image as ImageIcon, Copy, Check, UserPlus, History, KeyRound, Search
 } from 'lucide-react';
+import ChatIntake from './ChatIntake';
 
 const FLOW_KEY = 'chakshu_patient_encounter';
 const loadPatientFlow = () => {
@@ -58,6 +59,10 @@ export default function PatientIntake({ activeStep = 1, onStepChange = () => {} 
   const [conditions, setConditions] = useState('');
   const [medications, setMedications] = useState('');
   const [allergies, setAllergies] = useState('');
+
+  // Chat intake state
+  const [intakeMode, setIntakeMode] = useState('chat'); // 'chat' | 'form'
+  const [chatCompleted, setChatCompleted] = useState(false);
 
   // Step 3: Reports & Scan state
   const [activeUploadTab, setActiveUploadTab] = useState('camera'); // 'camera' | 'file'
@@ -964,8 +969,63 @@ export default function PatientIntake({ activeStep = 1, onStepChange = () => {} 
             </div>
           )}
 
-          <form onSubmit={handleSaveIntake}>
-            <div className="form-group">
+          {/* CHAT INTAKE — shown by default; falls back to form */}
+          {intakeMode === 'chat' && !chatCompleted && (
+            <div style={{ marginBottom: 20 }}>
+              <ChatIntake
+                visit={visit}
+                patientToken={patientToken}
+                onComplete={(structuredIntake) => {
+                  // Pre-fill form fields from chat and mark complete
+                  if (structuredIntake) {
+                    if (structuredIntake.chief_complaint) setReason(structuredIntake.chief_complaint);
+                    if (structuredIntake.duration) setDuration(structuredIntake.duration);
+                    if (structuredIntake.severity && structuredIntake.severity !== 'unspecified') setSeverity(structuredIntake.severity);
+                    if (structuredIntake.associated_symptoms) setAssociated(structuredIntake.associated_symptoms);
+                    if (structuredIntake.allergies) setAllergies(structuredIntake.allergies);
+                  }
+                  setChatCompleted(true);
+                }}
+                onFallback={() => setIntakeMode('form')}
+              />
+            </div>
+          )}
+
+          {/* After chat done: show proceed button (or form for review) */}
+          {intakeMode === 'chat' && chatCompleted && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+              <div style={{
+                background: '#f0fdf4', border: '1.5px solid #86efac',
+                borderRadius: 14, padding: '14px 18px', color: '#166534', fontSize: '0.9rem',
+                display: 'flex', alignItems: 'center', gap: 10
+              }}>
+                <CheckCircle2 size={18} color="#16a34a" />
+                <span><strong>Your responses have been saved.</strong> Click next to upload your reports, or the doctor will review your information.</span>
+              </div>
+              <div style={{ display: 'flex', gap: 12, justifyContent: 'flex-end' }}>
+                <button
+                  type="button"
+                  className="btn-secondary"
+                  onClick={() => setIntakeMode('form')}
+                  style={{ fontSize: '0.88rem' }}
+                >
+                  Review / Edit Answers
+                </button>
+                <button
+                  type="button"
+                  className="btn-primary"
+                  onClick={() => setStep(3)}
+                >
+                  Next: Upload Reports <ArrowRight size={16} style={{ marginLeft: 4 }} />
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* FORM MODE — existing form, shown when chat unavailable or user switches */}
+          {intakeMode === 'form' && (
+            <form onSubmit={handleSaveIntake}>
+              <div className="form-group">
               <label className="form-label">What is the main reason for your hospital visit today? *</label>
               <input
                 type="text"
@@ -1050,6 +1110,7 @@ export default function PatientIntake({ activeStep = 1, onStepChange = () => {} 
               <ArrowRight size={16} />
             </button>
           </form>
+          )}
         </div>
       )}
 

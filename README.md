@@ -354,7 +354,135 @@ Tests cover:
 
 ---
 
-## 11. Security, Privacy & Compliance
+## 11. Patient Chatbot, Doctor Summary & LLM Failover Routing
+
+Chakshu incorporates three connected clinical context preparation features designed with hard safety boundaries and automatic provider resilience:
+
+### A. Patient Chatbot (Minimum-Questions Intake)
+
+- **Mobile-First Conversational Interface**: Embedded directly in the patient check-in flow (`frontend/src/components/ChatIntake.jsx`), using the existing soft blue (`#edf4fa`) rounded card and pill button design system.
+- **Session Auth**: Reuses the short-lived patient encounter token (`POST /api/chat/start` and `POST /api/chat/message`). No new credentials needed.
+- **Question-Minimization Policy**:
+  - Hard cap of **6 questions** (target 3–5 short, plain-language questions, under 25 words each).
+  - **Never asks what is already known**: For returning patients, existing chronic conditions, medications, allergies, and prior visit history are passed as known facts and omitted from questioning.
+  - Priority order: (1) chief complaint in patient's words, (2) onset / duration, (3) severity & progression, (4) targeted follow-up (missed doses, symptom changes), (5) optional closing.
+  - Quick-reply pill buttons ("Less than a week", "Getting worse", etc.) plus free text, skip option, and a persistent "That's all / Done" button to finish early.
+- **Deterministic Emergency Keyword Detection**:
+  - Triggers on acute keywords (*chest pain*, *severe breathing difficulty*, *fainting*, *stroke signs*, etc.) using strict keyword matching in code (not LLM judgment).
+  - Immediately displays a neutral directive: *"Please tell the nurse right now."* and marks the visit for staff triage without diagnostic commentary.
+- **Server-Side State & Structured Parsing**:
+  - Entire message history and collected fields reside in `chat_sessions` and `chat_messages` tables in SQLite.
+  - Completed conversations are parsed into structured JSON adhering to the existing `intakes` schema with strict validation and one-shot repair.
+- **Silent Fallback**: If all providers fail or are unconfigured, the UI silently falls back to the standard structured intake form pre-filled with whatever was collected.
+
+### B. Fast-Readable Doctor Summary
+
+- **Inputs**: Structured chatbot intake, nurse vitals, extracted lab results, and previous visit history.
+- **10–15 Second Read Card Layout**:
+  - `TODAY`: Presenting complaint, duration, severity, and associated symptoms.
+  - `RELEVANT HISTORY`: Comorbidities, active medications, and baseline profile.
+  - `SAME COMPLAINT BEFORE`: Prior visits, doctor examination notes, and past advice.
+  - `ABNORMAL VALUES`: **Generated deterministically in code (NOT by an LLM)**:
+    - Compares each observed lab value to printed reference ranges.
+    - Flags only: test name, value, unit, reference range, `HIGH`/`LOW` flag, report date, and source report link.
+    - Previous report comparison is expressed strictly as numbers only (e.g. `HbA1c 7.6% -> 8.1%`), with zero interpretive text.
+  - `CONFIRM IN ROOM`: Targeted clinical checklist for the physician.
+- **Strict Fact Verification & Output Validator**:
+  - Every bullet phrased by an LLM must carry valid bracketed source IDs (e.g. `[intake_1]`, `[vitals_1]`, `[lab_2]`).
+  - Output validator checks that every number, date, unit, and medicine name in generated text exists in the input facts.
+  - Forbidden wording (*suggests*, *indicates*, *likely*, *probably*, *consistent with*, *may be due to*, *diagnosis*, *you should take*, dose-change advice) triggers immediate rejection.
+  - On rejection, the router tries the next provider; if all fail, it falls back to the deterministic template summary.
+  - Adds metadata fields: `"generated_by"` (provider name or `"deterministic"`) and `"fallback_used"` (`true`/`false`).
+
+### C. Automatic LLM Failover Architecture
+
+```
+Patient Chat / Doctor Summary Request
+                  │
+                  ▼
+         [ LLM Router ] (Latency Budget: 12s)
+                  │
+     ┌────────────┼────────────┐
+     ▼            ▼            ▼
+[ Anthropic ]  [ Gemini ]   [ OpenAI ]
+   Claude       Gemini        GPT
+ (Primary)    (Fallback 1) (Fallback 2)
+     │            │            │
+     └────────────┴────────────┘
+                  │
+         (All providers down / rejected)
+                  │
+                  ▼
+  [ Deterministic Fallback Template / Form ]
+```
+
+- **Modular Package (`src/llm/`)**:
+  - `base.py`: `LLMProvider` abstract base and normalized error classes (`RateLimitError`, `QuotaExhaustedError`, `TimeoutError`, `ServerError`, `AuthError`, `BadRequestError`).
+  - `anthropic_provider.py`: Official Anthropic Python SDK adapter.
+  - `gemini_provider.py`: Official Google Generative AI adapter.
+  - `openai_provider.py`: Official OpenAI Python SDK adapter.
+  - `router.py`: Ordered failover (`LLM_PROVIDER_ORDER`), per-provider circuit breaker, transient error jittered retries (max 1), short timeout (6s), and total latency budget (12s).
+- **Circuit Breaker**: Skips rate-limited/quota-exhausted providers until `Retry-After` or cooldown expires (default 60s, 3600s for quota).
+- **Health Monitoring**: `GET /api/health` reports per-provider configuration, availability, and cooldown remaining without exposing API keys.
+- **Audit Logging**: Every turn and summary logs provider used, fallback status, and latency to `audit_logs` (zero PHI, zero keys).
+
+---
+
+## 12. Environment Setup & Failover Demo
+
+### Environment Configuration
+
+Copy the example environment template:
+
+```bash
+cp .env.example .env
+```
+
+Configure your provider order and keys in `.env`:
+
+```env
+LLM_PROVIDER_ORDER=anthropic,gemini,openai
+
+ANTHROPIC_API_KEY=sk-ant-...
+ANTHROPIC_MODEL=claude-3-haiku-20240307
+
+GEMINI_API_KEY=AIzaSy...
+GEMINI_MODEL=gemini-1.5-flash
+
+OPENAI_API_KEY=sk-proj-...
+OPENAI_MODEL=gpt-4o-mini
+
+LLM_PER_PROVIDER_TIMEOUT=6.0
+LLM_TOTAL_BUDGET=12.0
+LLM_COOLDOWN_SECONDS=60.0
+MAX_CHAT_QUESTIONS=6
+```
+
+### Manual Failover Demo
+
+To verify seamless LLM failover without disrupting the user:
+
+1. **Verify Baseline Health**:
+   ```bash
+   curl http://127.0.0.1:8000/api/health
+   ```
+   Inspect `"llm_providers"` to see all configured providers marked `available: true`.
+
+2. **Trigger Failover via Invalid Primary Key**:
+   Set `ANTHROPIC_API_KEY=invalid_dummy_key` in `.env` (or simulate a 429 rate limit).
+3. **Initiate Patient Intake / Chat**:
+   Open `http://localhost:8000/patient/check-in`, check in a patient, and start the intake chat.
+4. **Observe Seamless Response**:
+   - The primary provider (`anthropic`) fails authentication or rate limits.
+   - The router logs `[LLMRouter] anthropic auth/bad-request ... failing over to gemini`.
+   - The patient receives their question seamlessly from `gemini` with zero visible error.
+   - Check `audit_logs` in SQLite: `details="provider=gemini turn=1"`.
+5. **Verify Complete Fallback**:
+   Unset all API keys. The chatbot automatically uses the pre-configured deterministic clinical template questions, and the doctor summary uses the deterministic evidence card. Zero 500 errors or broken flows.
+
+---
+
+## 13. Security, Privacy & Compliance
 
 - **Multi-tenant Isolation**: All database queries are explicitly scoped to patient and visit identifiers.
 - **Audit Logging**: All view actions, vitals entries, notes saves, and report uploads are logged in `audit_logs`.

@@ -49,6 +49,8 @@ from src.services.auth_service import (
     authenticate_staff, create_staff_session, create_patient_session,
     get_staff_session, get_patient_session, revoke_staff_session
 )
+from src.services.chat_service import start_chat_session, handle_chat_message
+from src.services.summary_llm_enhance import enhance_summary_with_llm
 # Cached symptom extractor
 _extractor = None
 
@@ -131,11 +133,17 @@ async def staff_logout(request):
     return JSONResponse({"status": "signed_out"})
 
 async def health(request):
+    from src.llm.router import get_router
+    try:
+        llm_status = get_router().status()
+    except Exception:
+        llm_status = []
     return JSONResponse({
         "status": "healthy",
         "tesseract_available": is_tesseract_available(),
         "model_mode": get_extractor().mode,
-        "database": "sqlite_connected"
+        "database": "sqlite_connected",
+        "llm_providers": llm_status,
     })
 
 
@@ -338,6 +346,13 @@ async def save_intake_endpoint(request):
         extracted_labs=visit_data.get("extracted_results"),
         returning_history=prior_history,
         patient_info=patient_data
+    )
+    summary_payload = enhance_summary_with_llm(
+        base_summary=summary_payload,
+        intake=visit_data.get("intake") or {},
+        vitals=visit_data.get("vitals") or {},
+        labs=visit_data.get("extracted_results") or [],
+        history=prior_history,
     )
     save_summary(visit_id, patient_id, summary_payload)
 
@@ -656,6 +671,73 @@ async def prescription_safety_endpoint(request):
     return JSONResponse(check_prescription_safety(body.get("medications", []), body.get("allergies", "")))
 
 
+# --------------- CHAT ENDPOINTS ---------------
+
+async def chat_start_endpoint(request):
+    """Start a chat session for the current visit. Returns first question."""
+    identity, error = require_patient(request)
+    if error:
+        return error
+
+    visit_id = identity["visit_id"]
+    patient_id = identity["patient_id"]
+
+    # Build known fields from patient history to skip unnecessary questions
+    try:
+        patient_data = find_patient_by_id(patient_id)
+        prior_history = get_patient_history(patient_id, exclude_visit_id=visit_id)
+
+        # Extract known info from most recent visit
+        conditions, medications, allergies = "", "", ""
+        is_returning = len(prior_history) > 0
+        lab_summary = ""
+
+        for pv in prior_history[:1]:
+            pv_in = pv.get("intake") or {}
+            conditions = pv_in.get("medical_conditions", "")
+            medications = pv_in.get("current_medications", "")
+            allergies = pv_in.get("known_allergies", "")
+            # Build lab summary from prior visit
+            pv_labs = pv.get("extracted_results") or []
+            if pv_labs:
+                lab_summary = "; ".join(
+                    f"{l.get('test_name', l.get('test', ''))}: {l.get('test_value', l.get('value', ''))} {l.get('unit', '')}".strip()
+                    for l in pv_labs[:3]
+                )
+
+        known = {
+            "chronic_conditions": conditions,
+            "medications": medications,
+            "allergies": allergies,
+            "is_returning": is_returning,
+            "lab_summary": lab_summary,
+        }
+    except Exception:
+        known = {}
+
+    result = start_chat_session(visit_id=visit_id, patient_id=patient_id, known=known)
+    return JSONResponse(result)
+
+
+async def chat_message_endpoint(request):
+    """Submit a patient answer; receive next question or done signal."""
+    identity, error = require_patient(request)
+    if error:
+        return error
+
+    body = await request.json()
+    session_id = body.get("session_id", "").strip()
+    patient_text = body.get("message", "").strip()
+
+    if not session_id:
+        return JSONResponse({"error": "session_id is required"}, status_code=400)
+    if not patient_text:
+        return JSONResponse({"error": "message is required"}, status_code=400)
+
+    result = handle_chat_message(session_id=session_id, patient_text=patient_text)
+    return JSONResponse(result)
+
+
 async def checkin_returning_endpoint(request):
     """Check in a returning patient by permanent MRN with phone verification."""
     body = await request.json()
@@ -803,6 +885,8 @@ routes = [
     Route("/api/doctor/decision", save_decision_endpoint, methods=["POST"]),
     Route("/api/doctor/notes", save_notes_endpoint, methods=["POST"]),
     Route("/api/doctor/prescription-safety", prescription_safety_endpoint, methods=["POST"]),
+    Route("/api/chat/start", chat_start_endpoint, methods=["POST"]),
+    Route("/api/chat/message", chat_message_endpoint, methods=["POST"]),
 ]
 
 # Static frontend files mount if production build exists

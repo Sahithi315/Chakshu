@@ -8,6 +8,7 @@ import os
 import torch
 from .model import load, encode, decode, collate, ModelNotFoundError, ModelLoadError
 from .baseline import predict, from_train
+from . import hindi, kannada
 
 
 class Extractor:
@@ -20,6 +21,7 @@ class Extractor:
         self.tok = None
         self.model = None
         self._baseline_fn = None
+        self._muril = None
 
         if model_dir:
             try:
@@ -70,7 +72,27 @@ class Extractor:
                 out.append(decode(t, offs, pred[:len(offs)]))
         return out
 
+    def _extract_hindi(self, text):
+        """Rules by default. MuRIL only when CHAKSHU_HINDI_MODEL=muril and models/muril_hindi_v1 loads."""
+        if os.environ.get("CHAKSHU_HINDI_MODEL") == "muril" and self._muril is None:
+            try:
+                self._muril = Extractor(str(Path(__file__).resolve().parents[2] / "models" / "muril_hindi_v1"))
+            except Exception:
+                self._muril = False  # missing or broken checkpoint: keep using the rules
+        if self._muril:
+            res = structure(text, self._muril.spans([text])[0])
+            for s in res["symptoms"]:
+                s["english"] = hindi.TABLE.get(tuple(hindi.norm(w) for w in s["text"].split()), ("",))[0]
+            res["symptoms"] = hindi.keep_inside_negation(text, res["symptoms"])
+            return {**res, "extractor_mode": "hindi_muril"}
+        return {**hindi.extract(text), "extractor_mode": "hindi_rules"}
+
     def extract(self, text):
+        is_hi, is_kn = hindi.looks_hindi(text), kannada.looks_kannada(text)
+        if is_kn and (not is_hi or kannada.markers(text) > hindi.markers(text)):  # both: more marker words wins
+            return {**kannada.extract(text), "extractor_mode": "kannada_rules"}
+        if is_hi:
+            return self._extract_hindi(text)
         res = structure(text, self.spans([text])[0])
         res["extractor_mode"] = self.mode
         return res

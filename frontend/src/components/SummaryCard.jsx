@@ -8,6 +8,8 @@ const cleanItems = items => (Array.isArray(items) ? items : [items])
   .map(item => String(item || '').trim())
   .filter(Boolean);
 
+const englishName = (item) => (item.english && item.english.toLowerCase() !== item.text.toLowerCase() ? ` (${item.english})` : '');
+
 export default function SummaryCard({ summary, patient, visit, symptomExtraction, compact = false }) {
   const [copied, setCopied] = useState(false);
 
@@ -94,8 +96,8 @@ export default function SummaryCard({ summary, patient, visit, symptomExtraction
       <div className="clinical-chief-complaint">
         <div className="clinical-section-label">Symptoms</div>
         {extractedSymptoms.length > 0 ? <div className="clinical-symptom-chips clinical-symptom-keywords">
-            {reportedSymptoms.map((item, index) => <span key={`reported-${index}`} className="clinical-symptom-chip">{item.text}</span>)}
-            {deniedSymptoms.map((item, index) => <span key={`denied-${index}`} className="clinical-symptom-chip clinical-symptom-denied">No {item.text}</span>)}
+            {reportedSymptoms.map((item, index) => <span key={`reported-${index}`} className="clinical-symptom-chip">{item.text}{englishName(item)}</span>)}
+            {deniedSymptoms.map((item, index) => <span key={`denied-${index}`} className="clinical-symptom-chip clinical-symptom-denied">No {item.text}{englishName(item)}</span>)}
           </div> : <div className="clinical-chief-text">{reported.reason_for_visit || narrative || today}</div>}
         <div className="clinical-context-chips">
           <span><strong>Duration</strong>{durationText}</span>

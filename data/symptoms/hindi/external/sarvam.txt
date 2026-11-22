@@ -1,0 +1,50 @@
+mujhe \[kal raat\]{D} se \[sir me dard\]{S} hai aur \[thoda\]{V} \[chakkar\]{S} bhi aa raha hai
+\[do din\]{D} se \[pet me dard\]{S} hai, \[ulti\]{N} nahi hui
+\[ek hafte\]{D} se \[khansi\]{S} hai, \[bukhar\]{N} nahi hai
+\[bhookh nahi lagti\]{S} \[teen din\]{D} se, \[ulti\]{N} nahi
+\[saans lene me taklif\]{S} hoti hai seedhi chadhne par \[2 hafte\]{D} se
+\[neend nahi aati\]{S} \[kai din\]{D} se aur \[thakan\]{S} lagti hai
+\[peshab me jalan\]{S} ho rahi hai \[kal\]{D} se
+\[aankhon me sujan\]{S} hai \[subah\]{D} se aur \[dhundhla\]{S} dikhta hai
+\[kaan me dard\]{S} hai \[bahut\]{V} \[raat\]{D} se
+\[kamzori\]{S} lag rahi hai \[bahut\]{V} \[ek mahine\]{D} se
+\[sir me dard\]{N} nahi hai par \[gale me kharash\]{S} hai \[3 din\]{D} se
+\[haathon me khujli\]{S} ho rahi hai \[ek hafte\]{D} se, \[daane\]{N} nahi
+\[chakkar\]{S} aa rahe hain \[do din\]{D} se, \[ulti\]{N} nahi
+\[dast\]{S} ho rahe hain \[raat\]{D} se, \[bukhar\]{N} nahi
+\[seene me jalan\]{S} hoti hai khane ke baad \[ek hafte\]{D} se
+\[wajan kam\]{S} ho raha hai \[2 mahine\]{D} se, \[bukhar\]{N} nahi
+\[kamar dard\]{S} \[bahut\]{V} hai \[6 mahine\]{D} se
+\[pairon me sujan\]{S} hai \[shaam\]{D} se, \[dard\]{N} nahi
+\[naak band\]{S} hai aur \[sar bhari\]{S} lagta hai \[2 din\]{D} se
+\[periods me dard\]{S} \[bahut\]{V} hai \[pehle din\]{D} se, \[bukhar\]{N} nahi
+\[तीन दिन\]{D} से \[बुखार\]{S} है और \[सिर में दर्द\]{S} भी
+\[पेट में मरोड़\]{S} उठ रही है \[कल रात\]{D} से, \[उल्टी\]{N} नहीं हुई
+\[आँखों में जलन\]{S} है \[सुबह\]{D} से, \[धुंधला\]{S} दिखता है
+\[खांसी\]{S} \[एक हफ्ते\]{D} से है, \[बुखार\]{N} नहीं
+\[भूख नहीं लगती\]{S} \[कई दिन\]{D} से और \[कमजोरी\]{S} भी है
+\[पेशाब में जलन\]{S} होती है \[दो दिन\]{D} से
+\[कान में दर्द\]{S} है \[बहुत\]{V} \[रात\]{D} से
+\[नींद नहीं आती\]{S} \[एक हफ्ते\]{D} से, \[थकान\]{S} रहती है
+\[सांस फूलती\]{S} है \[थोड़ी\]{V} सीढ़ी चढ़ने पर \[दो हफ्ते\]{D} से
+\[जोड़ों में दर्द\]{S} है \[महीने\]{D} से, \[सूजन\]{S} भी है
+\[चक्कर\]{S} आता है \[दोपहर\]{D} से, \[उल्टी\]{N} नहीं
+\[त्वचा पर चकत्ते\]{S} निकल आए हैं \[कल\]{D} से, \[खुजली\]{S} भी है
+\[2 din\]{D} se \[fever\]{S} hai aur \[body pain\]{S} bhi
+\[pet kharab\]{S} hai \[kal raat\]{D} se, \[vomiting\]{N} nahi hui
+\[chest me pain\]{S} ho raha hai \[bahut\]{V} \[subah\]{D} se, \[breathing problem\]{N} nahi
+\[headache\]{S} \[bahut\]{V} hai \[3 din\]{D} se, \[thoda\]{V} \[nausea\]{S} bhi
+\[urine me burning\]{S} ho rahi hai \[ek hafte\]{D} se
+\[skin pe rash\]{S} hai aur \[itching\]{S} \[bahut\]{V} \[2 din\]{D} se
+\[appetite kam\]{S} ho gayi hai \[hafte\]{D} se, \[weight loss\]{S} bhi
+\[sleep nahi aa rahi\]{S} \[kai din\]{D} se, \[stress\]{S} \[bahut\]{V} hai
+\[shoulder me pain\]{S} hai \[mahine\]{D} se, \[swelling\]{N} nahi
+\[throat pain\]{S} hai \[kal\]{D} se, \[fever\]{N} nahi, \[cough\]{N} nahi
+\[chakkar\]{S} aa raha hai \[bahut\]{V} \[do din\]{D} se, \[BP\]{N} problem nahi
+\[periods\]{S} irregular ho rahe hain \[3 mahine\]{D} se, \[cramps\]{S} \[bahut\]{V}
+\[2din\]{D} se \[sirdard\]{S} horaha hai \[bukhar\]{N} nahi
+petme \[dard\]{S} \[kalraat\]{D} se \[ulti\]{N} nahi hui
+\[3din\]{D} se \[bukhar\]{S} h aur \[kamzori\]{S} bhi
+\[aankh me jaln\]{S} h \[subah\]{D} se
+\[neend nhi\]{S} aarhi \[2raat\]{D} se \[chakkar\]{S} bhi
+\[khansi\]{S} \[1hafta\]{D} se \[balgam\]{S} bhi hai \[bukhar\]{N} nahi

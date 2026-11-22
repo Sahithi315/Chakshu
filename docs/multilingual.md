@@ -20,10 +20,11 @@ Demo sentences: "mujhe 3 din se bukhar hai, khansi nahi hai", "मुझे द�
 ## Retrain MuRIL
 ```
 python tools/generate_hindi_symptoms.py          # -> data/symptoms/hindi/{all,train,dev}.jsonl (deterministic)
-python -m src.symptoms.train --model google/muril-base-cased --data data/symptoms/hindi --out models/muril_hindi_v1 --epochs 12 --bs 16 --dtype fp16
+python -m src.symptoms.train --model google/muril-base-cased --data data/symptoms/hindi --out models/_muril_new --epochs 12 --bs 8 --dtype fp16 --maxlen 64 > models/muril_train.log 2>&1
+# check models/_muril_new on the demo sentences, then: rm -rf models/muril_hindi_v1 && mv models/_muril_new models/muril_hindi_v1
 python tools/score_hindi_dev.py models/muril_hindi_v1   # synthetic sanity check, not accuracy
 ```
-About 5 minutes on an RTX 3050 6 GB. WSL has crashed during this run before; close other programs first. The current `models/muril_hindi_v1` was trained before the round-2 lexicon/data update.
+About 9 minutes on an RTX 3050 6 GB (22 Nov run: 526 s, 1274 training messages, longest 30 tokens). Batch size 8 and max length 64 keep memory low; WSL crashed twice during earlier runs with batch size 16, so close other programs first. The current `models/muril_hindi_v1` was trained on 22 Nov on the round-2 Hindi data (Hindi only; no Kannada model). The training data has no "body part + severity + dard" examples, so MuRIL still splits "सिर में बहुत दर्द" into "सिर में" and "दर्द"; the rules handle it.
 
 ## Data
 - `train.jsonl` / `dev.jsonl`: synthetic, made by `tools/generate_hindi_symptoms.py` from the lexicon (dev uses unseen patterns and some unseen symptoms).

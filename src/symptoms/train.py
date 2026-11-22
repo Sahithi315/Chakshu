@@ -35,7 +35,7 @@ def train(model_name, data_dir, frac, out, epochs=10, bs=16, lr=5e-5, seed=0, dt
         if ep % 3 == 0 or ep == epochs - 1:
             print(f"epoch {ep+1}/{epochs} loss {loss.item():.4f} ({time.time()-t0:.0f}s)")
     model.save_pretrained(out); tok.save_pretrained(out)
-    json.dump({"base": model_name, "n_train": len(rows), "frac": frac, "epochs": epochs, "bs": bs, "lr": lr, "seed": seed, "dtype": dtype},
+    json.dump({"base": model_name, "n_train": len(rows), "frac": frac, "epochs": epochs, "bs": bs, "lr": lr, "seed": seed, "dtype": dtype, "maxlen": model_module.MAXLEN},
               open(f"{out}/train_info.json", "w"))
     return len(rows)
 

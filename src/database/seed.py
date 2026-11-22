@@ -158,20 +158,49 @@ def seed_database(db_path=None):
                         (p_vid, pid, pv_vit.get("bp_systolic", 138), pv_vit.get("bp_diastolic", 86), pv_vit.get("heart_rate", 76), pv_vit.get("temperature", 98.2), pv_vit.get("spo2", 98.0), pv_vit.get("blood_sugar", 150.0), prior["created_at"])
                     )
 
-            # 3. Check or create active visit
-            v_row = conn.execute("SELECT * FROM visits WHERE patient_id = ? AND status = 'waiting'", (pid,)).fetchone()
-            if not v_row:
-                visit_id = f"VIS-{pid[-4:]}-01"
-                token_num = f"T-{100 + len(conn.execute('SELECT id FROM visits').fetchall()) + 1}"
-                conn.execute(
-                    """
-                    INSERT INTO visits (visit_id, patient_id, token_number, status)
-                    VALUES (?, ?, ?, 'waiting')
-                    """,
-                    (visit_id, pid, token_num)
-                )
-            else:
+            # 3. Reuse an existing waiting visit, or find/create this patient's
+            # deterministic seed visit. This makes seeding safe to run repeatedly.
+            v_row = conn.execute(
+                "SELECT * FROM visits WHERE patient_id = ? AND status = 'waiting' "
+                "ORDER BY created_at DESC LIMIT 1",
+                (pid,)
+            ).fetchone()
+
+            if v_row:
                 visit_id = v_row["visit_id"]
+            else:
+                visit_prefix = f"VIS-{pid[-4:]}-"
+                suffix = 1
+
+                while True:
+                    candidate_visit_id = f"{visit_prefix}{suffix:02d}"
+                    existing_visit = conn.execute(
+                        "SELECT visit_id, patient_id FROM visits WHERE visit_id = ?",
+                        (candidate_visit_id,)
+                    ).fetchone()
+
+                    if existing_visit is None:
+                        visit_id = candidate_visit_id
+                        token_num = (
+                            f"T-{100 + conn.execute('SELECT COUNT(*) FROM visits').fetchone()[0] + 1}"
+                        )
+                        conn.execute(
+                            """
+                            INSERT INTO visits (visit_id, patient_id, token_number, status)
+                            VALUES (?, ?, ?, 'waiting')
+                            """,
+                            (visit_id, pid, token_num)
+                        )
+                        break
+
+                    if existing_visit["patient_id"] == pid:
+                        # The seed visit already exists (possibly completed).
+                        # Reuse it; do not attempt a duplicate INSERT.
+                        visit_id = existing_visit["visit_id"]
+                        break
+
+                    # A different patient already owns this ID. Try the next suffix.
+                    suffix += 1
 
             # 3. Vitals
             vits = pdata.get("vitals", {})

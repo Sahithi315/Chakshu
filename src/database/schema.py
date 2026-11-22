@@ -131,7 +131,7 @@ CREATE TABLE IF NOT EXISTS doctor_reviews (
     visit_id TEXT NOT NULL REFERENCES visits(visit_id) ON DELETE CASCADE,
     patient_id TEXT NOT NULL REFERENCES patients(patient_id) ON DELETE CASCADE,
     item_id TEXT NOT NULL,
-    part_type TEXT NOT NULL, -- 'symptom' or 'lab'
+    part_type TEXT NOT NULL, -- 'symptom', 'lab', or 'medication'
     decision TEXT NOT NULL, -- 'confirmed', 'corrected', 'rejected'
     corrected_value_json TEXT,
     reviewed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -217,8 +217,23 @@ CREATE TABLE IF NOT EXISTS extracted_medications (
     duration TEXT,
     route TEXT,
     instructions TEXT,
+    medicine_type TEXT DEFAULT 'Not specified',
+    strength TEXT DEFAULT 'Not specified',
+    quantity TEXT DEFAULT 'Not specified',
     source_line TEXT,
+    raw_text TEXT,
+    confidence REAL DEFAULT 0.0,
+    confidence_level TEXT DEFAULT 'medium',
+    is_handwritten INTEGER DEFAULT 0,
+    verification_status TEXT DEFAULT 'unverified',
+    verified_by TEXT,
+    verified_at TIMESTAMP,
+    corrected_data_json TEXT,
+    page INTEGER DEFAULT 1,
     extraction_method TEXT DEFAULT 'ocr',
+    source_region_json TEXT,
+    field_confidences_json TEXT,
+    original_ocr_json TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -237,6 +252,7 @@ CREATE TABLE IF NOT EXISTS document_findings (
     severity TEXT DEFAULT 'info',
     is_automated INTEGER DEFAULT 1,
     source_line TEXT,
+    source_region_json TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -263,6 +279,43 @@ def init_db(db_path=None):
             conn.execute("ALTER TABLE reports ADD COLUMN findings_count INTEGER DEFAULT 0")
         if "error_message" not in report_cols:
             conn.execute("ALTER TABLE reports ADD COLUMN error_message TEXT")
+
+        # Auto-migrate extracted_medications columns
+        med_cols = [c[1] for c in conn.execute("PRAGMA table_info(extracted_medications)").fetchall()]
+        if "confidence" not in med_cols:
+            conn.execute("ALTER TABLE extracted_medications ADD COLUMN confidence REAL DEFAULT 0.0")
+        if "confidence_level" not in med_cols:
+            conn.execute("ALTER TABLE extracted_medications ADD COLUMN confidence_level TEXT DEFAULT 'medium'")
+        if "is_handwritten" not in med_cols:
+            conn.execute("ALTER TABLE extracted_medications ADD COLUMN is_handwritten INTEGER DEFAULT 0")
+        if "verification_status" not in med_cols:
+            conn.execute("ALTER TABLE extracted_medications ADD COLUMN verification_status TEXT DEFAULT 'unverified'")
+        if "verified_by" not in med_cols:
+            conn.execute("ALTER TABLE extracted_medications ADD COLUMN verified_by TEXT")
+        if "verified_at" not in med_cols:
+            conn.execute("ALTER TABLE extracted_medications ADD COLUMN verified_at TIMESTAMP")
+        if "corrected_data_json" not in med_cols:
+            conn.execute("ALTER TABLE extracted_medications ADD COLUMN corrected_data_json TEXT")
+        if "raw_text" not in med_cols:
+            conn.execute("ALTER TABLE extracted_medications ADD COLUMN raw_text TEXT")
+        if "page" not in med_cols:
+            conn.execute("ALTER TABLE extracted_medications ADD COLUMN page INTEGER DEFAULT 1")
+        if "medicine_type" not in med_cols:
+            conn.execute("ALTER TABLE extracted_medications ADD COLUMN medicine_type TEXT DEFAULT 'Not specified'")
+        if "strength" not in med_cols:
+            conn.execute("ALTER TABLE extracted_medications ADD COLUMN strength TEXT DEFAULT 'Not specified'")
+        if "quantity" not in med_cols:
+            conn.execute("ALTER TABLE extracted_medications ADD COLUMN quantity TEXT DEFAULT 'Not specified'")
+        if "source_region_json" not in med_cols:
+            conn.execute("ALTER TABLE extracted_medications ADD COLUMN source_region_json TEXT")
+        if "field_confidences_json" not in med_cols:
+            conn.execute("ALTER TABLE extracted_medications ADD COLUMN field_confidences_json TEXT")
+        if "original_ocr_json" not in med_cols:
+            conn.execute("ALTER TABLE extracted_medications ADD COLUMN original_ocr_json TEXT")
+
+        finding_cols = [c[1] for c in conn.execute("PRAGMA table_info(document_findings)").fetchall()]
+        if "source_region_json" not in finding_cols:
+            conn.execute("ALTER TABLE document_findings ADD COLUMN source_region_json TEXT")
     except Exception:
         pass
     from src.services.auth_service import seed_demo_staff

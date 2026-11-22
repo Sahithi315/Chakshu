@@ -20,7 +20,7 @@ if str(ROOT) not in sys.path:
 from starlette.applications import Starlette
 from starlette.middleware import Middleware
 from starlette.middleware.cors import CORSMiddleware
-from starlette.responses import JSONResponse, FileResponse
+from starlette.responses import JSONResponse, FileResponse, Response
 from starlette.routing import Route, Mount
 from starlette.staticfiles import StaticFiles
 from starlette.exceptions import HTTPException
@@ -432,9 +432,18 @@ async def upload_report_endpoint(request):
         )
 
         # Extract lab records, medications, and findings via structured PDF or OCR
-        extraction_res = process_report_file(rep_rec["storage_path"])
+        try:
+            extraction_res = process_report_file(rep_rec["storage_path"])
+        except Exception as ocr_err:
+            with get_db() as conn:
+                conn.execute(
+                    "UPDATE reports SET extraction_status = 'Failed', error_message = ? WHERE report_id = ?",
+                    (str(ocr_err), rep_rec["report_id"])
+                )
+            raise ocr_err
+
         doc_type = extraction_res.get("doc_type", "Medical Report")
-        ext_status = extraction_res.get("status", "completed").capitalize()
+        ext_status = "Completed" if extraction_res.get("status") in ["success", "warning"] else "Failed"
         findings_count = extraction_res.get("findings_count", 0)
 
         # Insert extracted items into DB
@@ -468,35 +477,59 @@ async def upload_report_endpoint(request):
             conn.execute("DELETE FROM extracted_medications WHERE report_id = ?", (rep_rec["report_id"],))
             for m in med_rows:
                 mid = f"MED-{uuid.uuid4().hex[:8].upper()}"
+                sr_json = json.dumps(m["source_region"]) if m.get("source_region") else None
+                fc_json = json.dumps(m["field_confidences"]) if m.get("field_confidences") else None
+                orig_ocr = json.dumps({
+                    "medicine_name": m["medicine_name"],
+                    "medicine_type": m.get("medicine_type", "Not specified"),
+                    "strength": m.get("strength", "Not specified"),
+                    "dosage": m.get("dosage", "Not specified"),
+                    "frequency": m.get("frequency", "Not specified"),
+                    "timing": m.get("timing", "Not specified"),
+                    "duration": m.get("duration", "Not specified"),
+                    "quantity": m.get("quantity", "Not specified"),
+                    "route": m.get("route", "Not specified"),
+                    "raw_text": m.get("raw_text", m.get("source_line", "")),
+                    "confidence": float(m.get("confidence", 80.0)),
+                })
                 conn.execute(
                     """
                     INSERT INTO extracted_medications (
                         med_id, report_id, patient_id, visit_id, medicine_name, dosage,
-                        frequency, timing, duration, route, instructions, source_line, extraction_method
-                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                        frequency, timing, duration, route, instructions, source_line,
+                        raw_text, confidence, confidence_level, is_handwritten, page,
+                        verification_status, extraction_method, medicine_type, strength, quantity,
+                        source_region_json, field_confidences_json, original_ocr_json
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                     """,
                     (mid, rep_rec["report_id"], patient_id, visit_id, m["medicine_name"],
                      m.get("dosage", "Not specified"), m.get("frequency", "Not specified"),
                      m.get("timing", "Not specified"), m.get("duration", "Not specified"),
                      m.get("route", "Not specified"), m.get("instructions", "Not specified"),
-                     m.get("source_line", ""), m.get("extraction_method", "ocr"))
+                     m.get("source_line", ""), m.get("raw_text", m.get("source_line", "")),
+                     float(m.get("confidence", 80.0)), m.get("confidence_level", "medium"),
+                     int(m.get("is_handwritten", 0)), int(m.get("page", 1)),
+                     m.get("verification_status", "unverified"), m.get("extraction_method", "ocr"),
+                     m.get("medicine_type", "Not specified"), m.get("strength", "Not specified"),
+                     m.get("quantity", "Not specified"), sr_json, fc_json, orig_ocr)
                 )
 
             findings = extraction_res.get("document_findings", [])
             conn.execute("DELETE FROM document_findings WHERE report_id = ?", (rep_rec["report_id"],))
             for f in findings:
                 fid = f"FND-{uuid.uuid4().hex[:8].upper()}"
+                f_sr_json = json.dumps(f["source_region"]) if f.get("source_region") else None
                 conn.execute(
                     """
                     INSERT INTO document_findings (
                         finding_id, report_id, patient_id, visit_id, category, title, detail,
-                        severity, is_automated, source_line
-                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                        severity, is_automated, source_line, source_region_json
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                     """,
                     (fid, rep_rec["report_id"], patient_id, visit_id,
                      f.get("category", "diagnostic_observation"), f.get("title", "Clinical Finding"),
                      f.get("detail", ""), f.get("severity", "info"),
-                     1 if f.get("is_automated", 1) else 0, f.get("source_line", ""))
+                     1 if f.get("is_automated", 1) else 0, f.get("source_line", ""), f_sr_json)
                 )
 
         # Recompile summary card
@@ -538,6 +571,7 @@ async def tag_symptoms_endpoint(request):
         return JSONResponse({"symptoms": [], "durations": [], "severities": []})
 
     extractor = get_extractor()
+    spans = extractor.spans([text])[0]
     extracted = extractor.extract(text)
     return JSONResponse(extracted)
 
@@ -695,7 +729,54 @@ async def download_report_endpoint(request):
     path = Path(rep["storage_path"])
     if not path.exists():
         return JSONResponse({"error": "Report file is missing from storage disk"}, status_code=404)
-    return FileResponse(path=str(path), filename=rep["filename"])
+    return FileResponse(path=str(path), filename=rep["filename"], content_disposition_type="inline")
+
+
+async def download_report_region_endpoint(request):
+    """Serve a cropped PNG snippet of a specific normalized region [x, y, w, h] from an uploaded image report."""
+    token = bearer_token(request) or request.query_params.get("token", "")
+    identity = get_staff_session(token) or get_patient_session(token)
+    if not identity:
+        identity, error = require_staff(request, "doctor")
+        if error:
+            return error
+    report_id = request.path_params["report_id"]
+    rep = get_report_by_id(report_id)
+    if not rep:
+        return JSONResponse({"error": "Report not found"}, status_code=404)
+    path = Path(rep["storage_path"])
+    if not path.exists():
+        return JSONResponse({"error": "Report file is missing from storage disk"}, status_code=404)
+
+    try:
+        rx = float(request.query_params.get("x", 0.0))
+        ry = float(request.query_params.get("y", 0.0))
+        rw = float(request.query_params.get("w", 1.0))
+        rh = float(request.query_params.get("h", 1.0))
+    except ValueError:
+        return JSONResponse({"error": "Invalid region coordinates"}, status_code=400)
+
+    try:
+        import io
+        from PIL import Image, ImageOps
+        with Image.open(path) as img:
+            img = ImageOps.exif_transpose(img).convert("RGB")
+            iw, ih = img.size
+            pad_x = max(14, int(iw * 0.02))
+            pad_y = max(12, int(ih * 0.015))
+            x0 = max(0, int(rx * iw) - pad_x)
+            y0 = max(0, int(ry * ih) - pad_y)
+            x1 = min(iw, int((rx + rw) * iw) + pad_x)
+            y1 = min(ih, int((ry + rh) * ih) + pad_y)
+            if x1 <= x0 + 5 or y1 <= y0 + 5:
+                crop = img
+            else:
+                crop = img.crop((x0, y0, x1, y1))
+            buf = io.BytesIO()
+            crop.save(buf, format="PNG")
+            return Response(content=buf.getvalue(), media_type="image/png")
+    except Exception as e:
+        return JSONResponse({"error": f"Unable to crop document region: {e}"}, status_code=500)
 
 
 # ---------------- ROUTE SETUP ----------------
@@ -717,6 +798,7 @@ routes = [
     Route("/api/vitals", save_vitals_endpoint, methods=["POST"]),
     Route("/api/reports/upload", upload_report_endpoint, methods=["POST"]),
     Route("/api/reports/{report_id}/file", download_report_endpoint, methods=["GET"]),
+    Route("/api/reports/{report_id}/region", download_report_region_endpoint, methods=["GET"]),
     Route("/api/symptoms/tag", tag_symptoms_endpoint, methods=["POST"]),
     Route("/api/doctor/decision", save_decision_endpoint, methods=["POST"]),
     Route("/api/doctor/notes", save_notes_endpoint, methods=["POST"]),

@@ -8,7 +8,7 @@ import os
 import torch
 from .model import load, encode, decode, collate, ModelNotFoundError, ModelLoadError
 from .baseline import predict, from_train
-from . import hindi
+from . import hindi, kannada
 
 
 class Extractor:
@@ -88,7 +88,10 @@ class Extractor:
         return {**hindi.extract(text), "extractor_mode": "hindi_rules"}
 
     def extract(self, text):
-        if hindi.looks_hindi(text):
+        is_hi, is_kn = hindi.looks_hindi(text), kannada.looks_kannada(text)
+        if is_kn and (not is_hi or kannada.markers(text) > hindi.markers(text)):  # both: more marker words wins
+            return {**kannada.extract(text), "extractor_mode": "kannada_rules"}
+        if is_hi:
             return self._extract_hindi(text)
         res = structure(text, self.spans([text])[0])
         res["extractor_mode"] = self.mode

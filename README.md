@@ -361,6 +361,6 @@ Tests cover:
 - **Deduplication**: SHA-256 hashing prevents storage of duplicate documents.
 - **Clinical Safety Boundary**: The summary, temporal reasoning, and prescription checks are review aids. They cannot independently diagnose, prescribe, or change medication.
 
-## Hindi support (prototype)
+## Hindi and Kannada support (prototype)
 
-Devanagari or Roman-letter Hindi/Hinglish symptom text ("mujhe 3 din se bukhar hai, khansi nahi hai") goes to a rule-based Hindi extractor (`src/symptoms/hindi.py`); English text stays on the existing model. The doctor brief shows the English name in brackets. Optional MuRIL route: `CHAKSHU_HINDI_MODEL=muril` (weights not in git). Synthetic data only, not tested on real patient text, no accuracy claims. Tests: `python -m pytest tests/test_hindi.py`. Details, retraining and limits: [docs/hindi.md](docs/hindi.md).
+Devanagari or Roman-letter Hindi/Hinglish symptom text ("mujhe 3 din se bukhar hai, khansi nahi hai") goes to a rule-based Hindi extractor (`src/symptoms/hindi.py`); English text stays on the existing model. The doctor brief shows the English name in brackets. Optional MuRIL route: `CHAKSHU_HINDI_MODEL=muril` (weights not in git). Synthetic data only, not tested on real patient text, no accuracy claims. An early Kannada rules version (`src/symptoms/kannada.py`, no native-speaker check yet) handles Kannada script and Roman Kannada the same way. Tests: `python -m pytest tests/test_hindi.py tests/test_kannada.py`. Details, retraining and limits: [docs/multilingual.md](docs/multilingual.md).

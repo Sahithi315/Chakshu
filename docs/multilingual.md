@@ -1,4 +1,4 @@
-# Hindi / Hinglish symptom extraction (prototype)
+# Hindi / Hinglish and Kannada symptom extraction (prototype)
 
 Prototype. Synthetic data only. Not for clinical use.
 
@@ -35,4 +35,12 @@ About 5 minutes on an RTX 3050 6 GB. WSL has crashed during this run before; clo
 - Spellings outside the lexicon are missed. "aur" ends a negation window ("bukhar aur khansi nahi hai" negates just khansi).
 - Severity words may sit inside a lexicon phrase ("सिर में बहुत दर्द", "pet me thoda sa dard", "seene me tez dard"): the full phrase is the symptom and the inner word the severity. Other words inside a phrase ("sir me abhi dard") still split it.
 - MuRIL stays opt-in: on demo sentences it split or cut some phrases ("pet me | dard", "chakkar aa") and gives no English name itself (looked up from the lexicon).
-- Kannada is not done. It would need its own lexicon, script check (U+0C80-0CFF), negation rules ("illa"), generator patterns and real test sentences.
+- Kannada: see below.
+
+## Kannada (early rules version)
+Early rules version, written without a native-speaker check, not tested on real patient text, no accuracy claims.
+- `src/symptoms/kannada.py`, `extractor_mode = kannada_rules`. Routed when the text has Kannada script (U+0C80-U+0CFF) or at least 2 Roman-Kannada marker words (nange, ide, illa, inda, tumba, novu, ... or Roman Kannada symptom spellings). If a text looks like both Hindi and Kannada, the one with more marker words wins (ties go to Hindi).
+- Lexicon: 51 symptoms in `data/symptoms/kannada/lexicon_review.csv` (Kannada script, Roman, English; column `native_speaker_checked` is "no" for all rows). Same output and `english` label as Hindi, so the doctor screen shows e.g. "jwara (fever)".
+- Rules: negation mostly after the symptom (illa, ilva, bandilla, aagilla, fused "jwaravilla", "ಕೆಮ್ಮಿಲ್ಲ"), or "no/not" before; the window stops at commas, aadre/matte/but, "ide" or another symptom. "hasivu aagalla" and "nidde barolla" are complaints, never negated. Durations: number + unit with optional inda (kept outside the span), or ninne/monne/beligge/raatri + inda. Severity words may sit inside body part + novu ("tale tumba novu" = headache). Locative endings are dropped before matching ("hotteyalli" = "hotte").
+- Tests: `python -m pytest tests/test_kannada.py` (21 sentences written by the same author as the rules, so they check behaviour, not accuracy).
+- Known limits: when "illa" is glued to a word, the span stops at the split point, so "ಕೆಮ್ಮಿಲ್ಲ" shows as "ಕೆಮ್ಮ" and "ದಿನಗಳಿಂದ" as "ದಿನಗಳ". Spellings outside the lexicon and other case endings are missed. "mattu" (and) does not stop negation, but another symptom does, so "jwara mattu kemmu illa" negates just kemmu. No MuRIL model for Kannada.

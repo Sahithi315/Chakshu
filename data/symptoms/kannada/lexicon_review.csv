@@ -1,0 +1,52 @@
+english,kannada,roman,english_variants,native_speaker_checked
+fever,ಜ್ವರ,jwara;jvara;jwra;jvra;jora,temperature,no
+cough,ಕೆಮ್ಮು,kemmu;kemu;kemmo,,no
+headache,ತಲೆ ನೋವು;ತಲೆನೋವು;ತಲೆಯಲ್ಲಿ ನೋವು,tale novu;thale novu;talenovu;thalenovu;taleyalli novu;tale noovu,head pain,no
+stomach pain,ಹೊಟ್ಟೆ ನೋವು;ಹೊಟ್ಟೆನೋವು;ಹೊಟ್ಟೆಯಲ್ಲಿ ನೋವು,hotte novu;hottenovu;hotteyalli novu;hotte noovu,stomach ache;stomach pain,no
+vomiting,ವಾಂತಿ,vaanti;vanti;vaanthi,vomit,no
+nausea,ವಾಕರಿಕೆ,vaakarike;vakarike,,no
+loose motions,ಭೇದಿ;ಬೇಧಿ,bhedi;bedi,loose motion;diarrhea;diarrhoea,no
+dizziness,ತಲೆ ಸುತ್ತು;ತಲೆಸುತ್ತು,tale suttu;thale suttu;thalesuttu;talesuttu,dizzy,no
+tiredness,ಸುಸ್ತು;ಆಯಾಸ,sustu;susthu;aayasa,fatigue,no
+weakness,ನಿಶ್ಶಕ್ತಿ,nishakti;nishyakti;nishshakti,,no
+body ache,ಮೈ ಕೈ ನೋವು;ಮೈಕೈ ನೋವು;ಮೈ ನೋವು,mai kai novu;maikai novu;mai novu,body pain,no
+cold,ನೆಗಡಿ;ಶೀತ,negadi;sheeta;sheetha,,no
+runny nose,ಮೂಗು ಸೋರುತ್ತಿದೆ,moogu soruttide;mugu soruttide,,no
+blocked nose,ಮೂಗು ಕಟ್ಟಿದೆ,moogu kattide;mugu kattide,,no
+sore throat,ಗಂಟಲು ನೋವು;ಗಂಟಲು ಕೆರೆತ,gantalu novu;gantal novu;gantalu kerata,throat pain,no
+breathlessness,ಉಸಿರಾಟದ ತೊಂದರೆ;ಉಸಿರು ಕಟ್ಟುತ್ತೆ,usiraata tondare;usirata tondare;usiraatada tondare;usiru kattutte,shortness of breath,no
+chest pain,ಎದೆ ನೋವು;ಎದೆನೋವು;ಎದೆಯಲ್ಲಿ ನೋವು,ede novu;edenovu;edeyalli novu,,no
+itching,ತುರಿಕೆ,turike;thurike,,no
+swelling,ಊತ,oota;uta;ootha,,no
+burning urination,ಮೂತ್ರದಲ್ಲಿ ಉರಿ;ಉರಿ ಮೂತ್ರ,mootradalli uri;mutradalli uri;uri mootra,,no
+frequent urination,ಪದೇ ಪದೇ ಮೂತ್ರ,pade pade mootra,,no
+loss of appetite,ಹಸಿವು ಆಗಲ್ಲ;ಹಸಿವಿಲ್ಲ;ಹಸಿವು ಇಲ್ಲ,hasivu aagalla;hasivu agalla;hasivilla;hasivu illa,,no
+sleeplessness,ನಿದ್ದೆ ಬರಲ್ಲ;ನಿದ್ರೆ ಬರುತ್ತಿಲ್ಲ;ನಿದ್ದೆ ಬರ್ತಾ ಇಲ್ಲ,nidde barolla;nidde baralla;nidde barta illa;nidre barta illa;nidde illa,insomnia,no
+back pain,ಬೆನ್ನು ನೋವು;ಸೊಂಟ ನೋವು,bennu novu;benu novu;sonta novu;bennalli novu,backache,no
+joint pain,ಕೀಲು ನೋವು,keelu novu;kilu novu,,no
+knee pain,ಮಂಡಿ ನೋವು;ಮೊಣಕಾಲು ನೋವು,mandi novu;monakaalu novu,,no
+neck pain,ಕುತ್ತಿಗೆ ನೋವು,kuttige novu;kuthige novu,,no
+shoulder pain,ಭುಜ ನೋವು,bhuja novu,,no
+leg pain,ಕಾಲು ನೋವು;ಕಾಲಲ್ಲಿ ನೋವು,kaalu novu;kalu novu;kaalalli novu,,no
+hand pain,ಕೈ ನೋವು,kai novu;kaiyalli novu,,no
+ear pain,ಕಿವಿ ನೋವು,kivi novu,earache,no
+tooth pain,ಹಲ್ಲು ನೋವು,hallu novu;halu novu,toothache,no
+eye pain,ಕಣ್ಣು ನೋವು,kannu novu;kannalli novu,,no
+burning eyes,ಕಣ್ಣು ಉರಿ,kannu uri,,no
+blurred vision,ಕಣ್ಣು ಮಂಜಾಗಿದೆ,kannu manjagide;kannu manjaagide,,no
+rash,ಗುಳ್ಳೆ;ದದ್ದು,gulle;daddu,,no
+acidity,ಹುಳಿ ತೇಗು;ಎದೆ ಉರಿ,huli tegu;ede uri,heartburn;gas,no
+constipation,ಮಲಬದ್ಧತೆ,malabaddhate,,no
+chills,ಚಳಿ;ನಡುಕ,chali;naduka,shivering,no
+sweating,ಬೆವರು,bevaru,,no
+palpitations,ಎದೆ ಬಡಿತ,ede badita;ede bhadita,,no
+fainting,ಪ್ರಜ್ಞೆ ತಪ್ಪಿತು,pragne tappitu;prajne tappitu,,no
+weight loss,ತೂಕ ಕಡಿಮೆ,tooka kadime;tuka kadime,,no
+cramps,ಸೆಳೆತ,selata;seleta,,no
+numbness,ಜೋಮು,jomu,,no
+tingling,ಜುಮ್ಮು,jummu,,no
+sneezing,ಸೀನು,seenu;sinu,,no
+muscle pain,ಸ್ನಾಯು ನೋವು,snayu novu,,no
+blood in stool,ಮಲದಲ್ಲಿ ರಕ್ತ,maladalli rakta,,no
+burning sensation,ಉರಿ,uri,,no
+pain,ನೋವು,novu;noovu,ache,no

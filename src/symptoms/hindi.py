@@ -64,6 +64,11 @@ def tokens(text):
     return [(m.start(), m.end(), norm(m.group())) for m in re.finditer(r"[\wऀ-ॿ]+", text)]
 
 
+def markers(text):
+    """Devanagari words plus Hindi function words; used to pick Hindi vs Kannada when both match."""
+    return sum(bool(re.search(r"[ऀ-ॿ]", w)) or w in FUNCS for w in (t[2] for t in tokens(text)))
+
+
 def looks_hindi(text):
     if re.search(r"[ऀ-ॿ]", text):
         return True

@@ -27,11 +27,12 @@ About 5 minutes on an RTX 3050 6 GB. WSL has crashed during this run before; clo
 
 ## Data
 - `train.jsonl` / `dev.jsonl`: synthetic, made by `tools/generate_hindi_symptoms.py` from the lexicon (dev uses unseen patterns and some unseen symptoms).
-- `external/*.txt`: Hindi/Hinglish sentences written by other LLMs (ChatGPT, Gemini, Sarvam). Kept as data only; not scored.
+- `external/*.txt`: Hindi/Hinglish sentences written by other LLMs (ChatGPT, Gemini, Sarvam). Kept as data; not scored.
 
 ## Limits
-- Rules and training data come from the same hand-written lexicon, and all data is synthetic. Dev scores only show the code runs; they are circular, not accuracy.
+- Rules and training data come from the same hand-written lexicon, and all data is synthetic. Dev scores show that the code runs; they are circular, not accuracy.
 - Not tested on real patient text. No accuracy claims for Hindi or Hinglish.
-- Spellings outside the lexicon are missed. "aur" ends a negation window ("bukhar aur khansi nahi hai" negates only khansi).
+- Spellings outside the lexicon are missed. "aur" ends a negation window ("bukhar aur khansi nahi hai" negates just khansi).
+- A severity word inside a body-part phrase splits it: "सिर में बहुत दर्द" gives "दर्द (pain)", not headache; "pet me thoda sa dard" likewise.
 - MuRIL stays opt-in: on demo sentences it split or cut some phrases ("pet me | dard", "chakkar aa") and gives no English name itself (looked up from the lexicon).
 - Kannada is not done. It would need its own lexicon, script check (U+0C80-0CFF), negation rules ("illa"), generator patterns and real test sentences.

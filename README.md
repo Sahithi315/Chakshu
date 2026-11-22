@@ -363,28 +363,4 @@ Tests cover:
 
 ## Hindi support (prototype)
 
-Symptom text with Devanagari, or Roman-letter Hindi/Hinglish ("mujhe 3 din se bukhar hai, khansi nahi hai"), is routed to a Hindi extractor. Labels are the same (SYMPTOM, NEG_SYMPTOM, DURATION, SEVERITY); each symptom also carries an `english` name, shown in brackets in the doctor brief.
-
-How it works
-- Default (`extractor_mode = hindi_rules`): `src/symptoms/hindi.py`, a lexicon of about 55 symptoms with Devanagari, Roman and English spellings, plus duration, severity and negation rules (negation words may come after or before the symptom). No model needed.
-- Optional (`hindi_muril`): MuRIL fine-tuned on synthetic data. Off by default; enable with `CHAKSHU_HINDI_MODEL=muril` when `models/muril_hindi_v1` exists. It falls back to the rules if the folder is missing or fails to load. English text keeps using the existing path.
-
-Run
-```
-python run.py                                   # or your usual app start; type Hindi text in the intake form
-python -m pytest tests/test_hindi.py
-CHAKSHU_HINDI_MODEL=muril python run.py        # optional MuRIL route
-```
-
-Retrain
-```
-python tools/generate_hindi_symptoms.py
-python -m src.symptoms.train --model google/muril-base-cased --data data/symptoms/hindi --out models/muril_hindi_v1 --epochs 12 --bs 16 --dtype fp16
-python tools/score_hindi_dev.py models/muril_hindi_v1   # synthetic sanity check, not accuracy
-```
-
-Limits
-- The rules and the training data come from the same hand-written lexicon, and the data is synthetic. Scores on the synthetic dev split are a pipeline check, not accuracy.
-- No evaluation on real patient text. No claims about Hinglish accuracy.
-- Spelling variants outside the lexicon are missed; "aur" ends a negation window.
-- Kannada is not done.
+Devanagari or Roman-letter Hindi/Hinglish symptom text ("mujhe 3 din se bukhar hai, khansi nahi hai") goes to a rule-based Hindi extractor (`src/symptoms/hindi.py`); English text stays on the existing model. The doctor brief shows the English name in brackets. Optional MuRIL route: `CHAKSHU_HINDI_MODEL=muril` (weights not in git). Synthetic data only, not tested on real patient text, no accuracy claims. Tests: `python -m pytest tests/test_hindi.py`. Details, retraining and limits: [docs/hindi.md](docs/hindi.md).

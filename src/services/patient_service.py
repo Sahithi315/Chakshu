@@ -3,7 +3,6 @@ from datetime import datetime
 import hashlib
 import json
 import os
-from pathlib import Path
 import re
 import uuid
 from src.database.connection import get_db
@@ -212,6 +211,8 @@ def register_or_get_patient(phone, name, age=None, gender=None, force_new=False,
     name_clean = name.strip()
 
     with get_db(db_path) as conn:
+        if getattr(conn, 'is_postgres', False):
+            conn.lock(408012)
         existing_records = [
             dict(r) for r in conn.execute(
                 "SELECT * FROM patients WHERE phone = ? ORDER BY registered_at DESC",
@@ -262,6 +263,8 @@ def create_visit(patient_id, allow_duplicate_today=False, db_path=None):
     Reuses today's active waiting visit by default to prevent duplicate visits on page refresh or double-click.
     """
     with get_db(db_path) as conn:
+        if getattr(conn, 'is_postgres', False):
+            conn.lock(408013)
         if not allow_duplicate_today:
             existing_visit = conn.execute(
                 """
@@ -302,10 +305,23 @@ def create_visit(patient_id, allow_duplicate_today=False, db_path=None):
         return dict(visit_row)
 
 
-def get_active_visits(db_path=None, needs_vitals=False):
+def get_active_visits(db_path=None, needs_vitals=False, replay_prefix=None):
     """Retrieve visits, optionally limited to waiting patients without vitals."""
     with get_db(db_path) as conn:
         queue_filter = """WHERE v.status != 'completed'"""
+        params = []
+        if replay_prefix:
+            from src.database.seed import SEED_PATIENTS
+
+            seed_ids = [patient["patient_id"] for patient in SEED_PATIENTS]
+            placeholders = ", ".join("?" for _ in seed_ids)
+            queue_filter += f"""
+              AND (v.visit_id LIKE ? OR (v.visit_id NOT LIKE 'NAMCS-%'
+                   AND v.patient_id NOT IN ({placeholders})))
+            """
+            params.extend([f"{replay_prefix}%", *seed_ids])
+        else:
+            queue_filter += " AND v.visit_id NOT LIKE 'NAMCS-%'"
         if needs_vitals:
             queue_filter += """
               AND NOT EXISTS (
@@ -320,7 +336,8 @@ def get_active_visits(db_path=None, needs_vitals=False):
             JOIN patients p ON v.patient_id = p.patient_id
             {queue_filter}
             ORDER BY v.created_at DESC, v.id DESC
-            """
+            """,
+            params,
         ).fetchall()
         return [dict(r) for r in rows]
 
@@ -330,27 +347,27 @@ def sync_unprocessed_reports(visit_id, conn):
     """Ensure any uploaded report for visit has been processed for labs, meds, and findings."""
     try:
         from src.services.ocr_service import process_report_file
+        from src.services.report_service import report_processing_path
         rep_rows = conn.execute("SELECT * FROM reports WHERE visit_id = ?", (visit_id,)).fetchall()
         for r in rep_rows:
             r_dict = dict(r)
             rid = r_dict["report_id"]
-            storage_path = Path(r_dict.get("storage_path", ""))
-            if not storage_path.exists():
-                continue
 
             has_labs = conn.execute("SELECT 1 FROM extracted_results WHERE report_id = ? LIMIT 1", (rid,)).fetchone()
             has_meds = conn.execute("SELECT 1 FROM extracted_medications WHERE report_id = ? LIMIT 1", (rid,)).fetchone()
 
             if not has_labs and not has_meds:
                 try:
-                    res = process_report_file(str(storage_path))
+                    with report_processing_path(r_dict, conn=conn) as storage_path:
+                        if not storage_path.is_file():
+                            continue
+                        res = process_report_file(str(storage_path))
                 except Exception as ocr_err:
                     conn.execute(
                         "UPDATE reports SET extraction_status = 'Failed', error_message = ? WHERE report_id = ?",
                         (str(ocr_err), rid)
                     )
                     continue
-
                 doc_type = res.get("doc_type", "Medical Report")
                 status = "Completed" if res.get("status") in ["success", "warning"] else "Failed"
                 findings_count = res.get("findings_count", 0)

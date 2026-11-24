@@ -24,7 +24,9 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 from src.database.schema import init_db
+from src.database.postgres import database_url
 from src.database.seed import seed_database
+from src.services.namcs_queue import queue_source
 
 
 def main():
@@ -32,12 +34,12 @@ def main():
     print("  TEAM 404 VISION: AI-ASSISTED HOSPITAL PRE-CONSULTATION PLATFORM")
     print("=" * 70)
 
-    # 1. Initialize SQLite database
+    # 1. Initialize the selected database
     print("[1/3] Initializing persistent hospital database...")
     init_db()
-    seed_database()
-    db_file = ROOT / "data" / "hospital.db"
-    print(f"      Database ready at: {db_file.resolve()}")
+    if not database_url() and queue_source() == "live":
+        seed_database()
+    print("      Using Supabase PostgreSQL" if database_url() else "      Using local SQLite")
 
     # 2. Check the compiled React frontend
     dist_dir = ROOT / "frontend" / "dist"

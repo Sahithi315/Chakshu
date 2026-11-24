@@ -3,6 +3,7 @@ from contextlib import contextmanager
 from pathlib import Path
 import sqlite3
 from .schema import get_db_path, init_db
+from .postgres import Database, connect, database_url
 
 
 @contextmanager
@@ -11,6 +12,11 @@ def get_db(db_path=None, conn=None):
     If an existing connection `conn` is provided, it is yielded directly without re-opening."""
     if conn is not None:
         yield conn
+        return
+
+    if db_path is None and database_url():
+        with connect() as connection:
+            yield Database(connection)
         return
 
     path = Path(db_path) if db_path else get_db_path()

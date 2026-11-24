@@ -24,7 +24,7 @@ In hospital outpatient departments (OPDs), doctors typically have only 3–5 min
 
 ## AI and Intelligent Automation Used
 
-Chakshu does **not** call an external generative-AI API at runtime, and it does not require OpenAI, Anthropic, Gemini, or similar API keys. Its intelligent features are local, reviewable, and deliberately non-autonomous:
+Chakshu runs its clinical workflow features locally. The optional staff Workflow help chatbot uses Gemini when `GEMINI_API_KEY` is set in the server-side `.env`. It sends only preset navigation prompts and falls back to the built-in guide when Gemini is unavailable.
 
 | Capability | Implementation | Safety boundary |
 | :--- | :--- | :--- |
@@ -360,3 +360,69 @@ Tests cover:
 - **Audit Logging**: All view actions, vitals entries, notes saves, and report uploads are logged in `audit_logs`.
 - **Deduplication**: SHA-256 hashing prevents storage of duplicate documents.
 - **Clinical Safety Boundary**: The summary, temporal reasoning, and prescription checks are review aids. They cannot independently diagnose, prescribe, or change medication.
+
+## NAMCS 2024 queue replay
+
+With `namcshc2024_stata.dta` in the project root, the existing staff dashboards
+start with four historical NAMCS encounters. The server releases the next four
+in public-use visit ID order every hour and logs the released IDs and next ID.
+Each queue shows up to four eligible visits in its existing order and refreshes
+once a minute. Restarting or reloading the backend starts again with visits 1-4.
+Prior replay records remain in SQLite and leave the active queue. The demo uses
+public-use visit IDs, ages, and recorded sex from the file. Set
+`NAMCS_QUEUE_SOURCE=live` to use the original queue source.
+
+To serve the replay from private Supabase Storage, configure the server
+environment or the git-ignored project-root `.env` file:
+
+```dotenv
+SUPABASE_URL=https://YOUR_PROJECT_REF.supabase.co
+SUPABASE_SECRET_KEY=
+NAMCS_QUEUE_SOURCE=supabase
+```
+
+Use a project secret key or legacy service-role key and keep it server-side.
+The existing frontend project URL is used when `SUPABASE_URL` is omitted.
+
+```powershell
+python tools/publish_namcs.py
+python run.py
+```
+
+The publisher archives and verifies the full Stata file. The server reads only
+the queue fields from that archive and tracks the replay position in memory.
+Set `NAMCS_QUEUE_SOURCE=local` to read the local file.
+
+## Supabase Patient Records
+
+Set these server-only values in the environment or the git-ignored root .env:
+
+```dotenv
+SUPABASE_DB_URL=
+CHAKSHU_DOCTOR_PASSWORD=
+CHAKSHU_NURSE_PASSWORD=
+```
+
+Use the project's PostgreSQL connection string from the Supabase Connect
+dialog (Session pooler for IPv4), with SSL enabled. Prefer sslmode=verify-full
+and configure the Supabase root certificate when needed. The staff password
+settings provision the doctor.demo and nurse.demo usernames using your own
+passwords. Supply them on first setup.
+
+With the app stopped, install the dependencies and import the archive before
+starting the server. Include --migrate-local on a fresh destination if
+existing SQLite patient histories and their original report files should be
+copied. Staff sessions and credentials are provisioned separately.
+
+```powershell
+python -m pip install -r requirements.txt
+python tools/import_supabase_records.py --migrate-local
+python run.py
+```
+
+Patient Records can find the imported survey by searching NAMCS or a visit ID,
+for example NAMCS-SURVEY-000002. ICD-10-CM codes, labels, explanations, and primary
+status are displayed when available. The archive remains separate from the
+active queue. With SUPABASE_DB_URL set, new clinical records and report files
+are committed to PostgreSQL in the private chakshu schema, and staff-authorized
+Records requests read from that database.

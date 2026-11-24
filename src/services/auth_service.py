@@ -46,7 +46,7 @@ def _token_hash(token):
     return hashlib.sha256(token.encode("utf-8")).hexdigest()
 
 
-def seed_demo_staff(conn):
+def seed_demo_staff(conn, passwords=None):
     """Create deterministic demo identities without replacing changed passwords."""
     accounts = (
         (
@@ -64,7 +64,9 @@ def seed_demo_staff(conn):
             os.environ.get("CHAKSHU_NURSE_PASSWORD", "Nurse123!"),
         ),
     )
-    for staff_id, username, display_name, role, password in accounts:
+    for index, (staff_id, username, display_name, role, password) in enumerate(accounts):
+        if passwords is not None:
+            password = passwords[index]
         conn.execute(
             """
             INSERT OR IGNORE INTO staff_users

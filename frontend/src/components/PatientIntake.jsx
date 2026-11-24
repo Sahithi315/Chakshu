@@ -58,6 +58,7 @@ export default function PatientIntake({ activeStep = 1, onStepChange = () => {} 
   const [conditions, setConditions] = useState('');
   const [medications, setMedications] = useState('');
   const [allergies, setAllergies] = useState('');
+  const [intakeError, setIntakeError] = useState('');
 
   // Step 3: Reports & Scan state
   const [activeUploadTab, setActiveUploadTab] = useState('camera'); // 'camera' | 'file'
@@ -414,7 +415,12 @@ export default function PatientIntake({ activeStep = 1, onStepChange = () => {} 
   // 8. Submit Intake Questionnaire
   const handleSaveIntake = async (e) => {
     e.preventDefault();
-    if (!reason.trim()) return;
+    if (isSubmitting) return;
+    if (!reason.trim()) {
+      setIntakeError('Enter the main reason for your visit.');
+      return;
+    }
+    setIntakeError('');
     setIsSubmitting(true);
     try {
       const res = await fetch('/api/intake', {
@@ -433,13 +439,19 @@ export default function PatientIntake({ activeStep = 1, onStepChange = () => {} 
           known_allergies: allergies
         })
       });
-      const data = await res.json();
-      if (res.ok && data.summary) {
-        setGeneratedSummary(data.summary);
-        setStep(3);
+      const data = await res.json().catch(() => null);
+      if (res.status === 401 || res.status === 403) {
+        setIntakeError('This check-in session is no longer valid. Start a new check-in before submitting.');
+        return;
       }
-    } catch (err) {
-      console.error('Intake failed', err);
+      if (!res.ok || !data?.summary) {
+        setIntakeError('We could not confirm the save. Your answers are still here. Try saving again.');
+        return;
+      }
+      setGeneratedSummary(data.summary);
+      setStep(3);
+    } catch {
+      setIntakeError('We could not reach the server to confirm the save. Your answers are still here. Try saving again.');
     } finally {
       setIsSubmitting(false);
     }
@@ -1045,6 +1057,7 @@ export default function PatientIntake({ activeStep = 1, onStepChange = () => {} 
               />
             </div>
 
+            {intakeError && <div className="auth-error" role="alert">{intakeError}</div>}
             <button type="submit" className="btn-primary" style={{ width: '100%', marginTop: '12px' }} disabled={isSubmitting}>
               <span>{isSubmitting ? 'Saving...' : 'Save & Proceed to Report Upload'}</span>
               <ArrowRight size={16} />

@@ -50,3 +50,7 @@ frontend/node_modules/
 .pytest_cache/
 .coverage
 htmlcov/
+
+# Local clinical datasets
+/mimic-iv-clinical-database-demo-2.2/
+/namcshc2024_stata.dta

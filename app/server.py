@@ -27,6 +27,9 @@ from starlette.exceptions import HTTPException
 
 from src.database.connection import get_db
 from src.database.schema import init_db
+from src.database.postgres import database_url
+from src.services.namcs_archive import get_archive_profile, search_archive
+from src.services.namcs_queue import INTERVAL_SECONDS, NamcsReplay, logger, queue_source
 from src.services.patient_service import (
     register_or_get_patient, find_patient_by_phone, find_patient_by_id,
     create_visit, get_active_visits, get_visit_details, get_patient_history,
@@ -37,7 +40,7 @@ from src.services.patient_service import (
 )
 from src.services.report_service import (
     store_and_register_report, get_reports_for_visit, get_reports_for_patient,
-    get_report_by_id, ReportValidationError
+    get_report_by_id, get_cloud_report_content, report_processing_path, ReportValidationError
 )
 from src.services.ocr_service import process_report_file, is_tesseract_available
 from src.services.summary_service import generate_clinical_summary, save_summary, build_temporal_reasoning
@@ -45,6 +48,7 @@ from src.services.doctor_service import (
     record_doctor_decision, save_doctor_notes, get_longitudinal_labs
 )
 from src.services.prescription_safety_service import check_prescription_safety
+from src.services.workflow_chat import TOPICS, workflow_answer
 from src.services.auth_service import (
     authenticate_staff, create_staff_session, create_patient_session,
     get_staff_session, get_patient_session, revoke_staff_session
@@ -75,10 +79,36 @@ async def warm_clinical_services():
     await asyncio.to_thread(get_extractor)
 
 
+async def advance_namcs_hourly(replay):
+    while True:
+        await asyncio.sleep(INTERVAL_SECONDS)
+        try:
+            await asyncio.to_thread(replay.advance)
+        except Exception:
+            logger.exception("NAMCS batch failed; the same encounters will be retried next hour")
+
+
 @asynccontextmanager
-async def application_lifespan(_app):
+async def application_lifespan(app):
+    if database_url():
+        await asyncio.to_thread(init_db)
     await warm_clinical_services()
-    yield
+    source = queue_source()
+    app.state.namcs_replay = None
+    if source == "live":
+        yield
+        return
+
+    replay = await asyncio.to_thread(NamcsReplay, source)
+    await asyncio.to_thread(replay.advance)
+    app.state.namcs_replay = replay
+    timer = asyncio.create_task(advance_namcs_hourly(replay))
+    try:
+        yield
+    finally:
+        timer.cancel()
+        await asyncio.gather(timer, return_exceptions=True)
+        app.state.namcs_replay = None
 
 
 # ---------------- API HANDLERS ----------------
@@ -135,8 +165,23 @@ async def health(request):
         "status": "healthy",
         "tesseract_available": is_tesseract_available(),
         "model_mode": get_extractor().mode,
-        "database": "sqlite_connected"
+        "database": "supabase_connected" if database_url() else "sqlite_connected"
     })
+
+
+async def workflow_chat(request):
+    _, error = await asyncio.to_thread(require_staff, request, "doctor", "nurse")
+    if error:
+        return error
+    topic = (await request.json()).get("topic")
+    if not isinstance(topic, str) or topic not in TOPICS:
+        return JSONResponse({"error": "Choose a workflow question."}, status_code=400)
+    try:
+        answer = await asyncio.to_thread(workflow_answer, topic)
+    except (OSError, ValueError) as exc:
+        logger.warning("Gemini workflow help unavailable (%s)", getattr(exc, "code", type(exc).__name__))
+        return JSONResponse({"answer": TOPICS[topic], "source": "guide"})
+    return JSONResponse({"answer": answer, "source": "gemini"})
 
 
 async def list_visits(request):
@@ -147,7 +192,8 @@ async def list_visits(request):
     needs_vitals = request.query_params.get("needs_vitals", "").lower() in {"1", "true", "yes"}
     if needs_vitals and identity["role"] != "nurse":
         return JSONResponse({"error": "The vitals queue is available to nursing staff only"}, status_code=403)
-    visits = get_active_visits(needs_vitals=needs_vitals)
+    replay = getattr(request.app.state, "namcs_replay", None)
+    visits = get_active_visits(needs_vitals=needs_vitals, replay_prefix=replay.prefix if replay else None)
     return JSONResponse(visits)
 
 
@@ -186,6 +232,8 @@ async def search_patients(request):
     if error:
         return error
     q = request.query_params.get("q", "").strip()
+    records_search = request.query_params.get("records") == "1"
+    archive_matches = await asyncio.to_thread(search_archive, q) if records_search and q else []
     with get_db() as conn:
         if not q:
             rows = conn.execute("SELECT * FROM patients ORDER BY registered_at DESC LIMIT 25").fetchall()
@@ -217,7 +265,8 @@ async def search_patients(request):
                 if compact_q in db_compact:
                     results.append(dict(r))
 
-        return JSONResponse(results)
+        existing = {match["patient_id"] for match in archive_matches}
+        return JSONResponse((archive_matches + [row for row in results if row["patient_id"] not in existing])[:25])
 
 
 async def get_patient(request):
@@ -433,15 +482,15 @@ async def upload_report_endpoint(request):
 
         # Extract lab records, medications, and findings via structured PDF or OCR
         try:
-            extraction_res = process_report_file(rep_rec["storage_path"])
+            with report_processing_path(rep_rec) as report_path:
+                extraction_res = process_report_file(str(report_path))
         except Exception as ocr_err:
             with get_db() as conn:
                 conn.execute(
                     "UPDATE reports SET extraction_status = 'Failed', error_message = ? WHERE report_id = ?",
                     (str(ocr_err), rep_rec["report_id"])
                 )
-            raise ocr_err
-
+            raise
         doc_type = extraction_res.get("doc_type", "Medical Report")
         ext_status = "Completed" if extraction_res.get("status") in ["success", "warning"] else "Failed"
         findings_count = extraction_res.get("findings_count", 0)
@@ -703,7 +752,9 @@ async def get_patient_records_endpoint(request):
         if not patient_id:
             return JSONResponse({"error": "Patient identifier is required"}, status_code=400)
 
-        profile = get_patient_complete_timeline(patient_id)
+        profile = await asyncio.to_thread(get_archive_profile, patient_id)
+        if profile is None:
+            profile = get_patient_complete_timeline(patient_id)
         if not profile:
             return JSONResponse({"error": f"Patient record '{patient_id}' was not found in the hospital system"}, status_code=404)
         return JSONResponse(profile)
@@ -726,6 +777,17 @@ async def download_report_endpoint(request):
     rep = get_report_by_id(report_id)
     if not rep:
         return JSONResponse({"error": "Report not found"}, status_code=404)
+    if identity.get("patient_id") and identity["patient_id"] != rep["patient_id"]:
+        return JSONResponse({"error": "Report not found"}, status_code=404)
+    if database_url():
+        content = await asyncio.to_thread(get_cloud_report_content, report_id)
+        if content is None:
+            return JSONResponse({"error": "Report file is missing"}, status_code=404)
+        filename = urllib.parse.quote(rep["filename"], safe="")
+        return Response(content, media_type="application/octet-stream", headers={
+            "Content-Disposition": f"attachment; filename*=UTF-8''{filename}",
+            "Cache-Control": "no-store",
+        })
     path = Path(rep["storage_path"])
     if not path.exists():
         return JSONResponse({"error": "Report file is missing from storage disk"}, status_code=404)
@@ -783,6 +845,7 @@ async def download_report_region_endpoint(request):
 
 routes = [
     Route("/api/health", health, methods=["GET"]),
+    Route("/api/workflow-chat", workflow_chat, methods=["POST"]),
     Route("/api/auth/staff/login", staff_login, methods=["POST"]),
     Route("/api/auth/staff/me", staff_me, methods=["GET"]),
     Route("/api/auth/staff/logout", staff_logout, methods=["POST"]),
@@ -830,7 +893,7 @@ middleware = [
     )
 ]
 
-app = Starlette(debug=True, routes=routes, middleware=middleware, lifespan=application_lifespan)
+app = Starlette(debug=not bool(database_url()), routes=routes, middleware=middleware, lifespan=application_lifespan)
 
 if __name__ == "__main__":
     import uvicorn

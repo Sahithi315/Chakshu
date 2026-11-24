@@ -11,7 +11,8 @@ const orderedActiveQueue = queue => [...queue]
     const leftToken = Number(String(left.token_number || '').replace(/\D/g, '')) || Number.MAX_SAFE_INTEGER;
     const rightToken = Number(String(right.token_number || '').replace(/\D/g, '')) || Number.MAX_SAFE_INTEGER;
     return leftToken - rightToken;
-  });
+  })
+  .slice(0, 4);
 
 export default function DoctorDashboard({ onOpenPatientRecords, apiFetch = fetch }) {
   const [visits, setVisits] = useState([]);
@@ -338,6 +339,8 @@ export default function DoctorDashboard({ onOpenPatientRecords, apiFetch = fetch
 
   useEffect(() => {
     fetchVisits();
+    const timer = window.setInterval(fetchVisits, 60_000);
+    return () => window.clearInterval(timer);
   }, []);
 
   // Fetch selected visit details

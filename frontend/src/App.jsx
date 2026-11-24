@@ -9,6 +9,7 @@ import PatientRecords from './components/PatientRecords';
 import PatientIntake from './components/PatientIntake';
 import NurseStation from './components/NurseStation';
 import AnimatedContent from './components/AnimatedContent';
+import WorkflowChat from './components/WorkflowChat';
 
 function ProtectedRoute({ role, children }) {
   const { user, loading } = useAuth();
@@ -60,6 +61,7 @@ function AppRoutes() {
       <Route path="/nurse/queue" element={<ProtectedRoute role="nurse"><NurseStation apiFetch={apiFetch} user={user} /></ProtectedRoute>} />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes></AnimatedContent></main>
+    {user && location.pathname !== '/' && !location.pathname.startsWith('/patient/') && <WorkflowChat apiFetch={apiFetch} />}
   </div>;
 }
 

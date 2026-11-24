@@ -195,6 +195,13 @@ button, input, select, textarea {
 .login-icon { width: 54px; height: 54px; display: grid; place-items: center; border-radius: 16px; margin: auto; color: var(--primary); background: #eff6ff; }
 .login-submit { width: 100%; margin-top: 22px; justify-content: center; }
 .auth-error { background: #fef2f2; color: #991b1b; border: 1px solid #fecaca; border-radius: 10px; padding: 10px 12px; margin-bottom: 16px; font-size: .86rem; }
+.workflow-chat { position: fixed; right: 16px; bottom: 16px; z-index: 40; display: grid; justify-items: end; gap: 8px; }
+.workflow-chat-panel { width: min(360px, calc(100vw - 32px)); max-height: calc(100dvh - 80px); overflow: auto; padding: 16px; display: grid; gap: 8px; }
+.workflow-chat-panel h2 { font-size: 1.05rem; margin: 0; }
+.workflow-chat-messages { max-height: 30vh; overflow: auto; font-size: .9rem; }
+.workflow-chat-messages p { margin: 6px 0; padding: 8px 10px; background: #eff6ff; border-radius: 10px; }
+.workflow-chat-messages .workflow-chat-question { background: #e2e8f0; }
+.workflow-chat-messages strong { display: block; font-size: .75rem; margin-bottom: 3px; }
 .demo-credentials { margin-top: 20px; background: #f8fafc; border-radius: 12px; padding: 12px; display: flex; flex-direction: column; gap: 3px; font-size: .78rem; color: var(--text-muted); }
 .route-loading { padding: 60px; text-align: center; color: var(--text-muted); }
 .patient-complete-card { max-width: 620px; margin: 30px auto; text-align: center; display: flex; flex-direction: column; align-items: center; gap: 14px; }

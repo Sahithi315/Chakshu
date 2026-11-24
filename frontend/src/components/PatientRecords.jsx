@@ -36,9 +36,9 @@ export default function PatientRecords({ initialPatientId, onBackToDoctor, apiFe
     const timer = setTimeout(async () => {
       setIsSearching(true);
       try {
-        const res = await apiFetch(`/api/patients?q=${encodeURIComponent(searchQuery.trim())}`);
+        const res = await apiFetch(`/api/patients?records=1&q=${encodeURIComponent(searchQuery.trim())}`);
         const data = await res.json();
-        setSearchResults(data);
+        setSearchResults(res.ok && Array.isArray(data) ? data : []);
       } catch (err) {
         console.error('Patient search error:', err);
       } finally {
@@ -166,7 +166,7 @@ export default function PatientRecords({ initialPatientId, onBackToDoctor, apiFe
         <input
           type="text"
           className="search-input"
-          placeholder="Search by Permanent MRN (e.g. P10482, PAT-...), Patient Name, or Registered Phone Number..."
+          placeholder="Search by MRN, name, phone, or NAMCS visit ID"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           onKeyDown={handleSearchKeyDown}
@@ -213,7 +213,7 @@ export default function PatientRecords({ initialPatientId, onBackToDoctor, apiFe
                   </span>
                 </div>
                 <div style={{ fontSize: '0.82rem', color: '#2563eb', fontWeight: 700 }}>
-                  MRN: {p.patient_id} · 📞 {p.phone}
+                  {p.source === 'namcs' ? 'Survey ID' : 'MRN'}: {p.patient_id}{p.phone && ` · ${p.phone}`}
                 </div>
               </div>
             ))}
@@ -286,7 +286,7 @@ export default function PatientRecords({ initialPatientId, onBackToDoctor, apiFe
                     {patient.name}
                   </h1>
                   <span style={{ fontSize: '0.88rem', color: '#64748b', fontWeight: 600 }}>
-                    {patient.age || '-'} y/o · {patient.gender || 'Unspecified'}
+                    {patient.age ?? '-'} y/o · {patient.gender || 'Unspecified'}
                   </span>
                   <div style={{
                     display: 'inline-flex',
@@ -300,11 +300,11 @@ export default function PatientRecords({ initialPatientId, onBackToDoctor, apiFe
                     fontWeight: 700,
                     color: '#1d4ed8'
                   }}>
-                    <span>MRN: {patient.patient_id}</span>
+                    <span>{patient.source === 'namcs' ? 'Survey ID' : 'MRN'}: {patient.patient_id}</span>
                     <button
                       type="button"
                       onClick={() => copyToClipboard(patient.patient_id)}
-                      title="Copy Permanent MRN"
+                      title={patient.source === 'namcs' ? 'Copy survey ID' : 'Copy patient MRN'}
                       style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: '#2563eb', padding: '2px', display: 'flex' }}
                     >
                       {copiedMRN ? <Check size={14} style={{ color: '#16a34a' }} /> : <Copy size={14} />}
@@ -313,8 +313,8 @@ export default function PatientRecords({ initialPatientId, onBackToDoctor, apiFe
                 </div>
 
                 <div style={{ display: 'flex', gap: '16px', marginTop: '8px', fontSize: '0.84rem', color: '#64748b', flexWrap: 'wrap' }}>
-                  <span>📞 <strong>Mobile:</strong> {patient.phone}</span>
-                  <span>🗓️ <strong>First Registered:</strong> {patient.registered_at ? patient.registered_at.slice(0, 10) : 'Recorded'}</span>
+                  {patient.source !== 'namcs' && <span>📞 <strong>Mobile:</strong> {patient.phone || 'Not recorded'}</span>}
+                  {patient.registered_at && <span>🗓️ <strong>First Registered:</strong> {patient.registered_at.slice(0, 10)}</span>}
                   <span>🏥 <strong>Total Recorded Visits:</strong> <strong style={{ color: '#0f172a' }}>{patientRecord.visits_count}</strong></span>
                 </div>
               </div>
@@ -403,6 +403,20 @@ export default function PatientRecords({ initialPatientId, onBackToDoctor, apiFe
                 </div>
               ) : (
                 visits.map((v, index) => {
+                  if (v.diagnoses) {
+                    return <details key={v.visit_id} className="card" open>
+                      <summary>Historical NAMCS visit{v.survey_year ? ` (${v.survey_year})` : ''}</summary>
+                      <h4>Recorded diagnoses</h4>
+                      {v.diagnoses.length ? <ul>
+                        {v.diagnoses.map(diagnosis => <li key={diagnosis.slot}>
+                          <strong>{diagnosis.code}</strong>
+                          {diagnosis.label && ` - ${diagnosis.label}`}
+                          {diagnosis.type && ` (${diagnosis.type})`}
+                          {diagnosis.explanation && <p>{diagnosis.explanation}</p>}
+                        </li>)}
+                      </ul> : <p>No diagnosis codes were recorded.</p>}
+                    </details>;
+                  }
                   const isExpanded = !!expandedVisits[v.visit_id];
                   const isCurrent = index === 0;
                   const vDate = v.created_at ? v.created_at.slice(0, 16).replace('T', ' ') : 'Date recorded';
@@ -488,6 +502,8 @@ export default function PatientRecords({ initialPatientId, onBackToDoctor, apiFe
                             <div style={{ fontSize: '0.78rem', fontWeight: 700, color: '#2563eb', textTransform: 'uppercase', marginBottom: '6px' }}>
                               📋 Patient Check-In Intake Details
                             </div>
+
+
                             <div className="responsive-two-column" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', fontSize: '0.88rem', marginBottom: '8px' }}>
                               <div><strong>Chief Complaint:</strong> {inData.reason_for_visit || 'Not specified'}</div>
                               <div><strong>Timeline:</strong> {inData.duration || 'Unspecified'} ({inData.severity || 'Unspecified'})</div>

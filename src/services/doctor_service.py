@@ -14,7 +14,7 @@ LEGACY_DECISIONS = ROOT / "data" / "decisions.json"
 def record_doctor_decision(visit_id, patient_id, item_id, part_type, decision, corrected_value=None, db_path=None, conn=None):
     """
     Record Confirm, Correct, or Reject for a symptom or lab finding.
-    Persists to database table `doctor_reviews` and updates legacy decisions.json.
+    Persists to doctor_reviews and maintains the legacy file in local mode.
     """
     corrected_json = json.dumps(corrected_value) if corrected_value else None
 
@@ -128,11 +128,11 @@ def record_doctor_decision(visit_id, patient_id, item_id, part_type, decision, c
             conn=c
         )
 
-    if conn is not None:
-        _do_record(conn)
-    else:
-        with get_db(db_path) as c:
-            _do_record(c)
+    with get_db(db_path, conn=conn) as c:
+        _do_record(c)
+        cloud = getattr(c, "is_postgres", False)
+    if cloud:
+        return
 
     # Legacy file sync
     try:

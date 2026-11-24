@@ -21,8 +21,10 @@ export default function NurseStation({ apiFetch = fetch, user }) {
     try {
       const response = await apiFetch('/api/visits?needs_vitals=1');
       const data = await response.json();
-      setVisits(data);
-      setSelectedVisitId(current => data.some(visit => visit.visit_id === current) ? current : (data[0]?.visit_id || ''));
+      if (!response.ok) throw new Error(data.error);
+      const queue = data.slice(0, 4);
+      setVisits(queue);
+      setSelectedVisitId(current => queue.some(visit => visit.visit_id === current) ? current : (queue[0]?.visit_id || ''));
     } catch (error) {
       console.error('Failed to load queue', error);
     } finally {
@@ -30,7 +32,11 @@ export default function NurseStation({ apiFetch = fetch, user }) {
     }
   };
 
-  useEffect(() => { fetchVisits(); }, []);
+  useEffect(() => {
+    fetchVisits();
+    const timer = window.setInterval(fetchVisits, 60_000);
+    return () => window.clearInterval(timer);
+  }, []);
 
   const handleSaveVitals = event => {
     event.preventDefault();

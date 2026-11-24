@@ -1,5 +1,7 @@
 """Medical report upload, validation, secure storage, and deduplication service."""
+from contextlib import contextmanager
 from pathlib import Path
+from tempfile import TemporaryDirectory
 import hashlib
 import os
 import re
@@ -81,12 +83,13 @@ def store_and_register_report(file_bytes, filename, patient_id, visit_id, group_
             )
             return rep, False
 
-        patient_storage_dir = UPLOAD_DIR / patient_id
-        patient_storage_dir.mkdir(parents=True, exist_ok=True)
-
-        target_filename = f"{file_hash[:12]}_{clean_name}"
-        target_path = patient_storage_dir / target_filename
-        target_path.write_bytes(file_bytes)
+        cloud = getattr(c, "is_postgres", False)
+        storage_path = ""
+        if not cloud:
+            target_path = UPLOAD_DIR / patient_id / f"{file_hash[:12]}_{clean_name}"
+            target_path.parent.mkdir(parents=True, exist_ok=True)
+            target_path.write_bytes(file_bytes)
+            storage_path = str(target_path)
 
         report_id = f"REP-{uuid.uuid4().hex[:8].upper()}"
         logical_group = group_id or f"GRP-{uuid.uuid4().hex[:6].upper()}"
@@ -95,7 +98,8 @@ def store_and_register_report(file_bytes, filename, patient_id, visit_id, group_
         if ext == ".pdf":
             try:
                 import pdfplumber
-                with pdfplumber.open(target_path) as p:
+                from io import BytesIO
+                with pdfplumber.open(BytesIO(file_bytes)) as p:
                     page_count = len(p.pages)
             except Exception:
                 page_count = 1
@@ -105,8 +109,11 @@ def store_and_register_report(file_bytes, filename, patient_id, visit_id, group_
             INSERT INTO reports (report_id, patient_id, visit_id, group_id, filename, file_type, file_hash, storage_path, page_count)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
             """,
-            (report_id, patient_id, visit_id, logical_group, clean_name, file_type, file_hash, str(target_path), page_count)
+            (report_id, patient_id, visit_id, logical_group, clean_name, file_type, file_hash, storage_path, page_count)
         )
+
+        if cloud:
+            c.execute("INSERT INTO report_files (report_id, content) VALUES (?, ?)", (report_id, file_bytes))
 
         log_audit(
             "patient", "report_uploaded", patient_id, visit_id=visit_id,
@@ -152,3 +159,26 @@ def get_report_by_id(report_id, db_path=None):
             (report_id.strip(),)
         ).fetchone()
         return dict(row) if row else None
+
+
+def get_cloud_report_content(report_id, conn=None):
+    with get_db(conn=conn) as db:
+        if not getattr(db, "is_postgres", False):
+            return None
+        row = db.execute("SELECT content FROM report_files WHERE report_id = ?", (report_id,)).fetchone()
+        return bytes(row["content"]) if row else None
+
+
+@contextmanager
+def report_processing_path(report, conn=None):
+    if report["storage_path"]:
+        yield Path(report["storage_path"])
+        return
+
+    content = get_cloud_report_content(report["report_id"], conn=conn)
+    if content is None:
+        raise FileNotFoundError("Report content is missing")
+    with TemporaryDirectory() as directory:
+        path = Path(directory) / sanitize_filename(report["filename"])
+        path.write_bytes(content)
+        yield path
